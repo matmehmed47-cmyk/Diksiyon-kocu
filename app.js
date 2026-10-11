@@ -236,7 +236,7 @@
 
   // ================= Ekranlar =================
   var BASLIKLAR = {
-    bugun: 'Diksiyon Koçu', nefes: 'Nefes ve ses', metin: 'Metin çalışması', ders: 'Dersler', gelisim: 'Gelişimim'
+    bugun: 'Diksiyon Koçu', nefes: 'Nefes ve ses', metin: 'Metin çalışması', calis: 'Çalış', ders: 'Dersler', gelisim: 'Gelişimim'
   };
   var aktifEkran = 'bugun';
   function goster(ad, kaydirId) {
@@ -244,6 +244,7 @@
     if (aktifEkran !== ad) {
       if (aktifEkran === 'nefes') { nefesDurdur(false); testIptal(); }
       if (aktifEkran === 'metin' && Kayit.aktif) kayitBitir();
+      if (aktifEkran === 'calis') { calisDurdur(); mkDurdur(); }
       oynatmayiDurdur();
     }
     aktifEkran = ad;
@@ -271,6 +272,353 @@
       goster(b.getAttribute('data-git'), b.getAttribute('data-kaydir'));
     });
   });
+
+  // ================= Çalış (sese / soruna göre çalışmalar) =================
+  var Calis = { modul: null, adim: 0, zaman: null, oto: false, tempo: 'orta', dizi: 0, kart: 0, sesli: false, tutCalisiyor: false };
+  var TEMPO = { yavas: 2200, orta: 1400, hizli: 800 };
+  function calisBul(id) { return window.CALISMALAR.filter(function (c) { return c.id === id; })[0]; }
+
+  function calisListeCiz() {
+    var kutu = $('#calisKartlar');
+    kutu.textContent = '';
+    window.CALISMALAR.forEach(function (c) {
+      var b = el('button', 'calis-kart' + (c.hazir ? '' : ' yakinda'));
+      b.type = 'button';
+      b.appendChild(el('span', 'harf', c.harf));
+      var y = el('span', 'yazi');
+      y.appendChild(el('b', null, c.ad));
+      y.appendChild(el('span', 'muted kucuk', c.hazir ? c.ozet : 'Yakında'));
+      b.appendChild(y);
+      if (c.hazir) b.addEventListener('click', function () { calisAc(c.id); });
+      else b.disabled = true;
+      kutu.appendChild(b);
+    });
+  }
+  function calisAc(id) {
+    Calis.modul = calisBul(id);
+    Calis.adim = 0;
+    $('#calisListe').hidden = true;
+    $('#calisDetay').hidden = false;
+    mkHazirla();
+    adimCiz();
+  }
+  function calisKapat() {
+    calisDurdur(); mkDurdur();
+    $('#calisDetay').hidden = true;
+    $('#calisListe').hidden = false;
+    window.scrollTo(0, 0);
+  }
+  function calisDurdur() {
+    clearTimeout(Calis.zaman); Calis.zaman = null;
+    Calis.oto = false; Calis.tutCalisiyor = false;
+    try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { /* yok */ }
+  }
+  function calisSoyle(metin) {
+    if (!('speechSynthesis' in window) || !Rehber.ses) return false;
+    try {
+      var u = new SpeechSynthesisUtterance(metin);
+      u.voice = Rehber.ses; u.lang = Rehber.ses.lang; u.rate = 0.8;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+      return true;
+    } catch (e) { return false; }
+  }
+  function bip(frekans) {
+    try {
+      var c = Ses.baglam(), o = c.createOscillator(), g = c.createGain();
+      o.frequency.value = frekans; g.gain.value = 0.08;
+      o.connect(g); g.connect(c.destination);
+      o.start(); o.stop(c.currentTime + 0.15);
+    } catch (e) { /* yok */ }
+    try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) { /* yok */ }
+  }
+
+  function adimCiz() {
+    calisDurdur();
+    var m = Calis.modul, a = m.adimlar[Calis.adim], kutu = $('#calisIcerik');
+    kutu.textContent = '';
+    $('#calisAdimYazi').textContent = m.ad + ' · ' + (Calis.adim + 1) + ' / ' + m.adimlar.length;
+    $('#calisIlerleme').style.width = Math.round((Calis.adim + 1) / m.adimlar.length * 100) + '%';
+    kutu.appendChild(el('h2', 'h2', (Calis.adim + 1) + '. ' + a.baslik));
+    (a.metin || []).forEach(function (p) { kutu.appendChild(el('p', 'calis-p', p)); });
+    if (a.yonerge) kutu.appendChild(el('p', 'muted calis-p', a.yonerge));
+    if (a.maddeler) {
+      var ul = el('ul', 'calis-ul');
+      a.maddeler.forEach(function (md) { var li = document.createElement('li'); li.innerHTML = md; ul.appendChild(li); });
+      kutu.appendChild(ul);
+    }
+    if (a.tur === 'bilgi' && a.dene) {
+      var d = el('div', 'dene');
+      d.appendChild(el('div', null, a.dene.yonerge));
+      var cs = el('div', 'soz-chipler');
+      a.dene.sozler.forEach(function (s) { cs.appendChild(el('span', 'soz-chip', s)); });
+      d.appendChild(cs);
+      kutu.appendChild(d);
+    }
+    if (a.tur === 'tut') tutCiz(kutu, a);
+    if (a.tur === 'kart') kartCiz(kutu, a);
+    if (a.tur === 'cumle') cumleCiz(kutu, a);
+    $('#calisOnceki').disabled = Calis.adim === 0;
+    $('#calisSonraki').textContent = Calis.adim === m.adimlar.length - 1 ? 'Bitir ✓' : 'Sonraki →';
+    var ust = $('#calisDetay');
+    if (ust.getBoundingClientRect().top < 0) ust.scrollIntoView({ block: 'start' });
+  }
+
+  // ---------- Ses tutma (Rrrr gibi) ----------
+  function tutCiz(kutu, a) {
+    var ekran = el('div', 'tut-ekran');
+    var ses = el('div', 'tut-ses', a.sesler[0]);
+    var faz = el('div', 'tut-faz', 'Hazır');
+    var bilgi = el('div', 'muted kucuk', a.sesler.length + ' ses × ' + a.turSayisi + ' tur · her tur ' + a.sure + ' saniye');
+    ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi);
+    kutu.appendChild(ekran);
+    var btn = el('button', 'primary', 'Başlat');
+    btn.type = 'button';
+    kutu.appendChild(btn);
+    var fazlar = [];
+    a.sesler.forEach(function (s) {
+      for (var t = 1; t <= a.turSayisi; t++) {
+        fazlar.push({ ses: s, ad: 'Titret!', sn: a.sure, tur: t });
+        fazlar.push({ ses: s, ad: 'Dinlen', sn: a.dinlenme, tur: t, dinlen: true });
+      }
+    });
+    fazlar.pop();
+    function bitir(tamam) {
+      calisDurdur();
+      btn.textContent = 'Yeniden başlat';
+      faz.textContent = tamam ? 'Bitti! Sonraki adıma geçebilirsin.' : 'Durduruldu';
+      ekran.classList.remove('aktif', 'dinlen');
+    }
+    function calistir(i, kalan) {
+      if (!Calis.tutCalisiyor) return;
+      if (i >= fazlar.length) { bip(880); bitir(true); return; }
+      var f = fazlar[i];
+      if (kalan === f.sn) bip(f.dinlen ? 440 : 660);
+      ses.textContent = f.ses;
+      faz.textContent = f.ad + ' ' + kalan + ' · ' + f.tur + '. tur';
+      ekran.classList.toggle('aktif', !f.dinlen);
+      ekran.classList.toggle('dinlen', !!f.dinlen);
+      Calis.zaman = setTimeout(function () {
+        if (kalan > 1) calistir(i, kalan - 1); else calistir(i + 1, i + 1 < fazlar.length ? fazlar[i + 1].sn : 0);
+      }, 1000);
+    }
+    btn.addEventListener('click', function () {
+      if (Calis.tutCalisiyor) { bitir(false); return; }
+      calisDurdur();
+      Calis.tutCalisiyor = true;
+      btn.textContent = 'Durdur';
+      ekraniAcikTut();
+      calistir(0, fazlar[0].sn);
+    });
+  }
+
+  // ---------- Hece / sözcük kartları ----------
+  function kartCiz(kutu, a) {
+    Calis.dizi = 0; Calis.kart = 0;
+    var chipler = el('div', 'chips kaydir');
+    var kart = el('button', 'hece-kart');
+    kart.type = 'button';
+    kart.setAttribute('aria-label', 'Sonraki kart');
+    var satir = el('div', 'dizi-satir');
+    var durum = el('div', 'muted kucuk', '');
+    durum.style.textAlign = 'center';
+
+    var kontrol = el('div', 'kart-kontrol');
+    var geri = el('button', 'secondary', '◀'); geri.type = 'button'; geri.setAttribute('aria-label', 'Önceki kart');
+    var oto = el('button', 'primary', '▶ Otomatik'); oto.type = 'button';
+    var ileri = el('button', 'secondary', '▶'); ileri.type = 'button'; ileri.setAttribute('aria-label', 'Sonraki kart');
+    kontrol.appendChild(geri); kontrol.appendChild(oto); kontrol.appendChild(ileri);
+
+    var ayar = el('div', 'kart-ayar');
+    var tempo = el('div', 'chips');
+    [['yavas', 'Yavaş'], ['orta', 'Orta'], ['hizli', 'Hızlı']].forEach(function (t) {
+      var b = el('button', null, t[1]); b.type = 'button';
+      b.setAttribute('aria-pressed', String(Calis.tempo === t[0]));
+      b.addEventListener('click', function () {
+        Calis.tempo = t[0];
+        $$('button', tempo).forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+      });
+      tempo.appendChild(b);
+    });
+    var sesliEt = el('label', 'check');
+    var kutucuk = document.createElement('input'); kutucuk.type = 'checkbox'; kutucuk.checked = Calis.sesli;
+    sesliEt.appendChild(kutucuk);
+    sesliEt.appendChild(document.createTextNode(' Önce telefon söylesin, sonra ben tekrar edeyim'));
+    kutucuk.addEventListener('change', function () {
+      if (kutucuk.checked && !Rehber.ses) {
+        kutucuk.checked = false;
+        uyariGoster('Telefonunda Türkçe konuşma sesi bulunamadı. Kartları kendin okuyabilirsin.');
+        return;
+      }
+      Calis.sesli = kutucuk.checked;
+    });
+    ayar.appendChild(el('span', 'muted kucuk', 'Tempo'));
+    ayar.appendChild(tempo);
+
+    kutu.appendChild(chipler);
+    kutu.appendChild(kart);
+    kutu.appendChild(satir);
+    kutu.appendChild(durum);
+    kutu.appendChild(kontrol);
+    kutu.appendChild(ayar);
+    kutu.appendChild(sesliEt);
+
+    function dizi() { return a.diziler[Calis.dizi]; }
+    function chipCiz() {
+      chipler.textContent = '';
+      a.diziler.forEach(function (d, i) {
+        var b = el('button', null, d.ad); b.type = 'button';
+        b.setAttribute('aria-pressed', String(i === Calis.dizi));
+        b.addEventListener('click', function () { otoDurdur(); Calis.dizi = i; Calis.kart = 0; chipCiz(); goster1(false); });
+        chipler.appendChild(b);
+      });
+    }
+    function goster1(soyle) {
+      var d = dizi();
+      kart.textContent = d.ogeler[Calis.kart];
+      kart.classList.remove('vurus'); void kart.offsetWidth; kart.classList.add('vurus');
+      satir.textContent = '';
+      d.ogeler.forEach(function (o, i) {
+        var s = el('span', i === Calis.kart ? 'simdi' : (i < Calis.kart ? 'gecti' : null), o);
+        s.addEventListener('click', function () { otoDurdur(); Calis.kart = i; goster1(Calis.sesli); });
+        satir.appendChild(s);
+      });
+      durum.textContent = (Calis.kart + 1) + ' / ' + d.ogeler.length;
+      if (soyle && Calis.sesli) calisSoyle(d.ogeler[Calis.kart]);
+    }
+    function adimAt(yon) {
+      var d = dizi(), y = Calis.kart + yon;
+      if (y >= d.ogeler.length) {
+        if (Calis.dizi < a.diziler.length - 1) { Calis.dizi++; Calis.kart = 0; chipCiz(); }
+        else { Calis.kart = d.ogeler.length - 1; otoDurdur(); durum.textContent = 'Bütün diziler bitti. Bir tur daha yap ya da sonraki adıma geç.'; return false; }
+      } else if (y < 0) {
+        if (Calis.dizi > 0) { Calis.dizi--; Calis.kart = dizi().ogeler.length - 1; chipCiz(); }
+        else Calis.kart = 0;
+      } else Calis.kart = y;
+      goster1(true);
+      return true;
+    }
+    function otoDurdur() { clearTimeout(Calis.zaman); Calis.zaman = null; Calis.oto = false; oto.textContent = '▶ Otomatik'; }
+    function otoTik() {
+      if (!Calis.oto) return;
+      Calis.zaman = setTimeout(function () {
+        if (adimAt(1)) otoTik();
+      }, TEMPO[Calis.tempo] * (Calis.sesli ? 2 : 1));
+    }
+    oto.addEventListener('click', function () {
+      if (Calis.oto) { otoDurdur(); return; }
+      Calis.oto = true; oto.textContent = '❚❚ Durdur';
+      ekraniAcikTut();
+      goster1(true);
+      otoTik();
+    });
+    geri.addEventListener('click', function () { otoDurdur(); adimAt(-1); });
+    ileri.addEventListener('click', function () { otoDurdur(); adimAt(1); });
+    kart.addEventListener('click', function () { otoDurdur(); adimAt(1); });
+    chipCiz();
+    goster1(false);
+  }
+
+  // ---------- Cümleler ----------
+  function cumleCiz(kutu, a) {
+    var liste = el('div', 'stack');
+    liste.style.gap = '8px';
+    a.cumleler.forEach(function (c, i) {
+      var b = el('button', 'cumle-kart'); b.type = 'button';
+      b.appendChild(el('span', 'no', String(i + 1)));
+      b.appendChild(el('span', 'grow', c));
+      b.addEventListener('click', function () {
+        b.classList.toggle('okundu');
+        if (Calis.sesli && b.classList.contains('okundu')) calisSoyle(c);
+      });
+      liste.appendChild(b);
+    });
+    kutu.appendChild(liste);
+    kutu.appendChild(el('div', 'muted kucuk', 'Okuduğun cümleye dokunup işaretle.'));
+  }
+
+  $('#calisGeri').addEventListener('click', calisKapat);
+  $('#calisOnceki').addEventListener('click', function () { if (Calis.adim > 0) { Calis.adim--; adimCiz(); } });
+  $('#calisSonraki').addEventListener('click', function () {
+    var m = Calis.modul;
+    if (Calis.adim < m.adimlar.length - 1) { Calis.adim++; adimCiz(); return; }
+    gunuIsaretle('calis');
+    uyariGoster('Tebrikler, ' + m.ad + ' çalışmasını bitirdin! Kaydını ilk kaydınla karşılaştırmayı unutma.');
+    calisKapat();
+  });
+
+  // ---------- Mini kayıt (her çalışmada) ----------
+  var MK = { aktif: false, rec: null, stream: null, parcalar: [], bas: 0, saat: null, ilkVar: false, urller: [] };
+  function mkUrl(blob) { var u = URL.createObjectURL(blob); MK.urller.push(u); return u; }
+  function mkHazirla() {
+    mkDurdur();
+    MK.urller.forEach(function (u) { URL.revokeObjectURL(u); }); MK.urller = [];
+    MK.ilkVar = false;
+    $('#mkSonKutu').hidden = true; $('#mkIlkKutu').hidden = true;
+    $('#mkDurum').textContent = 'Kırmızı düğmeye bas, söyle, tekrar bas.';
+    var id = Calis.modul.id;
+    Depo.hepsi().then(function (l) {
+      l = l.filter(function (k) { return k.calis === id && k.ses; })
+        .sort(function (a, b) { return a.tarih < b.tarih ? -1 : 1; });
+      if (!l.length || !Calis.modul || Calis.modul.id !== id) return;
+      MK.ilkVar = true;
+      var ilk = l[0];
+      $('#mkIlk').src = mkUrl(new Blob([ilk.ses], { type: ilk.mime }));
+      $('#mkIlkYazi').textContent = 'İlk kaydın · ' + tarihYaz(ilk.tarih);
+      $('#mkIlkKutu').hidden = false;
+      if (l.length > 1) {
+        var son = l[l.length - 1];
+        $('#mkSon').src = mkUrl(new Blob([son.ses], { type: son.mime }));
+        $('#mkSonKutu').hidden = false;
+      }
+    }).catch(function () { /* depo yok */ });
+  }
+  function mkDurdur() {
+    if (MK.aktif && MK.rec) { try { MK.rec.stop(); } catch (e) { /* yok */ } }
+    ['#mkSon', '#mkIlk'].forEach(function (s) { try { $(s).pause(); } catch (e) { /* yok */ } });
+  }
+  function mkBitti() {
+    clearInterval(MK.saat);
+    MK.aktif = false;
+    $('#mkBtn').classList.remove('on');
+    $('#mkBtn').setAttribute('aria-label', 'Kaydı başlat');
+    akisiKapat(MK.stream);
+    var sure = (Date.now() - MK.bas) / 1000;
+    if (!MK.parcalar.length || sure < 0.7) { $('#mkDurum').textContent = 'Kayıt çok kısa oldu, tekrar dene.'; return; }
+    var mime = (MK.rec && MK.rec.mimeType) || MK.parcalar[0].type || 'audio/mp4';
+    var blob = new Blob(MK.parcalar, { type: mime });
+    var m = Calis.modul, a = m.adimlar[Calis.adim];
+    $('#mkSon').src = mkUrl(blob);
+    $('#mkSonKutu').hidden = false;
+    $('#mkDurum').textContent = 'Kaydedildi · ' + sure.toFixed(0) + ' sn. Dinle.';
+    var kayit = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      tarih: new Date().toISOString(), baslik: m.ad + ' · ' + a.baslik, kat: 'calis', calis: m.id,
+      mime: mime, sure: sure, hiz: null
+    };
+    blob.arrayBuffer().then(function (buf) { kayit.ses = buf; return Depo.ekle(kayit); }).catch(function () {
+      uyariGoster('Kayıt telefona kaydedilemedi (depolama dolu olabilir).');
+    });
+  }
+  $('#mkBtn').addEventListener('click', function () {
+    if (MK.aktif) { mkDurdur(); return; }
+    if (!window.MediaRecorder) { uyariGoster('Bu tarayıcı ses kaydını desteklemiyor.'); return; }
+    calisDurdur();
+    Ses.mikrofon().then(function (stream) {
+      var tur = uygunTur(), rec;
+      try { rec = tur ? new MediaRecorder(stream, { mimeType: tur }) : new MediaRecorder(stream); }
+      catch (e) { rec = new MediaRecorder(stream); }
+      MK.stream = stream; MK.rec = rec; MK.parcalar = []; MK.bas = Date.now(); MK.aktif = true;
+      rec.ondataavailable = function (e) { if (e.data && e.data.size) MK.parcalar.push(e.data); };
+      rec.onstop = mkBitti;
+      rec.start();
+      $('#mkBtn').classList.add('on');
+      $('#mkBtn').setAttribute('aria-label', 'Kaydı bitir');
+      MK.saat = setInterval(function () { $('#mkDurum').textContent = 'Kaydediliyor · ' + sure((Date.now() - MK.bas) / 1000); }, 250);
+      $('#mkDurum').textContent = 'Kaydediliyor · 0:00';
+    }).catch(mikrofonHatasi);
+  });
+  calisListeCiz();
 
   // ================= Dersler =================
   $$('[data-ders]').forEach(function (b) {
@@ -1230,7 +1578,7 @@
         var bilgi = el('div', 'grow');
         bilgi.appendChild(el('div', 't', k.baslik));
         var kat = katBul(k.kat);
-        bilgi.appendChild(el('div', 's', tarihYaz(k.tarih) + ' · ' + sure(k.sure) + ' · ' + k.hiz + ' k/dk' + (kat ? ' · ' + kat.ad : '')));
+        bilgi.appendChild(el('div', 's', tarihYaz(k.tarih) + ' · ' + sure(k.sure) + (k.hiz ? ' · ' + k.hiz + ' k/dk' : '') + (kat ? ' · ' + kat.ad : (k.kat === 'calis' ? ' · Çalış' : ''))));
         c.appendChild(bilgi);
         var sil = el('button', 'secondary kucuk-btn danger', 'Sil');
         sil.type = 'button';

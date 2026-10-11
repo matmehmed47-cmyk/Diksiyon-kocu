@@ -1,7 +1,7 @@
 // Çevrimdışı çalışma: önce ağdan dene (güncel sürüm gelsin), olmazsa önbellekten aç.
-var ONBELLEK = 'diksiyon-v3';
+var ONBELLEK = 'diksiyon-v4';
 var DOSYALAR = [
-  './', './index.html', './style.css', './app.js', './metinler.js', './manifest.webmanifest',
+  './', './index.html', './style.css', './app.js', './metinler.js', './calismalar.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'
 ];
 

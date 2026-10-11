@@ -47,6 +47,18 @@ Ayrıntılı özetler kullanıcının Obsidian kasasında (Ders Kitabı Özetler
 - Fikir olarak bekleyenler: iki dereceli vurgu işareti, uzatma (:) ve hızlı/ağır işaretleri, "Metin ekle", "sunum öncesi 1 dk nefes" modu,
   hazırlıklı konuşma (konu + ipucu) bölümü, kitabın Nefes/Ses/Boğumlanma bölümleri (s.57-104) henüz okunmadı.
 
+## Sürüm 4 (11 Ekim 2026): "Çalış" sekmesi, R zorluğu
+Kullanıcının asıl isteği: kitaptaki bütün etkinlikleri (hece dizileri, dudak-dil hareketleri, r/s/z bozukluğu çalışmaları)
+sitede düğmeye basarak yapmak. Kitabın tamamı tarandı (özetler kullanıcının kasasında). Teker teker eklenecek.
+- Yeni **Çalış** sekmesi (6. sekme; "Gelişimim" → "Gelişim"). Veriler `calismalar.js` içinde, adım türleri: bilgi, tut, kart, cumle.
+- **R zorluğu** (kitap s.95-96): açıklama + kendini yokla, Rrrr/Prrrr sayaçlı ısınma (5 sn × 3 tur, bip + titreşim),
+  7 hece dizisi ve 3 sözcük listesi kart olarak (dokun/otomatik, 3 tempo, isteğe bağlı telefon önce söyler),
+  sözcük sonu r cümleleri, tekerleme + özgün cümleler.
+- Her çalışmada mini kayıt: kayıtlar IndexedDB'de (kat: 'calis', calis: modül id), ilk kayıtla karşılaştırma. Kayıtlarım listesinde görünür.
+- Sıradaki modüller: S (s.96-97), Z (s.97), Dudak ve dil (s.90, 6 hareket), Isınma (gevşeme s.44-50 + ünlü yuvarlağı s.79-81),
+  Nefes (s.66-72). Kitapta ş/ç/l için ayrı çalışma yok; istenirse aynı yöntemle eklenebilir.
+- jsdom ile akış testi yapıldı (gerçek tarayıcı yok).
+
 ## Açık sorunlar
 - Android'de mikrofon izni penceresi "Bu site izninizi isteyemiyor" uyarısıyla engelleniyor
   (ekran üstü öğe: sağ kenardaki yüzen kalem simgesi, ekran kaydı vb.).
