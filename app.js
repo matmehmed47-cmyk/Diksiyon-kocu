@@ -236,7 +236,7 @@
 
   // ================= Ekranlar =================
   var BASLIKLAR = {
-    bugun: 'Diksiyon Koçu', nefes: 'Nefes ve ses', metin: 'Metin çalışması', gelisim: 'Gelişimim'
+    bugun: 'Diksiyon Koçu', nefes: 'Nefes ve ses', metin: 'Metin çalışması', ders: 'Dersler', gelisim: 'Gelişimim'
   };
   var aktifEkran = 'bugun';
   function goster(ad, kaydirId) {
@@ -263,7 +263,13 @@
   }
   $$('[data-sekme]').forEach(function (b) { b.addEventListener('click', function () { goster(b.getAttribute('data-sekme')); }); });
   $$('[data-git]').forEach(function (b) {
-    b.addEventListener('click', function () { goster(b.getAttribute('data-git'), b.getAttribute('data-kaydir')); });
+    b.addEventListener('click', function () {
+      var kat = b.getAttribute('data-kategori');
+      if (kat && katBul(kat) && !Kayit.aktif) {
+        veri.ayarlar.kategori = kat; kaydet(); katCiz(); metinSec(false);
+      }
+      goster(b.getAttribute('data-git'), b.getAttribute('data-kaydir'));
+    });
   });
 
   // ================= Bugün =================

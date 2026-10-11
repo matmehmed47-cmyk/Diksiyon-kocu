@@ -24,6 +24,16 @@ Telefon ve tablette kullanılacak. Kullanıcı işleri yalnızca telefondan yap�
   Kayıt, 1×/0,85×/0,7× dinleme, dalgaya dokunup oradan dinleme, hız ve durak analizi, ilk kayıtla karşılaştırma.
 - Gelişimim: grafikler, seri, kayıt listesi. Veriler yalnızca telefonda (localStorage + IndexedDB).
 
+## Sürüm 2 (11 Ekim 2026): Can Gürzap kitabına göre güncelleme
+Kaynak: Can Gürzap, Söz Söyleme ve Diksiyon (Remzi Kitabevi). Kitap taranmış PDF; Diksiyon (s.105-131), Söyleyiş Yanlışları (s.147-151) ve Genel Çalışmalar başı okundu.
+Telif nedeniyle kitaptan metin kopyalanmadı; yöntem ve kurallar özetlendi, tüm metinler özgün.
+- Yeni **Dersler** sekmesi: çalışma yöntemi, vurgu (sözcük + cümle), tonlama, durak/nefes, sık söyleyiş hataları tablosu.
+- Metin kütüphanesine 3 kategori: **Vurgu** (6), **Tonlama** (7), **Söyleyiş** (6). Toplam 43 metin, 9 kategori.
+- Ders sayfalarındaki düğmeler ilgili metin kategorisini açar.
+- Önbellek sürümü diksiyon-v2.
+- Kitaptan henüz kullanılmayan: Nefes/ses/boğumlanma bölümleri (s.57-104), Genel Çalışmalar'daki monolog ve metin parçaları (s.152-196). Monologlar telifli olabilir, doğrudan alınmaz.
+- Tarayıcıda gerçek denemesi yapılmadı (araç yoktu); söz dizimi ve HTML dengesi kontrol edildi.
+
 ## Açık sorunlar
 - Android'de mikrofon izni penceresi "Bu site izninizi isteyemiyor" uyarısıyla engelleniyor
   (ekran üstü öğe: sağ kenardaki yüzen kalem simgesi, ekran kaydı vb.).
@@ -33,8 +43,7 @@ Telefon ve tablette kullanılacak. Kullanıcı işleri yalnızca telefondan yap�
 
 ## Sıradaki adımlar
 1. Mikrofon iznini çözmek, gerçek kullanımla eşikleri ayarlamak.
-2. Can Gürzap'ın diksiyon kitabı (PDF) yöntem kaynağı olarak okunacak. Telif nedeniyle metinler
-   kopyalanmayacak (depo herkese açık); yönteme uygun özgün egzersizler yazılacak, halk tekerlemeleri eklenecek.
+2. (Kısmen yapıldı, bkz. Sürüm 2.) Kitabın kalan bölümlerinden (nefes, boğumlanma, çalışmalar) özgün egzersizler ve halk tekerlemeleri eklenecek.
 3. "Metin ekle" özelliği: kullanıcının kendi metinleri sadece telefonunda saklanır.
 4. Metin sayısını artırmak (kategori başına 10-15, ses odaklı metinler: r, ş/s, kelime sonları).
 5. Sonraki sürüm: "Dersler" bölümü (sık hatalar), yapay zekâ ile telaffuz hatası tespiti, metin üretme, koç yorumu.

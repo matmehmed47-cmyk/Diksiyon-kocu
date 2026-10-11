@@ -10,7 +10,10 @@ window.KATEGORILER = [
   { id: 'veli', ad: 'Velilere', hedef: [120, 140] },
   { id: 'ogretmen', ad: 'Öğretmenlere', hedef: [125, 150] },
   { id: 'seminer', ad: 'Seminer', hedef: [115, 145] },
-  { id: 'siir', ad: 'Şiir', hedef: [80, 115] }
+  { id: 'siir', ad: 'Şiir', hedef: [80, 115] },
+  { id: 'vurgu', ad: 'Vurgu', hedef: null },
+  { id: 'tonlama', ad: 'Tonlama', hedef: [100, 135] },
+  { id: 'soyleyis', ad: 'Söyleyiş', hedef: null }
 ];
 
 window.METINLER = [
@@ -72,5 +75,49 @@ window.METINLER = [
   { id: 'p2', kat: 'siir', baslik: 'Bana seni gerek seni · Yunus Emre',
     metin: 'Aşkın aldı benden beni / \n Bana seni gerek seni / \n Ben yanarım dün ü günü / \n Bana seni gerek seni ↘ ||' },
   { id: 'p3', kat: 'siir', baslik: 'Sabah',
-    metin: 'Pencereye konan güneş / \n Masama bir selam bıraktı, | \n Defterler açıldı birer birer, / \n Sınıfa *sabah* uyandı. ↘ ||' }
+    metin: 'Pencereye konan güneş / \n Masama bir selam bıraktı, | \n Defterler açıldı birer birer, / \n Sınıfa *sabah* uyandı. ↘ ||' },
+
+  // ---------- Vurgu (cümle vurgusu: önemli sözcüğü öne çıkar) ----------
+  { id: 'vg1', kat: 'vurgu', baslik: 'Aynı cümle, dört vurgu',
+    metin: '*Ben* yarın sınıfa gideceğim. ↘ \n Ben *yarın* sınıfa gideceğim. ↘ \n Ben yarın *sınıfa* gideceğim. ↘ \n Ben yarın sınıfa *gideceğim*. ↘ ||' },
+  { id: 'vg2', kat: 'vurgu', baslik: 'Soruya göre vurgu',
+    metin: 'Kitabı kim getirdi? | *Elif* getirdi. || Elif ne getirdi? | Elif *kitabı* getirdi. || Elif kitabı ne zaman getirdi? | Elif kitabı *sabah* getirdi. ||' },
+  { id: 'vg3', kat: 'vurgu', baslik: 'Soru eki ve vurgu',
+    metin: 'Yarın *gelecek* misin? ↗ || Bu kalemi *alabilir* miyim? ↗ || Ödevini *yaptın* mı? ↗ || Siz *hazır* mısınız? ↗ ||' },
+  { id: 'vg4', kat: 'vurgu', baslik: 'Önemli sözcük başa gelir',
+    metin: '*Başardık* sonunda. ↘ || *Unutmadım* sözümü. ↘ || *Gelmedi* arkadaşım, | haber de vermedi. ↘ ||' },
+  { id: 'vg5', kat: 'vurgu', baslik: 'Sınıfta uyarı',
+    metin: 'Çantalarınızı *yere* koyun. ↘ || Defterinizi *masaya* çıkarın. ↘ || Kalemi *yalnızca* ben söyleyince alın. ↘ ||' },
+  { id: 'vg6', kat: 'vurgu', baslik: 'Yer adları ve seslenmeler · büyük harf vurgulu hece',
+    metin: 'ANkara, | İZmir, | BURsa. || anTALya, | amaMASya. || ÇanakKAle, | DiyarBAKır. || MEHmet! | AYşe! | arKAdaşlar! ||' },
+
+  // ---------- Tonlama (aynı söz, değişik duygu; başlıkta nasıl söyleyeceğin yazıyor) ----------
+  { id: 'tn1', kat: 'tonlama', baslik: 'Sınıfa girerken · sıcak ve neşeli',
+    metin: 'Günaydın! ↗ || Bugün hepinizi *çok* özlemişim. ↗ || Hadi bakalım, | yerlerinize geçelim. ↘ ||' },
+  { id: 'tn2', kat: 'tonlama', baslik: 'Sessizlik isterken · sakin ama kararlı',
+    metin: 'Şimdi | sessiz olmanızı istiyorum. ↘ || *Herkes* | yerine otursun. ↘ || Teşekkür ederim. ↘ ||' },
+  { id: 'tn3', kat: 'tonlama', baslik: 'Yanlış cevaba · cesaretlendirerek',
+    metin: 'Güzel bir deneme! ↗ || Şimdi birlikte bakalım: | *hangi* adımda | yanlış gitti? ↗ || Sen yapabilirsin. ↘ ||' },
+  { id: 'tn4', kat: 'tonlama', baslik: 'Merak uyandırmak · gizemli',
+    metin: 'Bugün size | bir şey göstereceğim. || Ama önce tahmin edin: | *sizce* | bu kutunun içinde ne var? ↗ ||' },
+  { id: 'tn5', kat: 'tonlama', baslik: 'Başarıyı kutlamak · coşkulu',
+    metin: 'İşte *bu*! ↗ || Hepiniz | çok güzel çalıştınız! ↗ || Kendinizle *gurur* duyabilirsiniz. ↘ ||' },
+  { id: 'tn6', kat: 'tonlama', baslik: 'Dikkat çekmek · ciddi',
+    metin: 'Dinleyin, | çünkü bu *önemli*. ↘ || Yolun karşısına geçmeden önce / *mutlaka* | sağa ve sola bakın. ↘ ||' },
+  { id: 'tn7', kat: 'tonlama', baslik: '“Peki” · dört ayrı anlam',
+    metin: 'Peki. ↘ || Peki? ↗ || Peeeki, | gidelim. || Peki, peki! ↗ ||' },
+
+  // ---------- Söyleyiş (sık yanlış söylenen sözcükler) ----------
+  { id: 'sy1', kat: 'soyleyis', baslik: 'Hakem ve rakip',
+    metin: 'Hakem | maçı düdükle başlattı. ↘ || Rakip takım | sahaya çıktı. ↘ || Rakibimize | başarılar diledik. ↘ ||' },
+  { id: 'sy2', kat: 'soyleyis', baslik: 'Millî ve resmî',
+    metin: 'Millî bayramlarımız / her yıl coşkuyla kutlanır. ↘ || Resmî tatiller / takvimde yazılıdır. ↘ || Vatanî görevini / sevinçle yaptı. ↘ ||' },
+  { id: 'sy3', kat: 'soyleyis', baslik: 'Hayır ve hamal',
+    metin: 'Ona | “hayır” dedi. ↘ || Hayır işleri / insanı mutlu eder. ↘ || Hamal | yükü sırtladı. ↘ ||' },
+  { id: 'sy4', kat: 'soyleyis', baslik: 'Şahane ve meşale',
+    metin: 'Şahane | bir akşamdı. ↘ || Olimpiyat meşalesi / stadyuma girdi. ↘ || Bu vak’ayı / hiç unutmayacağım. ↘ ||' },
+  { id: 'sy5', kat: 'soyleyis', baslik: 'İki ünsüz yan yana',
+    metin: 'Sürpriz | bir doğum günü. ↘ || Trafo | arızalandı. ↘ || Prestij | sözcüğünü / doğru söyleyelim. ↘ ||' },
+  { id: 'sy6', kat: 'soyleyis', baslik: 'Hükümet ve fazilet',
+    metin: 'Hükümet | yeni bir karar aldı. ↘ || Dürüstlük | büyük bir fazilettir. ↘ || Akıbeti | hepimiz merak ettik. ↘ ||' }
 ];
