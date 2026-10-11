@@ -49,7 +49,7 @@ window.CALISMALAR = [
         sesler: ['Rrrrrrr', 'Prrrrrr'], sure: 5, dinlenme: 4, turSayisi: 3, titresimOlc: true
       },
       {
-        tur: 'kart', baslik: 'Hece kartları',
+        tur: 'kart', baslik: 'Hece kartları', hece: true,
         yonerge: 'Her heceyi net söyle. Önce yavaş, ısındıkça tempoyu artır.',
         diziler: [
           { ad: 'ra - re - ri', ogeler: ['ra', 're', 'ri', 'ro', 'ru', 'rö', 'rü'] },

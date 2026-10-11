@@ -403,8 +403,14 @@
     if (Calis.tanima) { try { Calis.tanima.abort(); } catch (e) { /* yok */ } Calis.tanima = null; }
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { /* yok */ }
   }
-  function calisSoyle(metin) {
+  // Kısa heceleri telefon kısaltma sanıp harf harf okuyor ("rö" → "R, Ö").
+  // Ünlüyü uzatınca ("röö") sözcük gibi okuyor.
+  function heceSesi(h) {
+    return h.replace(/[aeıioöuü]/, function (u) { return u + u; });
+  }
+  function calisSoyle(metin, hece) {
     if (!('speechSynthesis' in window) || !Rehber.ses) return false;
+    if (hece) metin = heceSesi(metin);
     try {
       var u = new SpeechSynthesisUtterance(metin);
       u.voice = Rehber.ses; u.lang = Rehber.ses.lang; u.rate = 0.8;
@@ -816,7 +822,7 @@
         satir.appendChild(s);
       });
       durum.textContent = (Calis.kart + 1) + ' / ' + d.ogeler.length;
-      if (soyle && Calis.sesli) calisSoyle(d.ogeler[Calis.kart]);
+      if (soyle && Calis.sesli) calisSoyle(d.ogeler[Calis.kart], a.hece);
     }
     function adimAt(yon) {
       var d = dizi(), y = Calis.kart + yon;
