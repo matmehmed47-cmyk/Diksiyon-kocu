@@ -84,6 +84,15 @@ Kullanıcı: "Sürekli aynı şeyler çıkıyor." Amaç günlük konuşma (matem
 - Ağırlıklı seçim: zorlanılan sözcük (zor[y] > zor[d]) ağırlığı 1 + 3·min(y−d, 3).
 - Telefonun TTS'i kısa heceleri harf harf okuyor; hece kartlarında sesli okuma kapalı.
 
+## Sürüm 11 (12 Ekim 2026): S zorluğu
+- Kitap s.96-97 (s bozukluğu): dil büzülür, ucu sivrilip alt ön dişlere yaklaşır; üst diş etine değerse hava yanlardan kaçar.
+- 6 adım: bilgi, Sssss/Sssszzzz ısınması, 11 hece dizisi (kitabın 5'i + sa-şa ayırma, tas, kas, sta, ast, ska),
+  100 sözcük (4 grup), "S ile Ş'yi ayır" 20 cümle, tekerleme + günlük 22 cümle.
+- **S incelik ölçer** (`olcum: 'keskinlik'`): 1.5-12 kHz bandında spektral ağırlık merkezi; varsayılan eşik 4800 Hz
+  (ince s ≈ 5-7 kHz, ş/yanal s ≈ 3-4 kHz). Kişisel ayar: "şşşş" 90. yüzdelik ile "ssss" medyanının ortası.
+- Kod genelleştirildi: OLCUMLER (titresim, keskinlik) ölçer/ayar/mesaj tanımları; modül düzeyinde
+  `tanima: { harf, karisma[], eksik, genel }` ile "Söyle, kontrol edeyim" her harfe uyarlanıyor; adımda `fazAd`.
+
 ## Önbellek kuralı (sürüm 5)
 Telefon yeni index.html ile eski app.js'i birleştirince Çalış sekmesi boş kaldı. Çözüm: index.html'deki css/js
 bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cache'` ile çeker.

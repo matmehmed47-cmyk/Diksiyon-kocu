@@ -354,12 +354,116 @@
   TitresimOlcer.prototype.dur = function () {
     this.calisiyor = false;
     var h = this.hzler.slice().sort(function (a, b) { return a - b; });
-    return { titresim: this.titresimli, ses: this.sesli, hz: h.length ? h[Math.floor(h.length / 2)] : 0, kareler: this.kareler };
+    return { iyi: this.titresimli, ses: this.sesli, hz: h.length ? h[Math.floor(h.length / 2)] : 0, kareler: this.kareler };
   };
   TitresimOlcer.prototype.kapat = function () {
     this.calisiyor = false;
     try { this.kaynak.disconnect(); } catch (e) { /* yok */ }
     akisiKapat(this.stream);
+  };
+
+  // Sürtünmeli sesin (s/ş) spektral ağırlık merkezi: s ince (yüksek), ş kalın (düşük)
+  function keskinlikAnaliz(db, binHz, rms) {
+    if (rms < 0.003) return { ses: false };
+    var alt = Math.floor(1500 / binHz), ust = Math.min(db.length - 1, Math.floor(12000 / binHz));
+    var top = 0, agir = 0;
+    for (var i = alt; i <= ust; i++) {
+      var p = Math.pow(10, db[i] / 10);
+      top += p; agir += p * i * binHz;
+    }
+    if (!top) return { ses: false };
+    return { ses: true, merkez: agir / top };
+  }
+  function keskinlikEsik() { return (veri.ayarlar && veri.ayarlar.keskinlik) || { esik: 4800 }; }
+  // S sesinin inceliğini ölçer: ağırlık merkezi eşiğin üstündeyse "ince"
+  function KeskinlikOlcer(stream) {
+    var ctx = Ses.baglam();
+    this.stream = stream;
+    this.kaynak = ctx.createMediaStreamSource(stream);
+    this.an = ctx.createAnalyser();
+    this.an.fftSize = 2048;
+    this.an.smoothingTimeConstant = 0.3;
+    this.kaynak.connect(this.an);
+    this.db = new Float32Array(this.an.frequencyBinCount);
+    this.zaman = new Float32Array(this.an.fftSize);
+    this.binHz = ctx.sampleRate / this.an.fftSize;
+    this.calisiyor = false;
+  }
+  KeskinlikOlcer.prototype.basla = function () {
+    var self = this;
+    self.ince = 0; self.sesli = 0; self.kareler = [];
+    self.calisiyor = true; self.son = performance.now();
+    (function dongu() {
+      if (!self.calisiyor) return;
+      var simdi = performance.now(), dt = Math.min((simdi - self.son) / 1000, 0.2);
+      self.son = simdi;
+      self.an.getFloatTimeDomainData(self.zaman);
+      var t = 0; for (var i = 0; i < self.zaman.length; i++) t += self.zaman[i] * self.zaman[i];
+      self.an.getFloatFrequencyData(self.db);
+      var r = keskinlikAnaliz(self.db, self.binHz, Math.sqrt(t / self.zaman.length));
+      if (r.ses) {
+        self.sesli += dt; self.kareler.push({ merkez: r.merkez });
+        if (r.merkez >= keskinlikEsik().esik) self.ince += dt;
+      }
+      requestAnimationFrame(dongu);
+    })();
+  };
+  KeskinlikOlcer.prototype.dur = function () {
+    this.calisiyor = false;
+    var m = this.kareler.map(function (k) { return k.merkez; });
+    return { iyi: this.ince, ses: this.sesli, merkez: yuzdelik(m, 0.5), kareler: this.kareler };
+  };
+  KeskinlikOlcer.prototype.kapat = TitresimOlcer.prototype.kapat;
+
+  function keskinlikKisisel(kalin, ince) {
+    if (kalin.length < 10) return { ok: false, mesaj: '“şşşş” sesini yeterince duyamadım. Telefonu biraz daha yakın tut ve yeniden dene.' };
+    if (ince.length < 10) return { ok: false, mesaj: '“ssss” sesini yeterince duyamadım. Telefonu biraz daha yakın tut ve yeniden dene.' };
+    var kUst = yuzdelik(kalin.map(function (k) { return k.merkez; }), 0.9);
+    var iOrta = yuzdelik(ince.map(function (k) { return k.merkez; }), 0.5);
+    if (iOrta < kUst + 400) {
+      return { ok: false, mesaj: '“ssss” ile “şşşş” seslerin birbirine çok yakın çıktı. Bu, s sesinin ş’ye kaydığını gösterebilir. Genel ayarla devam ediyorum; ısınma ve hece kartlarıyla çalışmaya devam et.' };
+    }
+    return { ok: true, deger: { esik: Math.round((kUst + iOrta) / 2) },
+      mesaj: 'Senin sesine göre ayarlandı ✓ Artık s sesin, kendi “şşşş” sesinden ne kadar ayrıldığına göre ölçülecek.' };
+  }
+
+  // Ölçüm türleri: ısınma adımlarındaki "olcum" alanı bunlardan birini seçer
+  var OLCUMLER = {
+    titresim: {
+      Olcer: function (st) { return new TitresimOlcer(st); },
+      aciklama: 'Telefon dinler ve dilinin ne kadar süre titrediğini ölçer. Ölçüm deneme aşamasındadır, sessiz bir yerde daha iyi çalışır.',
+      ayarAnahtar: 'titresim',
+      ayarAdim: [{ ses: 'aaaa', yazi: '1/2 · Rahat bir sesle “aaaa” de' }, { ses: 'Rrrrr', yazi: '2/2 · Şimdi güçlü bir “Rrrrr” de' }],
+      ayarHesap: function (a, b) { var s = kisiselEsik(a, b); if (s.ok) s.deger = { r: s.r, derinlik: s.derinlik }; return s; },
+      sonuc: function (o, oran) {
+        if (oran >= 0.5) return 'Titreşim ' + sn(o.iyi) + ' sn ✓ Dilin güzel titriyor.';
+        if (oran >= 0.15) return 'Titreşim ' + sn(o.iyi) + ' sn. Kesik kesik geliyor; nefesi biraz artır, dili gevşek bırak.';
+        return 'Titreşim duyulmadı. Dil ucunu öne, üst diş etine getir ve güçlü bir nefes ver.';
+      },
+      ozet: function (iyi, top) {
+        return iyi === top ? 'Bütün turlarda titreşim güzeldi. Hece kartlarına geçmeye hazırsın.'
+          : iyi > 0 ? top + ' turun ' + iyi + ' tanesinde titreşim iyiydi. Birkaç gün daha ısınmaya devam et, hece kartlarını yavaş tempoda çalış.'
+          : 'Henüz titreşim yakalayamadık. Bu normal, r titreşimi zamanla gelir. Her gün 2-3 dakika bu ısınmayı yap.';
+      }
+    },
+    keskinlik: {
+      Olcer: function (st) { return new KeskinlikOlcer(st); },
+      aciklama: 'Telefon dinler ve s sesinin ne kadar ince ve net olduğunu ölçer. Doğru s ince ve keskindir; kalınlaşırsa ş’ye benzer. Ölçüm deneme aşamasındadır, sessiz bir yerde daha iyi çalışır.',
+      ayarAnahtar: 'keskinlik',
+      ayarAdim: [{ ses: 'şşşş', yazi: '1/2 · “şşşş” de' }, { ses: 'ssss', yazi: '2/2 · Şimdi en ince “ssss” sesini çıkar' }],
+      ayarHesap: keskinlikKisisel,
+      sonuc: function (o, oran) {
+        var k = o.merkez ? ' (' + sn(o.merkez / 1000) + ' kHz)' : '';
+        if (oran >= 0.5) return 'S’in ince ve net ✓' + k;
+        if (oran >= 0.15) return 'Ara ara kalınlaşıyor' + k + '. Dil ucunu alt ön dişlerin arkasında tut, dişlerini hafifçe kapat.';
+        return 'S kalın çıkıyor, ş’ye benziyor' + k + '. Dilini üst diş etinden uzaklaştır, dil ucunu sivriltip alt ön dişlere yaklaştır.';
+      },
+      ozet: function (iyi, top) {
+        return iyi === top ? 'Bütün turlarda s sesin ince ve netti. Hece kartlarına geçmeye hazırsın.'
+          : iyi > 0 ? top + ' turun ' + iyi + ' tanesinde s sesin inceydi. Ayna karşısında dil ucunun yerine bakarak ısınmaya devam et.'
+          : 'S sesin henüz kalın çıkıyor. Dil ucunu alt ön dişlerin arkasına koy, dişlerini hafif kapat, havayı ortadan ince bir şerit gibi ver.';
+      }
+    }
   };
 
   var Calis = { modul: null, adim: 0, zaman: null, oto: false, tempo: 'orta', dizi: 0, kart: 0, sesli: false, tutCalisiyor: false, olcer: null, tanima: null };
@@ -534,31 +638,28 @@
     var bilgi = el('div', 'muted kucuk', a.sesler.length + ' ses × ' + a.turSayisi + ' tur · her tur ' + a.sure + ' saniye');
     ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi);
     kutu.appendChild(ekran);
-    if (a.titresimOlc) kutu.appendChild(el('div', 'muted kucuk', 'Telefon dinler ve dilinin ne kadar süre titrediğini ölçer. Ölçüm deneme aşamasındadır, sessiz bir yerde daha iyi çalışır.'));
+    var OL = a.olcum ? OLCUMLER[a.olcum] : null;
+    if (OL) kutu.appendChild(el('div', 'muted kucuk', OL.aciklama));
     var btn = el('button', 'primary', 'Başlat');
     btn.type = 'button';
     kutu.appendChild(btn);
-    if (a.titresimOlc) ayarCiz(kutu, ekran, ses, faz, btn);
+    if (OL) ayarCiz(kutu, ekran, ses, faz, btn, OL, a);
     var sonuclar = el('div', 'stack');
     sonuclar.style.gap = '6px';
     kutu.appendChild(sonuclar);
     var fazlar = [];
     a.sesler.forEach(function (s) {
       for (var t = 1; t <= a.turSayisi; t++) {
-        fazlar.push({ ses: s, ad: 'Titret!', sn: a.sure, tur: t });
+        fazlar.push({ ses: s, ad: a.fazAd || 'Titret!', sn: a.sure, tur: t });
         fazlar.push({ ses: s, ad: 'Dinlen', sn: a.dinlenme, tur: t, dinlen: true });
       }
     });
     fazlar.pop();
     var olcumler = [];
     function sonucYaz(f, o) {
-      var oran = o.titresim / f.sn;
+      var oran = o.ses > 0 ? o.iyi / Math.max(o.ses, f.sn * 0.6) : 0;
       var satir = el('div', 'olcum-satir ' + (oran >= 0.5 ? 'iyi' : oran >= 0.15 ? 'orta' : 'zayif'));
-      var yazi;
-      if (o.ses < 0.5) yazi = 'Ses duyamadım. Telefonu biraz daha yakın tut.';
-      else if (oran >= 0.5) yazi = 'Titreşim ' + sn(o.titresim) + ' sn ✓ Dilin güzel titriyor.';
-      else if (oran >= 0.15) yazi = 'Titreşim ' + sn(o.titresim) + ' sn. Kesik kesik geliyor; nefesi biraz artır, dili gevşek bırak.';
-      else yazi = 'Titreşim duyulmadı. Dil ucunu öne, üst diş etine getir ve güçlü bir nefes ver.';
+      var yazi = o.ses < 0.5 ? 'Ses duyamadım. Telefonu biraz daha yakın tut.' : OL.sonuc(o, oran);
       satir.appendChild(el('b', null, f.ses.slice(0, 4) + ' · ' + f.tur + '. tur: '));
       satir.appendChild(document.createTextNode(yazi));
       sonuclar.appendChild(satir);
@@ -570,9 +671,7 @@
       var iyi = gecerli.filter(function (o) { return o.oran >= 0.5; }).length;
       var ozet = el('div', 'coach');
       ozet.appendChild(el('div', 'label', 'Özet'));
-      var m = iyi === gecerli.length ? 'Bütün turlarda titreşim güzeldi. Hece kartlarına geçmeye hazırsın.'
-        : iyi > 0 ? gecerli.length + ' turun ' + iyi + ' tanesinde titreşim iyiydi. Birkaç gün daha ısınmaya devam et, hece kartlarını yavaş tempoda çalış.'
-        : 'Henüz titreşim yakalayamadık. Bu normal, r titreşimi zamanla gelir. Her gün 2-3 dakika bu ısınmayı yap.';
+      var m = OL.ozet(iyi, gecerli.length);
       ozet.appendChild(el('p', null, m));
       sonuclar.appendChild(ozet);
       veriCalis().isinma.push({ tarih: new Date().toISOString(), iyi: iyi, toplam: gecerli.length });
@@ -616,22 +715,22 @@
       if (Calis.tutCalisiyor) { bitir(false); return; }
       calisDurdur(); mkDurdur();
       sonuclar.textContent = ''; olcumler = [];
-      if (!a.titresimOlc) { basla(null); return; }
+      if (!OL) { basla(null); return; }
       faz.textContent = 'Mikrofon açılıyor…';
-      Ses.mikrofon().then(function (stream) { basla(new TitresimOlcer(stream)); })
+      Ses.mikrofon().then(function (stream) { basla(OL.Olcer(stream)); })
         .catch(function (e) { mikrofonHatasi(e); basla(null); });
     });
   }
 
   // ---------- Titreşim ölçeri kişinin sesine göre ayarlama ----------
-  function ayarCiz(kutu, ekran, ses, faz, anaBtn) {
+  function ayarCiz(kutu, ekran, ses, faz, anaBtn, OL, a) {
     var sar = el('div', 'ayar-kutu');
     var durum = el('div', 'muted kucuk');
     var bt = el('button', 'secondary kucuk-btn', '🎚 Sesime göre ayarla'); bt.type = 'button';
     var gen = el('button', 'secondary kucuk-btn', 'Genel ayara dön'); gen.type = 'button';
     var sonuc = el('div', 'tanima-sonuc'); sonuc.hidden = true;
     function durumYaz() {
-      var t = veri.ayarlar.titresim;
+      var t = veri.ayarlar[OL.ayarAnahtar];
       durum.textContent = t ? 'Ölçüm senin sesine göre ayarlı (' + tarihYaz(t.tarih) + ').' : 'Ölçüm genel ayarda. Daha doğru sonuç için sesine göre ayarla.';
       gen.hidden = !t;
     }
@@ -639,11 +738,8 @@
     sar.appendChild(durum); sar.appendChild(satir); sar.appendChild(sonuc);
     kutu.appendChild(sar);
     durumYaz();
-    gen.addEventListener('click', function () { delete veri.ayarlar.titresim; kaydet(); durumYaz(); sonuc.hidden = true; });
-    var adimlar = [
-      { ses: 'aaaa', yazi: '1/2 · Rahat bir sesle “aaaa” de', duz: true },
-      { ses: 'Rrrrr', yazi: '2/2 · Şimdi güçlü bir “Rrrrr” de' }
-    ];
+    gen.addEventListener('click', function () { delete veri.ayarlar[OL.ayarAnahtar]; kaydet(); durumYaz(); sonuc.hidden = true; });
+    var adimlar = OL.ayarAdim;
     bt.addEventListener('click', function () {
       if (Calis.tutCalisiyor) return;
       calisDurdur(); mkDurdur();
@@ -651,17 +747,17 @@
       bt.disabled = true; anaBtn.disabled = true;
       faz.textContent = 'Mikrofon açılıyor…';
       Ses.mikrofon().then(function (stream) {
-        var olcer = new TitresimOlcer(stream), toplanan = [];
+        var olcer = OL.Olcer(stream), toplanan = [];
         Calis.olcer = olcer; Calis.tutCalisiyor = true;
         function bitir(s) {
           Calis.olcer = null; Calis.tutCalisiyor = false;
           olcer.kapat();
           bt.disabled = false; anaBtn.disabled = false;
           ekran.classList.remove('aktif', 'dinlen');
-          ses.textContent = 'Rrrrrrr';
+          ses.textContent = a.sesler[0];
           faz.textContent = 'Hazır';
           if (!s) return;
-          if (s.ok) { veri.ayarlar.titresim = { r: s.r, derinlik: s.derinlik, tarih: new Date().toISOString() }; kaydet(); }
+          if (s.ok) { veri.ayarlar[OL.ayarAnahtar] = Object.assign({ tarih: new Date().toISOString() }, s.deger); kaydet(); }
           sonuc.className = 'tanima-sonuc ' + (s.ok ? 'iyi' : 'kotu');
           sonuc.textContent = s.mesaj;
           sonuc.hidden = false;
@@ -669,7 +765,7 @@
         }
         function adim(i, geri) {
           if (!Calis.tutCalisiyor) { bitir(null); return; }
-          if (i >= adimlar.length) { bitir(kisiselEsik(toplanan[0], toplanan[1])); return; }
+          if (i >= adimlar.length) { bitir(OL.ayarHesap(toplanan[0], toplanan[1])); return; }
           var A = adimlar[i];
           ses.textContent = A.ses;
           if (geri > 0) {
@@ -743,16 +839,19 @@
     var tum = duyulan.join(' ').split(' ');
     if (tum.indexOf(hedef) >= 0) return { dogru: true, yazi: '“' + hedef + '” doğru anlaşıldı ✓' };
     var ilk = duyulan[0];
-    var rH = (hedef.match(/r/g) || []).length, rD = (ilk.match(/r/g) || []).length;
-    var neden = 'R sesini dil ucuyla, net ama hafif söylemeyi dene.';
-    if (hedef.replace(/r/g, 'ğ') === ilk || hedef.replace(/r/g, 'g') === ilk) neden = 'R, ğ gibi çıkmış olabilir. Dil ucunu öne getir.';
-    else if (rD < rH) neden = 'R sesi duyulmadı ya da zayıf kaldı. Dil ucu titremeli.';
+    var T = Calis.modul.tanima, hf = T.harf, re = new RegExp(hf, 'g');
+    var hH = (hedef.match(re) || []).length, hD = (ilk.match(re) || []).length;
+    var neden = T.genel;
+    var karisan = T.karisma.filter(function (k) { return hedef.replace(re, k.harf) === ilk; })[0];
+    if (karisan) neden = karisan.yazi;
+    else if (hD < hH) neden = T.eksik;
     return { dogru: false, yazi: 'Ben “' + ilk + '” duydum. ' + neden };
   }
   // Cümle kontrolü: r'li sözcükler anlaşıldı mı?
   function cumleDegerlendir(hedef, duyulan) {
     if (!duyulan.length || !duyulan[0]) return { dogru: false, yazi: 'Seni duyamadım. Biraz daha yüksek sesle tekrar dene.', eksik: [] };
-    var sozler = trKucuk(hedef).split(' ').filter(function (w) { return /r/.test(w); });
+    var hf = Calis.modul.tanima.harf;
+    var sozler = trKucuk(hedef).split(' ').filter(function (w) { return w.indexOf(hf) >= 0; });
     var enIyi = null, enEksik = null;
     duyulan.forEach(function (d) {
       var dw = d.split(' ');
@@ -760,9 +859,9 @@
       if (!enEksik || eksik.length < enEksik.length) { enEksik = eksik; enIyi = d; }
     });
     sozler.forEach(function (w) { zorIsle(w, enEksik.indexOf(w) < 0); });
-    if (!enEksik.length) return { dogru: true, yazi: 'R’li sözcüklerin hepsi doğru anlaşıldı ✓ (' + sozler.length + ' / ' + sozler.length + ')', eksik: [] };
+    if (!enEksik.length) return { dogru: true, yazi: hf + '’li sözcüklerin hepsi doğru anlaşıldı ✓ (' + sozler.length + ' / ' + sozler.length + ')', eksik: [] };
     return { dogru: false, eksik: enEksik,
-      yazi: (sozler.length - enEksik.length) + ' / ' + sozler.length + ' r’li sözcük doğru anlaşıldı. Şunlarda r net değildi: ' + enEksik.join(', ') + '. Ben şunu duydum: “' + enIyi + '”' };
+      yazi: (sozler.length - enEksik.length) + ' / ' + sozler.length + ' ' + hf + '’li sözcük doğru anlaşıldı. Şunlarda ' + hf + ' net değildi: ' + enEksik.join(', ') + '. Ben şunu duydum: “' + enIyi + '”' };
   }
   function tanimaDugmesi(etiket, hedefAl, degerlendir, sonucKutu, basarida) {
     var b = el('button', 'secondary tanima-btn', '🎤 ' + etiket);
@@ -933,7 +1032,7 @@
     });
     kutu.appendChild(liste);
     kutu.appendChild(el('div', 'muted kucuk', a.tanima
-      ? 'Okuduğun cümleye dokunup işaretle. “Söyle, kontrol edeyim” düğmesiyle telefon r’li sözcükleri doğru anlayıp anlamadığını söyler.'
+      ? 'Okuduğun cümleye dokunup işaretle. “Söyle, kontrol edeyim” düğmesiyle telefon ' + Calis.modul.tanima.harf + '’li sözcükleri doğru anlayıp anlamadığını söyler.'
       : 'Okuduğun cümleye dokunup işaretle.'));
   }
 
