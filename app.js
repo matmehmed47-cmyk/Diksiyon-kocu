@@ -272,6 +272,82 @@
     });
   });
 
+  // ================= Dersler =================
+  $$('[data-ders]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var h = document.getElementById(b.getAttribute('data-ders'));
+      if (h) h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Doğru mu, yanlış mı? testi: [gösterilen, doğru mu, açıklama]
+  var SORULAR = [
+    ['resmi: (son hece uzun)', true, '-î ile biten sözcüklerde son hece uzun söylenir.'],
+    ['ha:kem', false, 'Doğrusu: hakem. Hiçbir hece uzamaz.'],
+    ['civa:rı', true, 'Civar ek alınca va hecesi uzar.'],
+    ['aza:metli', false, 'Doğrusu: azametli. Uzatma yok.'],
+    ['mütevazi (alçak gönüllü)', false, 'Doğrusu: mütevazı. Mütevazi “paralel” demektir.'],
+    ['ilha:mım', true, 'İlham ek alınca ha hecesi uzar.'],
+    ['sürpiriz', false, 'Doğrusu: sürpriz. İki ünsüz arasına ünlü girmez.'],
+    ['tahmi:ni:', true, 'Tahminî sözcüğünde iki î de uzundur.'],
+    ['ra:kip', false, 'Doğrusu: rakip. Ek alınca raki:bi olur.'],
+    ['“Bu işi yapmak durumundayız.”', false, 'Doğrusu: “Bu işi yapmak zorundayız.”'],
+    ['şa:ha:ne', true, 'Şahane sözcüğünde iki a da uzundur.'],
+    ['meşa:le', false, 'Doğrusu: meş’ale. Uzatma yok, kısa bir kesinti var.'],
+    ['hükû:met', true, 'Hükûmet sözcüğünde ku hecesi uzundur.'],
+    ['ha:yır', false, 'Doğrusu: hayır. Ha hecesi uzamaz.'],
+    ['tırafo', false, 'Doğrusu: trafo. Araya ı sokulmaz.'],
+    ['milli: bayram', true, 'Millî sözcüğünde son hece uzundur.'],
+    ['“Korkarım müdür bey bugün gelemeyecek.”', false, 'Doğrusu: “Maalesef müdür bey bugün gelemeyecek.”'],
+    ['tarafta:rı', true, 'Taraftar ek alınca üçüncü a uzar.']
+  ];
+  var Test = { sira: [], i: 0, dogru: 0, cevaplandi: false };
+  function testKaristir() {
+    Test.sira = SORULAR.map(function (x, i) { return i; });
+    for (var k = Test.sira.length - 1; k > 0; k--) {
+      var j = Math.floor(Math.random() * (k + 1)), t = Test.sira[k];
+      Test.sira[k] = Test.sira[j]; Test.sira[j] = t;
+    }
+    Test.i = 0; Test.dogru = 0;
+  }
+  function testSoruCiz() {
+    if (Test.i >= Test.sira.length) testKaristir();
+    var q = SORULAR[Test.sira[Test.i]];
+    Test.cevaplandi = false;
+    $('#testSoru').textContent = q[0];
+    $('#testSkor').textContent = (Test.i + 1) + ' / ' + Test.sira.length + ' · ' + Test.dogru + ' doğru';
+    $('#testSonuc').hidden = true;
+    $('#testSonraki').hidden = true;
+    $('#testDogru').disabled = false; $('#testYanlis').disabled = false;
+  }
+  function testCevap(dedi) {
+    if (Test.cevaplandi) return;
+    Test.cevaplandi = true;
+    var q = SORULAR[Test.sira[Test.i]];
+    var bildi = dedi === q[1];
+    if (bildi) Test.dogru++;
+    var kutu = $('#testSonuc');
+    kutu.textContent = '';
+    kutu.className = 'test-sonuc ' + (bildi ? 'iyi' : 'kotu');
+    kutu.appendChild(el('b', null, bildi ? 'Bildin! ' : 'Olmadı. '));
+    kutu.appendChild(document.createTextNode(q[2]));
+    kutu.hidden = false;
+    $('#testDogru').disabled = true; $('#testYanlis').disabled = true;
+    $('#testSkor').textContent = (Test.i + 1) + ' / ' + Test.sira.length + ' · ' + Test.dogru + ' doğru';
+    var son = Test.i === Test.sira.length - 1;
+    $('#testSonraki').textContent = son ? 'Baştan başla (' + Test.dogru + ' / ' + Test.sira.length + ')' : 'Sonraki soru';
+    $('#testSonraki').hidden = false;
+  }
+  $('#testDogru').addEventListener('click', function () { testCevap(true); });
+  $('#testYanlis').addEventListener('click', function () { testCevap(false); });
+  $('#testSonraki').addEventListener('click', function () {
+    Test.i++;
+    if (Test.i >= Test.sira.length) testKaristir();
+    testSoruCiz();
+  });
+  testKaristir();
+  testSoruCiz();
+
   // ================= Bugün =================
   function seriHesapla() {
     var gun = new Date(), n = 0;

@@ -132,6 +132,7 @@
       <span><span class="mk-n">/</span> nefes</span><span><span class="mk-d">|</span> kısa durak</span><span><span class="mk-d">||</span> uzun durak</span><span><b class="vurgu">kalın</b> vurgu</span><span>↗ ↘ ton</span>
     </div>
     <div class="card passage" id="metinAlan"></div>
+    <div class="ipucu kucuk">Okumadan önce sor: <b>Kime</b> söylüyorum? <b>Ne</b> istiyorum? <b>Ne</b> hissediyorum? Sonra okur gibi değil, anlatır gibi söyle.</div>
 
     <div class="recorder" id="kayitci">
       <canvas class="dalga" id="canliDalga" height="48" aria-hidden="true"></canvas>
@@ -167,93 +168,180 @@
 
   <!-- ============ DERSLER ============ -->
   <section data-ekran="ders" class="stack ders" hidden>
-    <div class="card stack" style="gap:8px">
-      <h2 class="h2">Nasıl çalışmalı?</h2>
-      <ol>
-        <li>Metni önce <b>düz</b>, işaretlere bakmadan oku.</li>
-        <li>Sonra vurgu ve durakları uygulayarak oku. Farkı kendin duyacaksın.</li>
-        <li>Okur gibi değil, <b>birine anlatır gibi</b> söyle: “Bunu karşımdaki birine söyleseydim nasıl söylerdim?”</li>
-        <li>Kaydet, dinle, bir kez daha oku.</li>
-      </ol>
+    <div class="chips kaydir" id="dersMenu" role="navigation" aria-label="Dersler">
+      <button type="button" data-ders="dCalis">Nasıl çalışmalı</button>
+      <button type="button" data-ders="dVurgu">Vurgu</button>
+      <button type="button" data-ders="dTon">Tonlama</button>
+      <button type="button" data-ders="dDurak">Durak</button>
+      <button type="button" data-ders="dHiz">Hız</button>
+      <button type="button" data-ders="dHeyecan">Heyecan</button>
+      <button type="button" data-ders="dSoyleyis">Söyleyiş</button>
+      <button type="button" data-ders="dTest">Test</button>
     </div>
 
-    <div class="card stack" style="gap:8px">
+    <div class="card stack" style="gap:8px" id="dCalis">
+      <h2 class="h2">Nasıl çalışmalı?</h2>
+      <ol>
+        <li>Metni önce bir kez <b>içinden</b> oku.</li>
+        <li>Kendine sor: <b>Kime</b> söylüyorum? <b>Ne</b> istiyorum? <b>Ne</b> hissediyorum?</li>
+        <li>İşaretlere uyarak oku ve kaydet.</li>
+        <li>Sonra okur gibi değil, <b>birine anlatır gibi</b> söyle: “Bunu karşımdaki birine söyleseydim nasıl söylerdim?”</li>
+        <li>Kaydını dinle. Tek bir şeyi seç, onu düzelterek bir kez daha oku.</li>
+      </ol>
+      <p class="muted kucuk">Her gün 10–15 dakika, uzun ve seyrek çalışmaktan daha etkilidir.</p>
+    </div>
+
+    <div class="card stack" style="gap:8px" id="dVurgu">
       <h2 class="h2">Vurgu</h2>
-      <p>Vurgu, bir hecenin ya da sözcüğün diğerlerinden biraz daha ağırlıklı söylenmesidir. İki türü var.</p>
+      <p>Vurgu, bir hecenin ya da sözcüğün ötekilerden biraz daha güçlü söylenmesidir. İki türü var.</p>
       <h3>Sözcük vurgusu</h3>
       <ul>
         <li>Türkçede vurgu çoğunlukla <b>son hecededir</b>. Ek gelince eke kayar: okul → okulda.</li>
-        <li>Soru eki varsa vurgu ondan <b>bir önceki hecededir</b>: gelecek misin, yapacak mısın.</li>
-        <li>Olumsuzlukta da vurgu olumsuzluk ekinden önceki hecededir: oturmaz mısınız (maz).</li>
-        <li>Şehir adları değişkendir: <b>An</b>kara, <b>İz</b>mir, <b>Bur</b>sa (ilk hece); An<b>tal</b>ya, Ama<b>mas</b>ya (orta hece).</li>
-        <li>Birleşik şehir adlarında iki vurgu vardır: Çanak<b>kale</b>, Diyar<b>bakır</b>.</li>
-        <li>Seslenmede iki heceli sözcükte vurgu ilk hecededir (<b>Ay</b>şe!, <b>Meh</b>met!). Daha uzunsa ikinci hecedir (Ar<b>ka</b>daşlar!).</li>
-        <li>Ülke adlarında vurgu son hecededir: Yunanis<b>tan</b>, Bulgaris<b>tan</b>.</li>
+        <li>Soru eki varsa vurgu ondan <b>önceki hecededir</b>: gele<b>cek</b> misin, yapa<b>cak</b> mısın.</li>
+        <li>Olumsuz soruda vurgu olumsuzluk hecesindedir: otur<b>maz</b> mısınız, git<b>mez</b> misiniz.</li>
+        <li>Pekiştirmede vurgu baştadır: <b>kıp</b>kırmızı, <b>mas</b>mavi, <b>düm</b>düz.</li>
+        <li>Şehir adları değişkendir: <b>An</b>kara, <b>İz</b>mir, <b>Bur</b>sa (ilk hece); An<b>tal</b>ya, A<b>mas</b>ya (orta hece).</li>
+        <li>Bir sözcük yer adı olunca vurgu başa geçer: “<b>Ay</b>dın’a gittim” ama “aydın bir insan”.</li>
+        <li>Birleşik şehir adlarında iki vurgu vardır: Ça<b>nak</b>ka<b>le</b>, Di<b>yar</b>ba<b>kır</b>.</li>
+        <li>Seslenmede iki heceli adda vurgu ilk hecededir (<b>Ay</b>şe!, <b>Meh</b>met!). Daha uzunsa ikinci hecededir (Ar<b>ka</b>daşlar!).</li>
+        <li>-istan ile biten ülke adlarında vurgu son hecededir: Yunanis<b>tan</b>, Bulgaris<b>tan</b>.</li>
       </ul>
       <h3>Cümle vurgusu</h3>
       <ul>
-        <li>Cümle vurgusu cümlenin <b>işaret parmağıdır</b>: dinleyene “asıl önemli olan bu” der.</li>
-        <li>Hangi sözcüğü vurgulayacağını bulmak için cümleye bir soru sor ve cevabı olan sözcüğü vurgula.</li>
-        <li>Her sözcüğü vurgularsan hiçbiri öne çıkmaz. Birini seç, ötekileri hafif bırak.</li>
-        <li>Devrik cümlede (“Gelmedi arkadaşım.”) yüklem başa alındığı için vurgu başta olur.</li>
+        <li>Cümle vurgusu cümlenin <b>işaret parmağıdır</b>. Dinleyene “asıl önemli olan bu” der.</li>
+        <li>Vurgu bir sorunun cevabıdır. Cümleye bir soru sor, cevabı olan sözcüğü vurgula.</li>
+        <li>Vurgunun dereceleri vardır: en önemli sözcük en güçlü, ötekiler daha hafif söylenir. Her sözcüğü vurgularsan hiçbiri öne çıkmaz.</li>
+        <li>Devrik cümlede başa alınan sözcük önemlidir, vurgu ondadır: “<b>Gelmedi</b> arkadaşım.”</li>
+        <li>Yanlış vurgu anlamı bozar ve dinleyeni yorar.</li>
       </ul>
       <div class="ornek">
-        <b>Ali dün akşam parkta koştu.</b>
-        <div>Kim koştu? → <b>Ali</b> dün akşam parkta koştu.</div>
-        <div>Ne zaman? → Ali <b>dün akşam</b> parkta koştu.</div>
-        <div>Nerede? → Ali dün akşam <b>parkta</b> koştu.</div>
-        <div>Ne yaptı? → Ali dün akşam parkta <b>koştu</b>.</div>
+        <b>Yarın ikinci derste kesirler sınavı var.</b>
+        <div>Ne zaman? → <b>Yarın</b> ikinci derste kesirler sınavı var.</div>
+        <div>Hangi derste? → Yarın <b>ikinci derste</b> kesirler sınavı var.</div>
+        <div>Hangi konu? → Yarın ikinci derste <b>kesirler</b> sınavı var.</div>
+        <div>Gerçekten var mı? → Yarın ikinci derste kesirler sınavı <b>var</b>.</div>
       </div>
       <button class="secondary" type="button" data-git="metin" data-kategori="vurgu">Vurgu metinleriyle çalış</button>
     </div>
 
-    <div class="card stack" style="gap:8px">
+    <div class="card stack" style="gap:8px" id="dTon">
       <h2 class="h2">Tonlama</h2>
       <ul>
-        <li>Tonlama, sesin cümle boyunca inip çıkmasıdır. Tek tonda konuşmak <b>monotonluktur</b> ve dinleyeni yorar.</li>
-        <li>Virgülde ses hafif kalkık kalır: dinleyen “devamı var” diye bekler. Cümle bitince ses iner. Sorularda ses yükselir.</li>
-        <li>Aynı söz tonlamayla bambaşka anlam kazanır. “Evet” sözcüğünü sevinçle, kızgınlıkla, kuşkuyla, alayla söyleyip farkı dene.</li>
+        <li>Tonlama, sesin cümle boyunca inip çıkmasıdır. Her cümleyi aynı tonla söylemek <b>monotonluktur</b>, dinleyeni yorar ve dikkatini dağıtır.</li>
+        <li>Virgülde ses hafif kalkık kalır (↗): dinleyen “devamı var” diye bekler. Cümle bitince ses iner (↘). Sorularda ses yükselir.</li>
+        <li>Aynı söz tonlamayla bambaşka anlam kazanır. “Tamam” sözcüğünü onaylayarak, sorarak, isteksizce, sevinçle söyleyip farkı dene.</li>
+        <li>Karşıt duygularla çalış: sabır ve sabırsızlık, övgü ve uyarı, sevinç ve üzüntü. Aynı sınıf cümlesini iki duyguyla söyle.</li>
         <li>Abartma. Sesi gereksiz yere alçaltıp yükseltmek yapaylık yaratır. Şiiri de konuşur gibi, doğal söyle.</li>
-        <li>Ton, söylediğin şeyin duygusuyla uyumlu olmalı. Önce ne hissettiğini bul, ses ardından gelir.</li>
+        <li>Önce ne hissettiğini bul, ses ardından gelir. Sözcüğün anlamını yaşayarak söyle: “su gibi” derken suyun akışını düşün.</li>
       </ul>
       <button class="secondary" type="button" data-git="metin" data-kategori="tonlama">Tonlama metinleriyle çalış</button>
     </div>
 
-    <div class="card stack" style="gap:8px">
+    <div class="card stack" style="gap:8px" id="dDurak">
       <h2 class="h2">Durak ve nefes</h2>
       <ul>
         <li><b>/</b> nefes alma yeri, <b>|</b> kısa durak, <b>||</b> uzun durak.</li>
         <li>Duraklar aynı zamanda <b>nefes alma</b> yerleridir. Nefesi anlam grubunun sonunda al, cümlenin ortasında değil.</li>
+        <li>Uzun cümlede asıl sorun nefestir. Okumadan önce nefes yerlerini kendin işaretle.</li>
         <li>Önemli bir şeyi söylemeden hemen önce kısa bir durak, dinleyenin dikkatini toplar.</li>
-        <li>Susmak da konuşmanın parçasıdır. Durak vermekten korkma.</li>
+        <li>Susmak da konuşmanın parçasıdır. Uzun durakta 2–3 saniye beklemekten korkma.</li>
       </ul>
     </div>
 
-    <div class="card stack" style="gap:8px">
+    <div class="card stack" style="gap:8px" id="dHiz">
+      <h2 class="h2">Konuşma hızı</h2>
+      <ul>
+        <li>Rahat dinlenen hız <b>dakikada 125–160 sözcüktür</b>.</li>
+        <li><b>Çok hızlı</b> konuşunca sesler bozulur, dinleyen yorulur. “Tekrar eder misiniz?” diye sorulur, kazandığın zamanı kaybedersin.</li>
+        <li><b>Çok yavaş</b> konuşunca dinleyen sıkılır ve dinlemeyi bırakır.</li>
+        <li>Matematik gibi zor konuları <b>biraz daha yavaş</b> anlat. Küçük çocuklarla daha da yavaş konuş.</li>
+        <li>Metin ekranı her kayıttan sonra hızını gösterir. Her gün bir metni kaydet, hızına bak.</li>
+        <li>Sonra 1 dakika serbest konuş ve kaydet: “Bugün sınıfta neler yaptım?” Doğru hız başta garip gelebilir. Devam et, kulağın alışır.</li>
+      </ul>
+      <button class="secondary" type="button" data-git="metin">Metin çalışmasına git</button>
+    </div>
+
+    <div class="card stack" style="gap:8px" id="dHeyecan">
+      <h2 class="h2">Heyecan ve korku</h2>
+      <p>Topluluk önünde konuşma korkusu çok yaygındır. Herkes heyecanlanır. Ölçülü heyecan konuşmaya canlılık katar. Sorun, heyecanın konuşmayı bozmasıdır.</p>
+      <ul>
+        <li><b>Heyecan ve nefes birbirini besler.</b> Heyecanlanınca nefes bozulur, bozuk nefes heyecanı artırır.</li>
+        <li>Başlamadan önce <b>burnundan iki derin nefes al, ağzından yavaşça ver</b>. Konuşurken heyecanlanırsan bunu belli etmeden tekrarla.</li>
+        <li>“Çok heyecanlıyım” ya da “Hata yaparsam affedin” diye <b>başlama</b>. Heyecanını çoğu kişi fark etmez, kendini ele verme.</li>
+        <li>Karşındakiler seni iyi niyetle, merakla dinlemeye geldi. Korkuyu çoğu zaman kendimiz üretiriz.</li>
+        <li>Kendine sesli söyle: “Hazırlandım. Biliyorum. Anlatabilirim.”</li>
+        <li>Cebinde küçük bir nesne taşı (bir taş, farklı bir kalem). Gerildiğinde belli etmeden eline al, sonra bırak.</li>
+        <li>Utangaçlık için: önce kabul et. Hangi ortamlarda zorlandığını kendine sor. Sonra o ortamlara küçük adımlarla gir.</li>
+        <li>Konuşmalarını kaydet ve dinle. Kendini dışarıdan duymak en hızlı gelişme yoludur.</li>
+      </ul>
+      <button class="secondary" type="button" data-git="nefes">Nefes egzersizine git</button>
+    </div>
+
+    <div class="card stack" style="gap:8px" id="dSoyleyis">
       <h2 class="h2">Sık yapılan söyleyiş hataları</h2>
       <p class="muted kucuk">İki nokta (:) o heceyi uzat demektir.</p>
-      <table>
-        <thead><tr><th>Sözcük</th><th>Doğrusu</th></tr></thead>
-        <tbody>
-          <tr><td>hakem</td><td>Hiçbir hece uzamaz. “Ha:kem” denmez.</td></tr>
-          <tr><td>rakip</td><td>Uzatma yok. Ek alırsa: raki:bi.</td></tr>
-          <tr><td>hayır</td><td>Ha hecesi uzamaz. “Ha:yır” denmez.</td></tr>
-          <tr><td>yarın</td><td>Hiçbir hece uzamaz.</td></tr>
-          <tr><td>hamal, hamasi</td><td>Tek m: hamal, hama:si. “Hammal” denmez.</td></tr>
-          <tr><td>millî</td><td>Son hece uzun: milli:</td></tr>
-          <tr><td>resmî, vatanî</td><td>Son hece uzun: resmi:, vatani:</td></tr>
-          <tr><td>şahane</td><td>İki a da uzun: şa:ha:ne</td></tr>
-          <tr><td>meşale</td><td>Meş’ale. “Meşa:le” denmez.</td></tr>
-          <tr><td>vak’a</td><td>K’den sonra kesme var: vak’a. “Vaka” ya da “va:ka” değil.</td></tr>
-          <tr><td>hükümet</td><td>Ku hecesi uzun: hükû:met</td></tr>
-          <tr><td>fazilet, akıbet</td><td>fazi:let, a:kıbet</td></tr>
-          <tr><td>dâhî / dahi</td><td>“Üstün zekâlı” anlamında iki hece de uzun (dâ:hî). “Bile” anlamında yalnız hi uzar (dahi:).</td></tr>
-          <tr><td>sürpriz, trafo, prestij</td><td>İki ünsüz arasına ünlü sokma. “Sürpiriz”, “tırafo”, “pirestij” denmez.</td></tr>
-          <tr><td>zorundayız</td><td>“Yapmak <b>durumundayız</b>” değil, “yapmak <b>zorundayız</b>”.</td></tr>
-          <tr><td>üzgünüm</td><td>“Korkarım” Türkçede “maalesef, üzgünüm” demektir. “Korkarım Ahmet Bey gelmeyecek” gibi kullanmak İngilizceden geçmiş bir yanlıştır.</td></tr>
-        </tbody>
-      </table>
+      <h3>Hiçbir hece uzamaz</h3>
+      <table><tbody>
+        <tr><td>hakem, rakip, yarın</td><td>“Ha:kem”, “ra:kip”, “ya:rın” denmez.</td></tr>
+        <tr><td>akabinde, azametli</td><td>“Aka:binde”, “aza:metli” denmez.</td></tr>
+        <tr><td>defile, şale, talan</td><td>Kısa söylenir.</td></tr>
+        <tr><td>meşale</td><td>Meş’ale. “Meşa:le” denmez.</td></tr>
+        <tr><td>hayır</td><td>Uzatma yok. “Olmaz” anlamında vurgu başta (<b>ha</b>yır), “iyilik” anlamında sonda (ha<b>yır</b>).</td></tr>
+      </tbody></table>
+      <h3>Sondaki -î uzun</h3>
+      <table><tbody>
+        <tr><td>millî, resmî</td><td>milli:, resmi:</td></tr>
+        <tr><td>vatanî, edebî, ebedî</td><td>vatani:, edebi:, ebedi:</td></tr>
+        <tr><td>tahminî</td><td>tahmi:ni:</td></tr>
+      </tbody></table>
+      <h3>Ek alınca uzar</h3>
+      <table><tbody>
+        <tr><td>rakip</td><td>raki:bi</td></tr>
+        <tr><td>civar</td><td>civa:rı</td></tr>
+        <tr><td>ilham</td><td>ilha:mım</td></tr>
+        <tr><td>mizah</td><td>miza:hı</td></tr>
+        <tr><td>taraftar</td><td>tarafta:rı</td></tr>
+        <tr><td>makam</td><td>maka:mı</td></tr>
+        <tr><td>ikametgâh</td><td>ikametgâ:hı (ka kalın söylenir)</td></tr>
+      </tbody></table>
+      <h3>İçinde uzun ses var</h3>
+      <table><tbody>
+        <tr><td>şahane</td><td>şa:ha:ne</td></tr>
+        <tr><td>harikulade</td><td>ha:rikula:de (“harükülade” değil)</td></tr>
+        <tr><td>fazilet, akıbet</td><td>fazi:let, a:kıbet</td></tr>
+        <tr><td>hükûmet</td><td>hükû:met</td></tr>
+        <tr><td>ısrar, itina</td><td>ısra:r, i:tina:</td></tr>
+      </tbody></table>
+      <h3>Ses ve harf</h3>
+      <table><tbody>
+        <tr><td>hamal, hamasi</td><td>Tek m: hamal, hama:si. “Hammal” denmez.</td></tr>
+        <tr><td>vak’a</td><td>K’den sonra kısa bir kesinti: vak’a. “Va:ka” değil.</td></tr>
+        <tr><td>mütevazı</td><td>“Alçak gönüllü” anlamında mütevazı. “Mütevazi” paralel demektir.</td></tr>
+        <tr><td>dâhî / dahi</td><td>“Üstün zekâlı” anlamında iki hece uzun (dâ:hî:). “Bile” anlamında yalnız son hece uzar (dahi:).</td></tr>
+        <tr><td>sürpriz, priz, trafo, prestij, kompleks</td><td>İki ünsüz arasına ünlü sokma. “Sürpiriz”, “tırafo”, “pirestij” denmez.</td></tr>
+      </tbody></table>
+      <div class="ornek">
+        <b>Doğru sözcüğü seç</b>
+        <div>Yapmak <s>durumundayız</s> → <b>zorundayız</b></div>
+        <div><s>Korkarım</s> gelemeyecek → <b>Maalesef</b> gelemeyecek</div>
+        <div><s>Şimdilerde</s> → <b>bugünlerde</b></div>
+        <div><s>Start aldı</s> → <b>başladı</b></div>
+        <div><s>Sahne almak</s> → <b>sahneye çıkmak</b></div>
+        <div><s>Global</s> → <b>küresel</b></div>
+      </div>
       <button class="secondary" type="button" data-git="metin" data-kategori="soyleyis">Söyleyiş metinleriyle çalış</button>
+    </div>
+
+    <div class="card stack" style="gap:10px" id="dTest">
+      <div class="satir"><h2 class="h2">Doğru mu, yanlış mı?</h2><span class="muted kucuk" id="testSkor"></span></div>
+      <p class="muted kucuk">Bu söyleyiş doğru mu?</p>
+      <div class="test-soru" id="testSoru"></div>
+      <div class="test-btnler">
+        <button class="secondary" type="button" id="testDogru">Doğru</button>
+        <button class="secondary" type="button" id="testYanlis">Yanlış</button>
+      </div>
+      <div class="test-sonuc" id="testSonuc" hidden></div>
+      <button class="primary" type="button" id="testSonraki" hidden>Sonraki soru</button>
     </div>
 
     <p class="muted kucuk kaynak">Kaynak: Can Gürzap, <i>Söz Söyleme ve Diksiyon</i> (Remzi Kitabevi). Açıklamalar kitaptaki yöntemden kendi cümlelerimizle özetlenmiş, metinler bu uygulama için yazılmıştır.</p>

@@ -34,6 +34,19 @@ Telif nedeniyle kitaptan metin kopyalanmadı; yöntem ve kurallar özetlendi, t�
 - Kitaptan henüz kullanılmayan: Nefes/ses/boğumlanma bölümleri (s.57-104), Genel Çalışmalar'daki monolog ve metin parçaları (s.152-196). Monologlar telifli olabilir, doğrudan alınmaz.
 - Tarayıcıda gerçek denemesi yapılmadı (araç yoktu); söz dizimi ve HTML dengesi kontrol edildi.
 
+## Sürüm 3 (11 Ekim 2026): kitabın üç bölümü ayrıntılı incelendi
+Diksiyon (s.105-131), Söyleyiş Yanlışları (s.147-151) ve Genel Çalışmalar (s.152-196) sayfa sayfa okundu.
+Ayrıntılı özetler kullanıcının Obsidian kasasında (Ders Kitabı Özetleri/), depoda değil.
+- Dersler sayfası yeniden yazıldı: üstte ders menüsü; Nasıl çalışmalı, Vurgu, Tonlama, Durak, **Hız** (125-160 sözcük/dk),
+  **Heyecan ve korku**, Söyleyiş (gruplu tablolar + doğru sözcük seçimi), **Doğru mu yanlış mı testi** (18 soru, karışık sıra).
+- Düzeltme: olumsuz soruda vurgu (kitaptaki örneklere göre olumsuzluk hecesinde: oturMAZ mısınız).
+- Metin ekranına "Kime? Ne istiyorum? Ne hissediyorum?" ipucu.
+- 30 yeni özgün metin: masallar, veli görüşmeleri, diyalog, duygu geçişli monolog, seminer, vurgu, tonlama, söyleyiş. Toplam 73 metin.
+- Önbellek sürümü diksiyon-v3.
+- Kitaptaki monolog, şiir ve masalların neredeyse hepsi telifli; uygulamaya konmadı.
+- Fikir olarak bekleyenler: iki dereceli vurgu işareti, uzatma (:) ve hızlı/ağır işaretleri, "Metin ekle", "sunum öncesi 1 dk nefes" modu,
+  hazırlıklı konuşma (konu + ipucu) bölümü, kitabın Nefes/Ses/Boğumlanma bölümleri (s.57-104) henüz okunmadı.
+
 ## Açık sorunlar
 - Android'de mikrofon izni penceresi "Bu site izninizi isteyemiyor" uyarısıyla engelleniyor
   (ekran üstü öğe: sağ kenardaki yüzen kalem simgesi, ekran kaydı vb.).
