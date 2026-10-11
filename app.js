@@ -403,14 +403,8 @@
     if (Calis.tanima) { try { Calis.tanima.abort(); } catch (e) { /* yok */ } Calis.tanima = null; }
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { /* yok */ }
   }
-  // Kısa heceleri telefon kısaltma sanıp harf harf okuyor ("rö" → "R, Ö").
-  // Ünlüyü uzatınca ("röö") sözcük gibi okuyor.
-  function heceSesi(h) {
-    return h.replace(/[aeıioöuü]/, function (u) { return u + u; });
-  }
-  function calisSoyle(metin, hece) {
+  function calisSoyle(metin) {
     if (!('speechSynthesis' in window) || !Rehber.ses) return false;
-    if (hece) metin = heceSesi(metin);
     try {
       var u = new SpeechSynthesisUtterance(metin);
       u.voice = Rehber.ses; u.lang = Rehber.ses.lang; u.rate = 0.8;
@@ -792,7 +786,8 @@
     kutu.appendChild(durum);
     kutu.appendChild(kontrol);
     kutu.appendChild(ayar);
-    kutu.appendChild(sesliEt);
+    // Telefonun konuşma sesi kısa heceleri harf harf okuyor ("rö" → "R, Ö"); hecelerde sesli okuma yok
+    if (!a.hece) kutu.appendChild(sesliEt);
     if (a.tanima) {
       var tSonuc = el('div', 'tanima-sonuc'); tSonuc.hidden = true;
       kutu.insertBefore(tanimaDugmesi('Söyle, kontrol edeyim', function () { return dizi().ogeler[Calis.kart]; },
@@ -822,7 +817,7 @@
         satir.appendChild(s);
       });
       durum.textContent = (Calis.kart + 1) + ' / ' + d.ogeler.length;
-      if (soyle && Calis.sesli) calisSoyle(d.ogeler[Calis.kart], a.hece);
+      if (soyle && Calis.sesli && !a.hece) calisSoyle(d.ogeler[Calis.kart]);
     }
     function adimAt(yon) {
       var d = dizi(), y = Calis.kart + yon;
@@ -841,7 +836,7 @@
       if (!Calis.oto) return;
       Calis.zaman = setTimeout(function () {
         if (adimAt(1)) otoTik();
-      }, TEMPO[Calis.tempo] * (Calis.sesli ? 2 : 1));
+      }, TEMPO[Calis.tempo] * (Calis.sesli && !a.hece ? 2 : 1));
     }
     oto.addEventListener('click', function () {
       if (Calis.oto) { otoDurdur(); return; }
