@@ -385,6 +385,7 @@
   function calisAc(id) {
     Calis.modul = calisBul(id);
     Calis.adim = 0;
+    Calis.set = {};
     $('#calisListe').hidden = true;
     $('#calisDetay').hidden = false;
     mkHazirla();
@@ -422,15 +423,69 @@
     try { if (navigator.vibrate) navigator.vibrate(60); } catch (e) { /* yok */ }
   }
 
+  // ---------- Her açışta farklı set (zorlanılan sözcükler daha sık) ----------
+  function agirlikliSec(liste, n, agirlik) {
+    var havuz = liste.map(function (x) { return { x: x, w: agirlik ? agirlik(x) : 1 }; }), sec = [];
+    while (sec.length < n && havuz.length) {
+      var top = 0, i;
+      for (i = 0; i < havuz.length; i++) top += havuz[i].w;
+      var r = Math.random() * top;
+      for (i = 0; i < havuz.length - 1; i++) { r -= havuz[i].w; if (r <= 0) break; }
+      sec.push(havuz.splice(i, 1)[0].x);
+    }
+    return sec;
+  }
+  function zorAgirlik(metin) {
+    var z = veriCalis().zor, w = 1;
+    trKucuk(metin).split(' ').forEach(function (s) {
+      var k = z[s];
+      if (k && k.y > k.d) w += 3 * Math.min(k.y - k.d, 3);
+    });
+    return w;
+  }
+  function adimVerisi(i) {
+    Calis.set = Calis.set || {};
+    if (Calis.set[i]) return Calis.set[i];
+    var a = Calis.modul.adimlar[i], b = a;
+    if (a.tur === 'kart' && a.havuz) {
+      b = Object.assign({}, a, { diziler: a.havuz.map(function (g) {
+        return { ad: g.ad, ogeler: agirlikliSec(g.ogeler, a.secim || g.ogeler.length, zorAgirlik) };
+      }) });
+    } else if (a.tur === 'kart' && a.secimDizi && a.diziler.length > a.secimDizi) {
+      var sabit = a.diziler.slice(0, a.sabitDizi || 0);
+      b = Object.assign({}, a, { diziler: sabit.concat(agirlikliSec(a.diziler.slice(sabit.length), a.secimDizi - sabit.length)) });
+    } else if (a.tur === 'cumle' && a.havuz) {
+      b = Object.assign({}, a, { cumleler: agirlikliSec(a.havuz, a.secim || a.havuz.length, zorAgirlik) });
+    }
+    Calis.set[i] = b;
+    return b;
+  }
+  function yeniSetSatiri(kutu, a) {
+    var ham = Calis.modul.adimlar[Calis.adim], yazi;
+    if (ham.havuz && ham.tur === 'kart') {
+      var t = 0; ham.havuz.forEach(function (g) { t += g.ogeler.length; });
+      yazi = 'Havuzda ' + t + ' sözcük var. Her açışta farklı ' + (ham.secim || '') + '’er tane gelir.';
+    } else if (ham.havuz) yazi = 'Havuzda ' + ham.havuz.length + ' cümle var. Her açışta farklı ' + ham.secim + ' tanesi gelir.';
+    else if (ham.secimDizi) yazi = ham.diziler.length + ' dizi var. Her açışta farklı ' + ham.secimDizi + ' tanesi gelir.';
+    else return;
+    var satir = el('div', 'yeni-set');
+    satir.appendChild(el('span', 'muted kucuk grow', yazi));
+    var b = el('button', 'secondary kucuk-btn', '🔀 Yeni set'); b.type = 'button';
+    b.addEventListener('click', function () { delete Calis.set[Calis.adim]; adimCiz(); });
+    satir.appendChild(b);
+    kutu.appendChild(satir);
+  }
+
   function adimCiz() {
     calisDurdur();
-    var m = Calis.modul, a = m.adimlar[Calis.adim], kutu = $('#calisIcerik');
+    var m = Calis.modul, a = adimVerisi(Calis.adim), kutu = $('#calisIcerik');
     kutu.textContent = '';
     $('#calisAdimYazi').textContent = m.ad + ' · ' + (Calis.adim + 1) + ' / ' + m.adimlar.length;
     $('#calisIlerleme').style.width = Math.round((Calis.adim + 1) / m.adimlar.length * 100) + '%';
     kutu.appendChild(el('h2', 'h2', (Calis.adim + 1) + '. ' + a.baslik));
     (a.metin || []).forEach(function (p) { kutu.appendChild(el('p', 'calis-p', p)); });
     if (a.yonerge) kutu.appendChild(el('p', 'muted calis-p', a.yonerge));
+    yeniSetSatiri(kutu, a);
     if (a.maddeler) {
       var ul = el('ul', 'calis-ul');
       a.maddeler.forEach(function (md) { var li = document.createElement('li'); li.innerHTML = md; ul.appendChild(li); });

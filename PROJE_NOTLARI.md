@@ -75,6 +75,15 @@ Kullanıcı: "Sesimi analiz etsin, nerede hata yaptığımı söylesin; kayıtla
   (aaa 90. yüzdelik ile Rrrr medyanının ortası) ve özilinti eşiğini (Rrrr 25. yüzdelik − 0.05) hesaplar.
   Fark yetersizse ayarlamaz ve nedenini söyler. Ayar veri.ayarlar.titresim içinde; "Genel ayara dön" ile silinir.
 
+## Sürüm 10 (11 Ekim 2026): R çalışmasında çeşitlilik
+Kullanıcı: "Sürekli aynı şeyler çıkıyor." Amaç günlük konuşma (matematikle ilişkilendirme İSTENMEDİ).
+- Hece: 14 dizi (kitabın 7'si + ara/pra/bra/kra/dra/art/kar), her açışta ra-re-ri + rastgele 4.
+- Sözcük havuzu 131 (başta / ortada / sonda / ünsüzle yan yana), grup başına 8 seçilir.
+- Cümle havuzları: sözcük sonu r 25 (5 seçilir), tekerleme + günlük cümle 28 (6 seçilir).
+- Set, çalışma açılınca bir kez oluşur (Calis.set); "🔀 Yeni set" ile yenilenir.
+- Ağırlıklı seçim: zorlanılan sözcük (zor[y] > zor[d]) ağırlığı 1 + 3·min(y−d, 3).
+- Telefonun TTS'i kısa heceleri harf harf okuyor; hece kartlarında sesli okuma kapalı.
+
 ## Önbellek kuralı (sürüm 5)
 Telefon yeni index.html ile eski app.js'i birleştirince Çalış sekmesi boş kaldı. Çözüm: index.html'deki css/js
 bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cache'` ile çeker.
