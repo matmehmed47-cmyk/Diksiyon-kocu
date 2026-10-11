@@ -221,6 +221,8 @@ canvas.dalga.buyuk{height:80px;cursor:pointer;touch-action:manipulation}
 .olcum-satir.orta{background:var(--warn-soft)}
 .olcum-satir.zayif{background:var(--bad-soft)}
 .tanima-btn{width:100%}
+.ayar-kutu{display:flex;flex-direction:column;gap:8px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+.ayar-dugmeler{display:flex;gap:8px;flex-wrap:wrap}
 .tanima-btn.dinliyor{border-color:var(--rec);color:var(--rec);animation:nabiz 1.2s ease-in-out infinite}
 @keyframes nabiz{50%{box-shadow:0 0 0 6px var(--rec-ring)}}
 .tanima-sonuc{border-radius:12px;padding:10px 14px;line-height:1.5;font-size:15px}

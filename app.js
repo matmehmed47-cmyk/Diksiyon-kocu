@@ -298,8 +298,31 @@
       if (r > enIyi) { enIyi = r; enL = L; }
     }
     var hz = enL ? 1 / (enL * 0.002) : 0;
-    return { ses: true, r: enIyi, hz: hz, derinlik: derinlik, titresim: enIyi > 0.55 && derinlik > 0.14 && hz >= 18 && hz <= 40 };
+    return { ses: true, r: enIyi, hz: hz, derinlik: derinlik, titresim: enIyi > titresimEsik().r && derinlik > titresimEsik().derinlik && hz >= 18 && hz <= 40 };
   }
+  function titresimEsik() { return (veri.ayarlar && veri.ayarlar.titresim) || { r: 0.55, derinlik: 0.14 }; }
+  // Kişisel ayar: "aaa" (titreşimsiz) ve "Rrrr" (titreşimli) karelerinden eşik çıkarır
+  function yuzdelik(dizi, p) {
+    if (!dizi.length) return 0;
+    var s = dizi.slice().sort(function (a, b) { return a - b; });
+    return s[Math.min(s.length - 1, Math.floor(p * s.length))];
+  }
+  function kisiselEsik(duz, titrek) {
+    var dD = duz.map(function (k) { return k.derinlik; });
+    var tAralik = titrek.filter(function (k) { return k.hz >= 18 && k.hz <= 40; });
+    if (duz.length < 10) return { ok: false, mesaj: '“aaa” sesini yeterince duyamadım. Telefonu biraz daha yakın tut ve yeniden dene.' };
+    if (tAralik.length < 10) return { ok: false, mesaj: '“Rrrr” sırasında titreşim bulamadım. Dil ucun henüz titremiyor olabilir; bu çok normal. Genel ayarla devam ediyorum.' };
+    var duzUst = yuzdelik(dD, 0.9);
+    var titrekOrta = yuzdelik(tAralik.map(function (k) { return k.derinlik; }), 0.5);
+    if (titrekOrta < duzUst * 1.4 || titrekOrta < 0.08) {
+      return { ok: false, mesaj: '“aaa” ile “Rrrr” arasında yeterince fark duyamadım. Rrrr’yi biraz daha güçlü bir nefesle dene ya da genel ayarla devam et.' };
+    }
+    var d = Math.max(0.06, Math.min(0.4, (duzUst + titrekOrta) / 2));
+    var r = Math.max(0.35, Math.min(0.6, yuzdelik(tAralik.map(function (k) { return k.r; }), 0.25) - 0.05));
+    return { ok: true, derinlik: Math.round(d * 1000) / 1000, r: Math.round(r * 100) / 100,
+      mesaj: 'Senin sesine göre ayarlandı ✓ Artık ölçüm senin “aaa” ve “Rrrr” sesine göre yapılacak.' };
+  }
+
   // Mikrofondan sürekli dinleyip titreşimli süreyi toplar
   function TitresimOlcer(stream) {
     var ctx = Ses.baglam();
@@ -315,7 +338,7 @@
   }
   TitresimOlcer.prototype.basla = function () {
     var self = this;
-    self.titresimli = 0; self.sesli = 0; self.hzler = [];
+    self.titresimli = 0; self.sesli = 0; self.hzler = []; self.kareler = [];
     self.calisiyor = true; self.son = performance.now();
     (function dongu() {
       if (!self.calisiyor) return;
@@ -323,7 +346,7 @@
       self.son = simdi;
       self.an.getFloatTimeDomainData(self.buf);
       var r = titresimAnaliz(self.buf, self.sr);
-      if (r.ses) self.sesli += dt;
+      if (r.ses) { self.sesli += dt; self.kareler.push({ r: r.r, hz: r.hz, derinlik: r.derinlik }); }
       if (r.titresim) { self.titresimli += dt; self.hzler.push(r.hz); }
       requestAnimationFrame(dongu);
     })();
@@ -331,7 +354,7 @@
   TitresimOlcer.prototype.dur = function () {
     this.calisiyor = false;
     var h = this.hzler.slice().sort(function (a, b) { return a - b; });
-    return { titresim: this.titresimli, ses: this.sesli, hz: h.length ? h[Math.floor(h.length / 2)] : 0 };
+    return { titresim: this.titresimli, ses: this.sesli, hz: h.length ? h[Math.floor(h.length / 2)] : 0, kareler: this.kareler };
   };
   TitresimOlcer.prototype.kapat = function () {
     this.calisiyor = false;
@@ -460,6 +483,7 @@
     var btn = el('button', 'primary', 'Başlat');
     btn.type = 'button';
     kutu.appendChild(btn);
+    if (a.titresimOlc) ayarCiz(kutu, ekran, ses, faz, btn);
     var sonuclar = el('div', 'stack');
     sonuclar.style.gap = '6px';
     kutu.appendChild(sonuclar);
@@ -541,6 +565,75 @@
       faz.textContent = 'Mikrofon açılıyor…';
       Ses.mikrofon().then(function (stream) { basla(new TitresimOlcer(stream)); })
         .catch(function (e) { mikrofonHatasi(e); basla(null); });
+    });
+  }
+
+  // ---------- Titreşim ölçeri kişinin sesine göre ayarlama ----------
+  function ayarCiz(kutu, ekran, ses, faz, anaBtn) {
+    var sar = el('div', 'ayar-kutu');
+    var durum = el('div', 'muted kucuk');
+    var bt = el('button', 'secondary kucuk-btn', '🎚 Sesime göre ayarla'); bt.type = 'button';
+    var gen = el('button', 'secondary kucuk-btn', 'Genel ayara dön'); gen.type = 'button';
+    var sonuc = el('div', 'tanima-sonuc'); sonuc.hidden = true;
+    function durumYaz() {
+      var t = veri.ayarlar.titresim;
+      durum.textContent = t ? 'Ölçüm senin sesine göre ayarlı (' + tarihYaz(t.tarih) + ').' : 'Ölçüm genel ayarda. Daha doğru sonuç için sesine göre ayarla.';
+      gen.hidden = !t;
+    }
+    var satir = el('div', 'ayar-dugmeler'); satir.appendChild(bt); satir.appendChild(gen);
+    sar.appendChild(durum); sar.appendChild(satir); sar.appendChild(sonuc);
+    kutu.appendChild(sar);
+    durumYaz();
+    gen.addEventListener('click', function () { delete veri.ayarlar.titresim; kaydet(); durumYaz(); sonuc.hidden = true; });
+    var adimlar = [
+      { ses: 'aaaa', yazi: '1/2 · Rahat bir sesle “aaaa” de', duz: true },
+      { ses: 'Rrrrr', yazi: '2/2 · Şimdi güçlü bir “Rrrrr” de' }
+    ];
+    bt.addEventListener('click', function () {
+      if (Calis.tutCalisiyor) return;
+      calisDurdur(); mkDurdur();
+      sonuc.hidden = true;
+      bt.disabled = true; anaBtn.disabled = true;
+      faz.textContent = 'Mikrofon açılıyor…';
+      Ses.mikrofon().then(function (stream) {
+        var olcer = new TitresimOlcer(stream), toplanan = [];
+        Calis.olcer = olcer; Calis.tutCalisiyor = true;
+        function bitir(s) {
+          Calis.olcer = null; Calis.tutCalisiyor = false;
+          olcer.kapat();
+          bt.disabled = false; anaBtn.disabled = false;
+          ekran.classList.remove('aktif', 'dinlen');
+          ses.textContent = 'Rrrrrrr';
+          faz.textContent = 'Hazır';
+          if (!s) return;
+          if (s.ok) { veri.ayarlar.titresim = { r: s.r, derinlik: s.derinlik, tarih: new Date().toISOString() }; kaydet(); }
+          sonuc.className = 'tanima-sonuc ' + (s.ok ? 'iyi' : 'kotu');
+          sonuc.textContent = s.mesaj;
+          sonuc.hidden = false;
+          durumYaz();
+        }
+        function adim(i, geri) {
+          if (!Calis.tutCalisiyor) { bitir(null); return; }
+          if (i >= adimlar.length) { bitir(kisiselEsik(toplanan[0], toplanan[1])); return; }
+          var A = adimlar[i];
+          ses.textContent = A.ses;
+          if (geri > 0) {
+            ekran.classList.remove('aktif'); ekran.classList.add('dinlen');
+            faz.textContent = A.yazi + ' · ' + geri;
+            Calis.zaman = setTimeout(function () { adim(i, geri - 1); }, 1000);
+            return;
+          }
+          bip(660);
+          ekran.classList.add('aktif'); ekran.classList.remove('dinlen');
+          faz.textContent = A.yazi + ' · dinliyorum';
+          olcer.basla();
+          Calis.zaman = setTimeout(function () {
+            toplanan.push(olcer.dur().kareler);
+            adim(i + 1, 3);
+          }, 3000);
+        }
+        adim(0, 3);
+      }).catch(function (e) { bt.disabled = false; anaBtn.disabled = false; faz.textContent = 'Hazır'; mikrofonHatasi(e); });
     });
   }
 

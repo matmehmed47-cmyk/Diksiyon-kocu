@@ -70,6 +70,11 @@ Kullanıcı: "Sesimi analiz etsin, nerede hata yaptığımı söylesin; kayıtla
 - **Öz değerlendirme** (`ozKontrol`): her kayıttan sonra işaretlenen sorunlara tavsiye ve "o adıma git".
 - **Kayıt listesi**: çalışma başına kayıtlar, dinle / sil (iki dokunuşla) / hepsini sil. İlk kayıt karşılaştırması korunur.
 
+## Sürüm 7 (11 Ekim 2026): titreşim ölçeri kişinin sesine göre ayarlama
+- Isınma adımında "Sesime göre ayarla": 3 sn "aaaa" + 3 sn "Rrrrr" dinlenir; kisiselEsik() derinlik eşiğini
+  (aaa 90. yüzdelik ile Rrrr medyanının ortası) ve özilinti eşiğini (Rrrr 25. yüzdelik − 0.05) hesaplar.
+  Fark yetersizse ayarlamaz ve nedenini söyler. Ayar veri.ayarlar.titresim içinde; "Genel ayara dön" ile silinir.
+
 ## Önbellek kuralı (sürüm 5)
 Telefon yeni index.html ile eski app.js'i birleştirince Çalış sekmesi boş kaldı. Çözüm: index.html'deki css/js
 bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cache'` ile çeker.
