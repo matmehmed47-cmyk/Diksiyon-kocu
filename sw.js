@@ -1,5 +1,5 @@
 // Çevrimdışı çalışma: önce ağdan dene (güncel sürüm gelsin), olmazsa önbellekten aç.
-var ONBELLEK = 'diksiyon-v4';
+var ONBELLEK = 'diksiyon-v5';
 var DOSYALAR = [
   './', './index.html', './style.css', './app.js', './metinler.js', './calismalar.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'
@@ -27,14 +27,15 @@ self.addEventListener('fetch', function (e) {
   if (!ayniKaynak && !yaziTipi) return;
 
   e.respondWith(
-    fetch(istek).then(function (yanit) {
+    // no-cache: tarayıcının HTTP önbelleğindeki eski kopyayı kullanma, sunucuya sor
+    fetch(ayniKaynak ? new Request(istek.url, { cache: 'no-cache' }) : istek).then(function (yanit) {
       if (yanit && (yanit.ok || yanit.type === 'opaque')) {
         var kopya = yanit.clone();
         caches.open(ONBELLEK).then(function (c) { c.put(istek, kopya); });
       }
       return yanit;
     }).catch(function () {
-      return caches.match(istek).then(function (k) { return k || caches.match('./index.html'); });
+      return caches.match(istek, { ignoreSearch: true }).then(function (k) { return k || caches.match('./index.html'); });
     })
   );
 });

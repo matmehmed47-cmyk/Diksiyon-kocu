@@ -59,6 +59,11 @@ sitede düğmeye basarak yapmak. Kitabın tamamı tarandı (özetler kullanıcı
   Nefes (s.66-72). Kitapta ş/ç/l için ayrı çalışma yok; istenirse aynı yöntemle eklenebilir.
 - jsdom ile akış testi yapıldı (gerçek tarayıcı yok).
 
+## Önbellek kuralı (sürüm 5)
+Telefon yeni index.html ile eski app.js'i birleştirince Çalış sekmesi boş kaldı. Çözüm: index.html'deki css/js
+bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cache'` ile çeker.
+**Her güncellemede:** index.html'deki `?v=` sayısını ve sw.js'deki ONBELLEK sürümünü birlikte artır.
+
 ## Açık sorunlar
 - Android'de mikrofon izni penceresi "Bu site izninizi isteyemiyor" uyarısıyla engelleniyor
   (ekran üstü öğe: sağ kenardaki yüzen kalem simgesi, ekran kaydı vb.).
