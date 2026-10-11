@@ -59,6 +59,17 @@ sitede düğmeye basarak yapmak. Kitabın tamamı tarandı (özetler kullanıcı
   Nefes (s.66-72). Kitapta ş/ç/l için ayrı çalışma yok; istenirse aynı yöntemle eklenebilir.
 - jsdom ile akış testi yapıldı (gerçek tarayıcı yok).
 
+## Sürüm 6 (11 Ekim 2026): dönüt ve kayıt yönetimi
+Kullanıcı: "Sesimi analiz etsin, nerede hata yaptığımı söylesin; kayıtları istediğimde sileyim."
+- **Titreşim ölçer** (Rrrr ısınması, `titresimOlc`): mikrofon zarfında 18-40 Hz genlik dalgalanması aranır
+  (10 ms RMS pencere, 2 ms adım, özilinti r>0.55, derinlik>0.14). Tur başına titreşim süresi ve özet. Deneme aşamasında;
+  gerçek seslerle eşikler ayarlanabilir.
+- **Konuşma tanıma** (`tanima: true` adımlar): webkitSpeechRecognition tr-TR, ilk kullanımda onay (veri.ayarlar.tanima).
+  Sözcükte: duyulan ≠ hedef ise r→ğ ya da eksik r teşhisi. Cümlede: r'li sözcüklerden hangileri anlaşılmadı.
+  Zorlanılan sözcükler veri.calis[id].zor içinde; 1. adımda "Senin için notlar".
+- **Öz değerlendirme** (`ozKontrol`): her kayıttan sonra işaretlenen sorunlara tavsiye ve "o adıma git".
+- **Kayıt listesi**: çalışma başına kayıtlar, dinle / sil (iki dokunuşla) / hepsini sil. İlk kayıt karşılaştırması korunur.
+
 ## Önbellek kuralı (sürüm 5)
 Telefon yeni index.html ile eski app.js'i birleştirince Çalış sekmesi boş kaldı. Çözüm: index.html'deki css/js
 bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cache'` ile çeker.

@@ -14,6 +14,15 @@ window.CALISMALAR = [
   {
     id: 'r', harf: 'R', ad: 'R zorluğu', ozet: 'R sesi çıkmıyor, ğ gibi ya da yutulmuş duyuluyor.',
     hazir: true,
+    // Kayıttan sonra kendi kulağınla değerlendirme. adim: tavsiye edilen adımın sırası (0'dan başlar)
+    ozKontrol: [
+      { id: 'net', yazi: 'R’ler net ve hafif duyuldu', iyi: true, tavsiye: 'Harika! Tempoyu bir kademe artırıp yeniden dene.' },
+      { id: 'g', yazi: 'Bazı r’ler ğ gibi çıktı', tavsiye: 'Dilini geriye çekiyorsun. Dil ucunu öne, üst ön dişlerin arkasındaki diş etine getir. Isınmada Rrrr çalış.', adim: 1 },
+      { id: 'yok', yazi: 'Bazı r’ler hiç duyulmadı', tavsiye: 'Dil ucu titremiyor. Önce Rrrr ısınması, sonra hece kartlarını yavaş tempoda çalış.', adim: 2 },
+      { id: 'son', yazi: 'Sondaki r’leri yuttum (geliyo, yapıyo)', tavsiye: 'Sözcük sonundaki r’ye dikkat: hafif ama mutlaka duyulsun.', adim: 4 },
+      { id: 'sert', yazi: 'R çok sert, fazla titredi', tavsiye: 'Türkçede r hafiftir. Dil ucu bir kez dokunup geçsin, uzun titretme.' },
+      { id: 'hiz', yazi: 'Hızlı okudum, sesler karıştı', tavsiye: 'Tempoyu Yavaş’a al. Her heceyi ayrı ve net söyle.', adim: 2 }
+    ],
     adimlar: [
       {
         tur: 'bilgi', baslik: 'R sesi nasıl çıkar?',
@@ -37,7 +46,7 @@ window.CALISMALAR = [
           'Sonra dudaklarını da katarak dene: Prrrrrr.',
           'Hemen titremezse zorlama. Dilini gevşek bırak, nefesi biraz artır. Her gün denedikçe gelir.'
         ],
-        sesler: ['Rrrrrrr', 'Prrrrrr'], sure: 5, dinlenme: 4, turSayisi: 3
+        sesler: ['Rrrrrrr', 'Prrrrrr'], sure: 5, dinlenme: 4, turSayisi: 3, titresimOlc: true
       },
       {
         tur: 'kart', baslik: 'Hece kartları',
@@ -53,7 +62,7 @@ window.CALISMALAR = [
         ]
       },
       {
-        tur: 'kart', baslik: 'Sözcükler',
+        tur: 'kart', baslik: 'Sözcükler', tanima: true,
         yonerge: 'Her sözcükte r duyulsun ama sert olmasın.',
         diziler: [
           { ad: 'Başta r', ogeler: ['raket', 'resim', 'rimel', 'roka', 'rumuz', 'rötar', 'rüküş'] },
@@ -62,7 +71,7 @@ window.CALISMALAR = [
         ]
       },
       {
-        tur: 'cumle', baslik: 'Sözcük sonundaki r',
+        tur: 'cumle', baslik: 'Sözcük sonundaki r', tanima: true,
         yonerge: 'Sondaki r yutulmaz ama hafif söylenir. Özellikle “-yor” ve “-yorlar” eklerine dikkat et.',
         cumleler: [
           'Öğrenciler sınıfa geliyorlar.',
@@ -73,7 +82,7 @@ window.CALISMALAR = [
         ]
       },
       {
-        tur: 'cumle', baslik: 'Tekerleme ve cümleler',
+        tur: 'cumle', baslik: 'Tekerleme ve cümleler', tanima: true,
         yonerge: 'Önce yavaş ve her r duyulacak şekilde oku. Sonra hızlan, ama r kaybolmasın.',
         cumleler: [
           'Bir berber bir berbere, bre berber gel beraber bir berber dükkânı açalım demiş.',

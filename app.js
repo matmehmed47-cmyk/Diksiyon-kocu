@@ -274,7 +274,72 @@
   });
 
   // ================= Çalış (sese / soruna göre çalışmalar) =================
-  var Calis = { modul: null, adim: 0, zaman: null, oto: false, tempo: 'orta', dizi: 0, kart: 0, sesli: false, tutCalisiyor: false };
+  // Bir ses parçasında dil/dudak titreşimi (yaklaşık 18-40 Hz genlik dalgalanması) arar.
+  function titresimAnaliz(buf, sr) {
+    var pencere = Math.round(sr * 0.010), adim = Math.round(sr * 0.002);
+    var env = [];
+    for (var bas = 0; bas + pencere <= buf.length; bas += adim) {
+      var t = 0;
+      for (var i = bas; i < bas + pencere; i++) t += buf[i] * buf[i];
+      env.push(Math.sqrt(t / pencere));
+    }
+    var n = env.length;
+    if (n < 40) return { ses: false };
+    var ort = 0; for (var j = 0; j < n; j++) ort += env[j]; ort /= n;
+    if (ort < 0.004) return { ses: false };
+    var v = 0; for (j = 0; j < n; j++) { env[j] -= ort; v += env[j] * env[j]; }
+    var derinlik = Math.sqrt(v / n) / ort;
+    var enIyi = 0, enL = 0;
+    var lmin = Math.round(1 / 40 / 0.002), lmax = Math.round(1 / 18 / 0.002);
+    for (var L = lmin; L <= lmax; L++) {
+      var a = 0, b = 0, c = 0;
+      for (var k = 0; k + L < n; k++) { a += env[k] * env[k + L]; b += env[k] * env[k]; c += env[k + L] * env[k + L]; }
+      var r = a / Math.sqrt(b * c || 1);
+      if (r > enIyi) { enIyi = r; enL = L; }
+    }
+    var hz = enL ? 1 / (enL * 0.002) : 0;
+    return { ses: true, r: enIyi, hz: hz, derinlik: derinlik, titresim: enIyi > 0.55 && derinlik > 0.14 && hz >= 18 && hz <= 40 };
+  }
+  // Mikrofondan sürekli dinleyip titreşimli süreyi toplar
+  function TitresimOlcer(stream) {
+    var ctx = Ses.baglam();
+    this.stream = stream;
+    this.kaynak = ctx.createMediaStreamSource(stream);
+    this.an = ctx.createAnalyser();
+    this.an.fftSize = 8192;
+    this.kaynak.connect(this.an);
+    this.buf = new Float32Array(this.an.fftSize);
+    this.sr = ctx.sampleRate;
+    this.titresimli = 0; this.sesli = 0; this.hzler = [];
+    this.calisiyor = false; this.son = 0;
+  }
+  TitresimOlcer.prototype.basla = function () {
+    var self = this;
+    self.titresimli = 0; self.sesli = 0; self.hzler = [];
+    self.calisiyor = true; self.son = performance.now();
+    (function dongu() {
+      if (!self.calisiyor) return;
+      var simdi = performance.now(), dt = Math.min((simdi - self.son) / 1000, 0.2);
+      self.son = simdi;
+      self.an.getFloatTimeDomainData(self.buf);
+      var r = titresimAnaliz(self.buf, self.sr);
+      if (r.ses) self.sesli += dt;
+      if (r.titresim) { self.titresimli += dt; self.hzler.push(r.hz); }
+      requestAnimationFrame(dongu);
+    })();
+  };
+  TitresimOlcer.prototype.dur = function () {
+    this.calisiyor = false;
+    var h = this.hzler.slice().sort(function (a, b) { return a - b; });
+    return { titresim: this.titresimli, ses: this.sesli, hz: h.length ? h[Math.floor(h.length / 2)] : 0 };
+  };
+  TitresimOlcer.prototype.kapat = function () {
+    this.calisiyor = false;
+    try { this.kaynak.disconnect(); } catch (e) { /* yok */ }
+    akisiKapat(this.stream);
+  };
+
+  var Calis = { modul: null, adim: 0, zaman: null, oto: false, tempo: 'orta', dizi: 0, kart: 0, sesli: false, tutCalisiyor: false, olcer: null, tanima: null };
   var TEMPO = { yavas: 2200, orta: 1400, hizli: 800 };
   function calisBul(id) { return window.CALISMALAR.filter(function (c) { return c.id === id; })[0]; }
 
@@ -311,6 +376,8 @@
   function calisDurdur() {
     clearTimeout(Calis.zaman); Calis.zaman = null;
     Calis.oto = false; Calis.tutCalisiyor = false;
+    if (Calis.olcer) { Calis.olcer.kapat(); Calis.olcer = null; }
+    if (Calis.tanima) { try { Calis.tanima.abort(); } catch (e) { /* yok */ } Calis.tanima = null; }
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { /* yok */ }
   }
   function calisSoyle(metin) {
@@ -354,6 +421,7 @@
       d.appendChild(cs);
       kutu.appendChild(d);
     }
+    if (a.tur === 'bilgi' && Calis.adim === 0) zorlukCiz(kutu);
     if (a.tur === 'tut') tutCiz(kutu, a);
     if (a.tur === 'kart') kartCiz(kutu, a);
     if (a.tur === 'cumle') cumleCiz(kutu, a);
@@ -361,6 +429,23 @@
     $('#calisSonraki').textContent = Calis.adim === m.adimlar.length - 1 ? 'Bitir ✓' : 'Sonraki →';
     var ust = $('#calisDetay');
     if (ust.getBoundingClientRect().top < 0) ust.scrollIntoView({ block: 'start' });
+  }
+
+  function zorlukCiz(kutu) {
+    var v = veriCalis();
+    var zor = Object.keys(v.zor).filter(function (w) { return v.zor[w].y > v.zor[w].d; })
+      .sort(function (x, y) { return (v.zor[y].y - v.zor[y].d) - (v.zor[x].y - v.zor[x].d); }).slice(0, 8);
+    var oz = Object.keys(v.oz).filter(function (k) { return v.oz[k] > 0 && k !== 'net'; })
+      .sort(function (x, y) { return v.oz[y] - v.oz[x]; });
+    if (!zor.length && !oz.length) return;
+    var k = el('div', 'coach');
+    k.appendChild(el('div', 'label', 'Senin için notlar'));
+    if (zor.length) k.appendChild(el('p', null, 'Telefonun zor anladığı sözcükler: ' + zor.join(', ') + '. Bunlara özellikle dikkat et.'));
+    if (oz.length) {
+      var ok = (Calis.modul.ozKontrol || []).filter(function (o) { return o.id === oz[0]; })[0];
+      if (ok) k.appendChild(el('p', null, 'En sık işaretlediğin sorun: “' + ok.yazi + '”. ' + ok.tavsiye));
+    }
+    kutu.appendChild(k);
   }
 
   // ---------- Ses tutma (Rrrr gibi) ----------
@@ -371,9 +456,13 @@
     var bilgi = el('div', 'muted kucuk', a.sesler.length + ' ses × ' + a.turSayisi + ' tur · her tur ' + a.sure + ' saniye');
     ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi);
     kutu.appendChild(ekran);
+    if (a.titresimOlc) kutu.appendChild(el('div', 'muted kucuk', 'Telefon dinler ve dilinin ne kadar süre titrediğini ölçer. Ölçüm deneme aşamasındadır, sessiz bir yerde daha iyi çalışır.'));
     var btn = el('button', 'primary', 'Başlat');
     btn.type = 'button';
     kutu.appendChild(btn);
+    var sonuclar = el('div', 'stack');
+    sonuclar.style.gap = '6px';
+    kutu.appendChild(sonuclar);
     var fazlar = [];
     a.sesler.forEach(function (s) {
       for (var t = 1; t <= a.turSayisi; t++) {
@@ -382,33 +471,176 @@
       }
     });
     fazlar.pop();
+    var olcumler = [];
+    function sonucYaz(f, o) {
+      var oran = o.titresim / f.sn;
+      var satir = el('div', 'olcum-satir ' + (oran >= 0.5 ? 'iyi' : oran >= 0.15 ? 'orta' : 'zayif'));
+      var yazi;
+      if (o.ses < 0.5) yazi = 'Ses duyamadım. Telefonu biraz daha yakın tut.';
+      else if (oran >= 0.5) yazi = 'Titreşim ' + sn(o.titresim) + ' sn ✓ Dilin güzel titriyor.';
+      else if (oran >= 0.15) yazi = 'Titreşim ' + sn(o.titresim) + ' sn. Kesik kesik geliyor; nefesi biraz artır, dili gevşek bırak.';
+      else yazi = 'Titreşim duyulmadı. Dil ucunu öne, üst diş etine getir ve güçlü bir nefes ver.';
+      satir.appendChild(el('b', null, f.ses.slice(0, 4) + ' · ' + f.tur + '. tur: '));
+      satir.appendChild(document.createTextNode(yazi));
+      sonuclar.appendChild(satir);
+      olcumler.push({ ses: f.ses, oran: oran, sesVar: o.ses >= 0.5 });
+    }
+    function ozetYaz() {
+      var gecerli = olcumler.filter(function (o) { return o.sesVar; });
+      if (!gecerli.length) return;
+      var iyi = gecerli.filter(function (o) { return o.oran >= 0.5; }).length;
+      var ozet = el('div', 'coach');
+      ozet.appendChild(el('div', 'label', 'Özet'));
+      var m = iyi === gecerli.length ? 'Bütün turlarda titreşim güzeldi. Hece kartlarına geçmeye hazırsın.'
+        : iyi > 0 ? gecerli.length + ' turun ' + iyi + ' tanesinde titreşim iyiydi. Birkaç gün daha ısınmaya devam et, hece kartlarını yavaş tempoda çalış.'
+        : 'Henüz titreşim yakalayamadık. Bu normal, r titreşimi zamanla gelir. Her gün 2-3 dakika bu ısınmayı yap.';
+      ozet.appendChild(el('p', null, m));
+      sonuclar.appendChild(ozet);
+      veriCalis().isinma.push({ tarih: new Date().toISOString(), iyi: iyi, toplam: gecerli.length });
+      kaydet();
+    }
     function bitir(tamam) {
+      var olcer = Calis.olcer; Calis.olcer = null;
       calisDurdur();
+      if (olcer) olcer.kapat();
       btn.textContent = 'Yeniden başlat';
       faz.textContent = tamam ? 'Bitti! Sonraki adıma geçebilirsin.' : 'Durduruldu';
       ekran.classList.remove('aktif', 'dinlen');
+      if (tamam) ozetYaz();
     }
     function calistir(i, kalan) {
       if (!Calis.tutCalisiyor) return;
       if (i >= fazlar.length) { bip(880); bitir(true); return; }
       var f = fazlar[i];
-      if (kalan === f.sn) bip(f.dinlen ? 440 : 660);
+      if (kalan === f.sn) {
+        bip(f.dinlen ? 440 : 660);
+        if (!f.dinlen && Calis.olcer) Calis.olcer.basla();
+      }
       ses.textContent = f.ses;
       faz.textContent = f.ad + ' ' + kalan + ' · ' + f.tur + '. tur';
       ekran.classList.toggle('aktif', !f.dinlen);
       ekran.classList.toggle('dinlen', !!f.dinlen);
       Calis.zaman = setTimeout(function () {
-        if (kalan > 1) calistir(i, kalan - 1); else calistir(i + 1, i + 1 < fazlar.length ? fazlar[i + 1].sn : 0);
+        if (kalan > 1) { calistir(i, kalan - 1); return; }
+        if (!f.dinlen && Calis.olcer) sonucYaz(f, Calis.olcer.dur());
+        calistir(i + 1, i + 1 < fazlar.length ? fazlar[i + 1].sn : 0);
       }, 1000);
     }
-    btn.addEventListener('click', function () {
-      if (Calis.tutCalisiyor) { bitir(false); return; }
-      calisDurdur();
+    function basla(olcer) {
+      Calis.olcer = olcer;
       Calis.tutCalisiyor = true;
       btn.textContent = 'Durdur';
       ekraniAcikTut();
       calistir(0, fazlar[0].sn);
+    }
+    btn.addEventListener('click', function () {
+      if (Calis.tutCalisiyor) { bitir(false); return; }
+      calisDurdur(); mkDurdur();
+      sonuclar.textContent = ''; olcumler = [];
+      if (!a.titresimOlc) { basla(null); return; }
+      faz.textContent = 'Mikrofon açılıyor…';
+      Ses.mikrofon().then(function (stream) { basla(new TitresimOlcer(stream)); })
+        .catch(function (e) { mikrofonHatasi(e); basla(null); });
     });
+  }
+
+  // ---------- Konuşma tanıma: "Doğru anlaşıldı mı?" ----------
+  function veriCalis() {
+    var id = Calis.modul.id;
+    veri.calis = veri.calis || {};
+    var v = veri.calis[id] = veri.calis[id] || {};
+    v.zor = v.zor || {}; v.oz = v.oz || {}; v.isinma = v.isinma || [];
+    return v;
+  }
+  function tanimaVar() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  function tanimaIzni() {
+    if (veri.ayarlar.tanima) return true;
+    var tamam = window.confirm('Söylediğini kontrol etmek için telefonun konuşma tanıması kullanılacak. ' +
+      'Bunun için ses kaydın Google’a gönderilip yazıya çevrilir. Diğer kayıtların telefonda kalmaya devam eder.\n\nKabul ediyor musun?');
+    if (tamam) { veri.ayarlar.tanima = true; kaydet(); }
+    return tamam;
+  }
+  function trKucuk(s) {
+    return s.toLocaleLowerCase('tr-TR').replace(/[.,;:!?…"“”'’()\-]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function dinle(cb) {
+    var R = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var r = new R(), bitti = false, sonuc = [];
+    r.lang = 'tr-TR'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false;
+    r.onresult = function (e) {
+      var res = e.results[0];
+      for (var i = 0; i < res.length; i++) sonuc.push(trKucuk(res[i].transcript));
+    };
+    r.onerror = function (e) { if (!bitti) { bitti = true; Calis.tanima = null; cb({ hata: e.error }); } };
+    r.onend = function () { if (!bitti) { bitti = true; Calis.tanima = null; cb({ duyulan: sonuc }); } };
+    Calis.tanima = r;
+    try { r.start(); } catch (e) { bitti = true; Calis.tanima = null; cb({ hata: 'baslamadi' }); }
+  }
+  function tanimaHataYazi(h) {
+    if (h === 'not-allowed' || h === 'service-not-allowed') return 'Mikrofon ya da konuşma tanıma izni verilmedi.';
+    if (h === 'network') return 'İnternet bağlantısı gerekiyor.';
+    if (h === 'no-speech') return 'Seni duyamadım. Düğmeye basıp hemen söyle.';
+    return 'Dinleyemedim, tekrar dene.';
+  }
+  function zorIsle(sozcuk, dogru) {
+    var z = veriCalis().zor;
+    var k = z[sozcuk] = z[sozcuk] || { y: 0, d: 0 };
+    if (dogru) k.d++; else k.y++;
+    kaydet();
+  }
+  // Tek sözcük kontrolü
+  function sozcukDegerlendir(hedef, duyulan) {
+    hedef = trKucuk(hedef);
+    if (!duyulan.length || !duyulan[0]) return { dogru: false, yazi: 'Seni duyamadım. Biraz daha yüksek sesle tekrar dene.' };
+    var tum = duyulan.join(' ').split(' ');
+    if (tum.indexOf(hedef) >= 0) return { dogru: true, yazi: '“' + hedef + '” doğru anlaşıldı ✓' };
+    var ilk = duyulan[0];
+    var rH = (hedef.match(/r/g) || []).length, rD = (ilk.match(/r/g) || []).length;
+    var neden = 'R sesini dil ucuyla, net ama hafif söylemeyi dene.';
+    if (hedef.replace(/r/g, 'ğ') === ilk || hedef.replace(/r/g, 'g') === ilk) neden = 'R, ğ gibi çıkmış olabilir. Dil ucunu öne getir.';
+    else if (rD < rH) neden = 'R sesi duyulmadı ya da zayıf kaldı. Dil ucu titremeli.';
+    return { dogru: false, yazi: 'Ben “' + ilk + '” duydum. ' + neden };
+  }
+  // Cümle kontrolü: r'li sözcükler anlaşıldı mı?
+  function cumleDegerlendir(hedef, duyulan) {
+    if (!duyulan.length || !duyulan[0]) return { dogru: false, yazi: 'Seni duyamadım. Biraz daha yüksek sesle tekrar dene.', eksik: [] };
+    var sozler = trKucuk(hedef).split(' ').filter(function (w) { return /r/.test(w); });
+    var enIyi = null, enEksik = null;
+    duyulan.forEach(function (d) {
+      var dw = d.split(' ');
+      var eksik = sozler.filter(function (w) { return dw.indexOf(w) < 0; });
+      if (!enEksik || eksik.length < enEksik.length) { enEksik = eksik; enIyi = d; }
+    });
+    sozler.forEach(function (w) { zorIsle(w, enEksik.indexOf(w) < 0); });
+    if (!enEksik.length) return { dogru: true, yazi: 'R’li sözcüklerin hepsi doğru anlaşıldı ✓ (' + sozler.length + ' / ' + sozler.length + ')', eksik: [] };
+    return { dogru: false, eksik: enEksik,
+      yazi: (sozler.length - enEksik.length) + ' / ' + sozler.length + ' r’li sözcük doğru anlaşıldı. Şunlarda r net değildi: ' + enEksik.join(', ') + '. Ben şunu duydum: “' + enIyi + '”' };
+  }
+  function tanimaDugmesi(etiket, hedefAl, degerlendir, sonucKutu, basarida) {
+    var b = el('button', 'secondary tanima-btn', '🎤 ' + etiket);
+    b.type = 'button';
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (Calis.tanima) { try { Calis.tanima.stop(); } catch (x) { /* yok */ } return; }
+      if (!tanimaVar()) { uyariGoster('Bu tarayıcı konuşma tanımayı desteklemiyor. Chrome ile açmayı dene.'); return; }
+      if (!tanimaIzni()) return;
+      clearTimeout(Calis.zaman); Calis.oto = false;
+      mkDurdur();
+      var hedef = hedefAl();
+      b.textContent = '👂 Dinliyorum… söyle';
+      b.classList.add('dinliyor');
+      sonucKutu.hidden = true;
+      dinle(function (r) {
+        b.textContent = '🎤 ' + etiket;
+        b.classList.remove('dinliyor');
+        var d = r.hata ? { dogru: false, yazi: tanimaHataYazi(r.hata), hata: true } : degerlendir(hedef, r.duyulan);
+        sonucKutu.className = 'tanima-sonuc ' + (d.dogru ? 'iyi' : 'kotu');
+        sonucKutu.textContent = d.yazi;
+        sonucKutu.hidden = false;
+        if (d.dogru && basarida) basarida();
+      });
+    });
+    return b;
   }
 
   // ---------- Hece / sözcük kartları ----------
@@ -462,6 +694,12 @@
     kutu.appendChild(kontrol);
     kutu.appendChild(ayar);
     kutu.appendChild(sesliEt);
+    if (a.tanima) {
+      var tSonuc = el('div', 'tanima-sonuc'); tSonuc.hidden = true;
+      kutu.insertBefore(tanimaDugmesi('Söyle, kontrol edeyim', function () { return dizi().ogeler[Calis.kart]; },
+        function (h, d) { var r = sozcukDegerlendir(h, d); zorIsle(trKucuk(h), r.dogru); return r; }, tSonuc), kontrol);
+      kutu.insertBefore(tSonuc, kontrol);
+    }
 
     function dizi() { return a.diziler[Calis.dizi]; }
     function chipCiz() {
@@ -475,6 +713,7 @@
     }
     function goster1(soyle) {
       var d = dizi();
+      var ts = kutu.querySelector('.tanima-sonuc'); if (ts) ts.hidden = true;
       kart.textContent = d.ogeler[Calis.kart];
       kart.classList.remove('vurus'); void kart.offsetWidth; kart.classList.add('vurus');
       satir.textContent = '';
@@ -524,6 +763,7 @@
     var liste = el('div', 'stack');
     liste.style.gap = '8px';
     a.cumleler.forEach(function (c, i) {
+      var sar = el('div', 'stack'); sar.style.gap = '6px';
       var b = el('button', 'cumle-kart'); b.type = 'button';
       b.appendChild(el('span', 'no', String(i + 1)));
       b.appendChild(el('span', 'grow', c));
@@ -531,10 +771,21 @@
         b.classList.toggle('okundu');
         if (Calis.sesli && b.classList.contains('okundu')) calisSoyle(c);
       });
-      liste.appendChild(b);
+      sar.appendChild(b);
+      if (a.tanima) {
+        var sonuc = el('div', 'tanima-sonuc'); sonuc.hidden = true;
+        var tb = tanimaDugmesi('Söyle, kontrol edeyim', function () { return c; }, cumleDegerlendir, sonuc,
+          function () { b.classList.add('okundu'); });
+        tb.classList.add('kucuk-btn');
+        sar.appendChild(tb);
+        sar.appendChild(sonuc);
+      }
+      liste.appendChild(sar);
     });
     kutu.appendChild(liste);
-    kutu.appendChild(el('div', 'muted kucuk', 'Okuduğun cümleye dokunup işaretle.'));
+    kutu.appendChild(el('div', 'muted kucuk', a.tanima
+      ? 'Okuduğun cümleye dokunup işaretle. “Söyle, kontrol edeyim” düğmesiyle telefon r’li sözcükleri doğru anlayıp anlamadığını söyler.'
+      : 'Okuduğun cümleye dokunup işaretle.'));
   }
 
   $('#calisGeri').addEventListener('click', calisKapat);
@@ -548,34 +799,141 @@
   });
 
   // ---------- Mini kayıt (her çalışmada) ----------
-  var MK = { aktif: false, rec: null, stream: null, parcalar: [], bas: 0, saat: null, ilkVar: false, urller: [] };
+  var MK = { aktif: false, rec: null, stream: null, parcalar: [], bas: 0, saat: null, urller: [], sonKayit: null, calar: null };
   function mkUrl(blob) { var u = URL.createObjectURL(blob); MK.urller.push(u); return u; }
+  function mkKayitlari() {
+    var id = Calis.modul.id;
+    return Depo.hepsi().then(function (l) {
+      return l.filter(function (k) { return k.calis === id && k.ses; })
+        .sort(function (a, b) { return a.tarih < b.tarih ? -1 : 1; });
+    });
+  }
   function mkHazirla() {
     mkDurdur();
     MK.urller.forEach(function (u) { URL.revokeObjectURL(u); }); MK.urller = [];
-    MK.ilkVar = false;
-    $('#mkSonKutu').hidden = true; $('#mkIlkKutu').hidden = true;
+    MK.sonKayit = null;
+    $('#mkSonKutu').hidden = true; $('#mkOz').hidden = true;
+    $('#mkListe').hidden = true;
     $('#mkDurum').textContent = 'Kırmızı düğmeye bas, söyle, tekrar bas.';
+    mkListeYenile();
+  }
+  function mkListeYenile() {
     var id = Calis.modul.id;
-    Depo.hepsi().then(function (l) {
-      l = l.filter(function (k) { return k.calis === id && k.ses; })
-        .sort(function (a, b) { return a.tarih < b.tarih ? -1 : 1; });
-      if (!l.length || !Calis.modul || Calis.modul.id !== id) return;
-      MK.ilkVar = true;
-      var ilk = l[0];
-      $('#mkIlk').src = mkUrl(new Blob([ilk.ses], { type: ilk.mime }));
-      $('#mkIlkYazi').textContent = 'İlk kaydın · ' + tarihYaz(ilk.tarih);
-      $('#mkIlkKutu').hidden = false;
-      if (l.length > 1) {
-        var son = l[l.length - 1];
-        $('#mkSon').src = mkUrl(new Blob([son.ses], { type: son.mime }));
-        $('#mkSonKutu').hidden = false;
-      }
+    mkKayitlari().then(function (l) {
+      if (!Calis.modul || Calis.modul.id !== id) return;
+      var ilkK = $('#mkIlkKutu'), lb = $('#mkListeBtn');
+      if (l.length > 1 || (l.length === 1 && !MK.sonKayit)) {
+        var ilk = l[0];
+        $('#mkIlk').src = mkUrl(new Blob([ilk.ses], { type: ilk.mime }));
+        $('#mkIlkYazi').textContent = 'İlk kaydın · ' + tarihYaz(ilk.tarih);
+        ilkK.hidden = false;
+      } else ilkK.hidden = true;
+      lb.hidden = !l.length;
+      lb.textContent = ($('#mkListe').hidden ? 'Kayıtlarımı göster' : 'Kayıtlarımı gizle') + ' (' + l.length + ')';
+      mkListeCiz(l);
     }).catch(function () { /* depo yok */ });
   }
+  function mkListeCiz(l) {
+    var kutu = $('#mkListe');
+    kutu.textContent = '';
+    l.slice().reverse().forEach(function (k) {
+      var satir = el('div', 'mk-kayit');
+      var cal = el('button', 'iconbtn', '▶'); cal.type = 'button';
+      cal.setAttribute('aria-label', 'Dinle');
+      cal.addEventListener('click', function () {
+        if (!MK.calar) MK.calar = new Audio();
+        if (MK.calar._id === k.id && !MK.calar.paused) { MK.calar.pause(); return; }
+        mkDurdur();
+        if (MK.calar._url) URL.revokeObjectURL(MK.calar._url);
+        MK.calar._url = URL.createObjectURL(new Blob([k.ses], { type: k.mime }));
+        MK.calar._id = k.id;
+        MK.calar.src = MK.calar._url;
+        var p = MK.calar.play(); if (p && p.catch) p.catch(function () {});
+      });
+      var bilgi = el('div', 'grow');
+      bilgi.appendChild(el('div', 't', (k.baslik || '').replace(Calis.modul.ad + ' · ', '')));
+      bilgi.appendChild(el('div', 'muted kucuk', tarihYaz(k.tarih) + ' · ' + sure(k.sure)));
+      var sil = el('button', 'secondary kucuk-btn danger', 'Sil'); sil.type = 'button';
+      sil.addEventListener('click', function () {
+        if (sil.getAttribute('data-onay') !== '1') {
+          sil.setAttribute('data-onay', '1'); sil.textContent = 'Emin misin?';
+          setTimeout(function () { sil.removeAttribute('data-onay'); sil.textContent = 'Sil'; }, 4000);
+          return;
+        }
+        if (MK.sonKayit && MK.sonKayit.id === k.id) { MK.sonKayit = null; $('#mkSonKutu').hidden = true; $('#mkOz').hidden = true; }
+        Depo.sil(k.id).then(mkListeYenile);
+      });
+      satir.appendChild(cal); satir.appendChild(bilgi); satir.appendChild(sil);
+      kutu.appendChild(satir);
+    });
+    if (l.length > 1) {
+      var hep = el('button', 'secondary kucuk-btn danger', 'Bu çalışmanın bütün kayıtlarını sil'); hep.type = 'button';
+      hep.addEventListener('click', function () {
+        if (hep.getAttribute('data-onay') !== '1') {
+          hep.setAttribute('data-onay', '1'); hep.textContent = 'Emin misin? ' + l.length + ' kayıt silinecek';
+          setTimeout(function () { hep.removeAttribute('data-onay'); hep.textContent = 'Bu çalışmanın bütün kayıtlarını sil'; }, 4000);
+          return;
+        }
+        mkDurdur();
+        Promise.all(l.map(function (k) { return Depo.sil(k.id); })).then(function () {
+          MK.sonKayit = null;
+          $('#mkSonKutu').hidden = true; $('#mkOz').hidden = true; $('#mkListe').hidden = true;
+          mkListeYenile();
+        });
+      });
+      kutu.appendChild(hep);
+    }
+  }
+  $('#mkListeBtn').addEventListener('click', function () {
+    var k = $('#mkListe'); k.hidden = !k.hidden;
+    mkListeYenile();
+  });
   function mkDurdur() {
     if (MK.aktif && MK.rec) { try { MK.rec.stop(); } catch (e) { /* yok */ } }
     ['#mkSon', '#mkIlk'].forEach(function (s) { try { $(s).pause(); } catch (e) { /* yok */ } });
+    if (MK.calar) { try { MK.calar.pause(); } catch (e) { /* yok */ } }
+  }
+  // Kayıttan sonra kendi kulağınla değerlendirme
+  function ozKontrolCiz(kayit) {
+    var kutu = $('#mkOz'), liste = Calis.modul.ozKontrol;
+    kutu.textContent = '';
+    if (!liste) { kutu.hidden = true; return; }
+    kutu.appendChild(el('b', null, 'Kaydını dinle, sonra kendine sor:'));
+    var secim = {};
+    liste.forEach(function (o) {
+      var l = el('label', 'check');
+      var c = document.createElement('input'); c.type = 'checkbox';
+      c.addEventListener('change', function () { secim[o.id] = c.checked; });
+      l.appendChild(c); l.appendChild(document.createTextNode(' ' + o.yazi));
+      kutu.appendChild(l);
+    });
+    var b = el('button', 'primary', 'Değerlendir'); b.type = 'button';
+    var sonuc = el('div', 'stack'); sonuc.style.gap = '8px';
+    b.addEventListener('click', function () {
+      var secilen = liste.filter(function (o) { return secim[o.id]; });
+      sonuc.textContent = '';
+      if (!secilen.length) { sonuc.appendChild(el('div', 'muted kucuk', 'Önce en az bir seçeneği işaretle.')); return; }
+      var v = veriCalis();
+      secilen.forEach(function (o) {
+        v.oz[o.id] = (v.oz[o.id] || 0) + 1;
+        var t = el('div', 'tavsiye ' + (o.iyi ? 'iyi' : ''));
+        t.appendChild(el('b', null, o.yazi + ': '));
+        t.appendChild(document.createTextNode(o.tavsiye));
+        if (o.adim != null && o.adim !== Calis.adim) {
+          var git = el('button', 'secondary kucuk-btn', (o.adim + 1) + '. adıma git'); git.type = 'button';
+          git.addEventListener('click', function () { Calis.adim = o.adim; adimCiz(); });
+          t.appendChild(git);
+        }
+        sonuc.appendChild(t);
+      });
+      kaydet();
+      kayit.oz = secilen.map(function (o) { return o.id; });
+      if (kayit.ses) Depo.ekle(kayit).catch(function () {});
+      b.disabled = true; b.textContent = 'Değerlendirildi';
+    });
+    kutu.appendChild(b);
+    kutu.appendChild(sonuc);
+    kutu.hidden = false;
   }
   function mkBitti() {
     clearInterval(MK.saat);
@@ -590,13 +948,15 @@
     var m = Calis.modul, a = m.adimlar[Calis.adim];
     $('#mkSon').src = mkUrl(blob);
     $('#mkSonKutu').hidden = false;
-    $('#mkDurum').textContent = 'Kaydedildi · ' + sure.toFixed(0) + ' sn. Dinle.';
+    $('#mkDurum').textContent = 'Kaydedildi · ' + sure.toFixed(0) + ' sn.';
     var kayit = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       tarih: new Date().toISOString(), baslik: m.ad + ' · ' + a.baslik, kat: 'calis', calis: m.id,
       mime: mime, sure: sure, hiz: null
     };
-    blob.arrayBuffer().then(function (buf) { kayit.ses = buf; return Depo.ekle(kayit); }).catch(function () {
+    MK.sonKayit = kayit;
+    ozKontrolCiz(kayit);
+    blob.arrayBuffer().then(function (buf) { kayit.ses = buf; return Depo.ekle(kayit); }).then(mkListeYenile).catch(function () {
       uyariGoster('Kayıt telefona kaydedilemedi (depolama dolu olabilir).');
     });
   }
@@ -604,6 +964,7 @@
     if (MK.aktif) { mkDurdur(); return; }
     if (!window.MediaRecorder) { uyariGoster('Bu tarayıcı ses kaydını desteklemiyor.'); return; }
     calisDurdur();
+    mkDurdur();
     Ses.mikrofon().then(function (stream) {
       var tur = uygunTur(), rec;
       try { rec = tur ? new MediaRecorder(stream, { mimeType: tur }) : new MediaRecorder(stream); }
@@ -612,6 +973,7 @@
       rec.ondataavailable = function (e) { if (e.data && e.data.size) MK.parcalar.push(e.data); };
       rec.onstop = mkBitti;
       rec.start();
+      $('#mkOz').hidden = true;
       $('#mkBtn').classList.add('on');
       $('#mkBtn').setAttribute('aria-label', 'Kaydı bitir');
       MK.saat = setInterval(function () { $('#mkDurum').textContent = 'Kaydediliyor · ' + sure((Date.now() - MK.bas) / 1000); }, 250);

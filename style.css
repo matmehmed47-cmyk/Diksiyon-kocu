@@ -216,6 +216,24 @@ canvas.dalga.buyuk{height:80px;cursor:pointer;touch-action:manipulation}
 .recbtn.kucuk-rec .dot{width:20px;height:20px}
 .recbtn.kucuk-rec.on .dot{width:18px;height:18px}
 .mini-kayit audio{width:100%;height:40px}
+.olcum-satir{border-radius:10px;padding:8px 12px;font-size:15px;line-height:1.45}
+.olcum-satir.iyi{background:var(--good-soft)}
+.olcum-satir.orta{background:var(--warn-soft)}
+.olcum-satir.zayif{background:var(--bad-soft)}
+.tanima-btn{width:100%}
+.tanima-btn.dinliyor{border-color:var(--rec);color:var(--rec);animation:nabiz 1.2s ease-in-out infinite}
+@keyframes nabiz{50%{box-shadow:0 0 0 6px var(--rec-ring)}}
+.tanima-sonuc{border-radius:12px;padding:10px 14px;line-height:1.5;font-size:15px}
+.tanima-sonuc.iyi{background:var(--good-soft)}
+.tanima-sonuc.kotu{background:var(--warn-soft)}
+.oz-kontrol{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
+.oz-kontrol .check{min-height:40px;line-height:1.35}
+.oz-kontrol .primary{margin-top:6px}
+.tavsiye{background:var(--warn-soft);border-radius:12px;padding:10px 14px;line-height:1.5;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.tavsiye.iyi{background:var(--good-soft)}
+.mk-kayit{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.mk-kayit .t{font-weight:600;font-size:14px}
+.mk-kayit .iconbtn{width:44px;height:44px;flex-shrink:0;border-radius:999px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center}
 @media (min-width:720px){.calis-grid{grid-template-columns:1fr 1fr}.hece-kart{font-size:84px;min-height:190px}}
 
 /* Tablet */
