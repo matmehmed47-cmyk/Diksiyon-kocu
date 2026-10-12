@@ -193,3 +193,10 @@ Kullanıcı: "Nefes al, sssss diye ver" ve nefes verişi kontrol edilsin; 6-8 iy
 - **Seviye 1 (≤14 dize) şiir sayısı:** 6'dan 15'e çıktı; 24 dizeye kadar 21, toplam 31 şiir.
 - Sürüm: ?v=21, önbellek diksiyon-v21. app.js değişmedi.
 - Test: `node --check`, belirteç ve kıta kontrolü (her şiirde son dize `||`, kıta sayısı kadar `||`), kaynakla sözcük karşılaştırması (kıta kıta), jsdom ile Metin sekmesinde 31 şiirin işaretli çizimi ve günlük rutinin 11 adımı; JS hatası yok.
+
+## Sürüm 22 (12 Ekim 2026): çürütücü raporuna göre dönüt dili ve mikrofon (A adımı)
+Çürütücü (3 bölüm) ölçümlerin "kesin" gibi sunulduğunu ve mikrofon yokken günün sessizce sayıldığını bulmuştu.
+- Ölçer ve nefes dönütleri "ipucu" diline çevrildi: "Güzel" yerine "İyi görünüyor: telefon … duydu"; titreşim ve s açıklamalarına "yalnızca ipucu, kaydını dinle, Türkçe r çoğu zaman kısa vuruş" uyarısı; sözcük tanıma sonucuna "telefon bozuk sesi de tamamlayabilir" notu; nefes adımının altına tahmin uyarısı.
+- Tanıyıcının tek yanlışı artık "zor sözcük" yapmıyor: en az 2 fazla yanlış gerekir (zorAgirlik, rutinSec, zorlukCiz).
+- Mikrofon hatası iki nedeni birlikte söylüyor (izin verilmedi / ekranda yüzen simge izin penceresini engelliyor) ve dokunulana kadar ekranda kalıyor (`uyariGoster(m, true)`).
+- Mikrofon açılmazsa nefes adımı "Bitti (ölçümsüz)" der, rutin kaydında `bugun.olcumsuz` işaretlenir ve bitiş mesajında belirtilir; Nefes sekmesi "ölçümsüz" yazar. Gün yine sayılır (mikrofon hiç çalışmazsa seri hiç oluşmasın diye), ama artık gizli değil.

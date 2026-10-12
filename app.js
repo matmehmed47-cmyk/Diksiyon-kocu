@@ -144,7 +144,7 @@
     var ad = e && e.name;
     var mesaj;
     if (ad === 'NotAllowedError' || ad === 'SecurityError') {
-      mesaj = 'Mikrofon izni verilmedi. Tarayıcının ayarlarından bu site için mikrofona izin ver, sonra sayfayı yenile.';
+      mesaj = 'Mikrofon açılamadı. İki neden olabilir: (1) İzin vermedin ya da izin penceresi çıkmadı; Chrome ayarlarından bu site için mikrofona izin ver. (2) Ekranda yüzen bir simge, baloncuk ya da ekran kaydı varsa izin penceresini engeller; onları kapat. Sonra sayfayı yenile. Mikrofon olmadan egzersiz yine yapılır ama ölçülmez.';
     } else if (ad === 'NotFoundError') {
       mesaj = 'Mikrofon bulunamadı.';
     } else if (ad === 'Desteklenmiyor') {
@@ -152,16 +152,18 @@
     } else {
       mesaj = 'Mikrofon açılamadı. Başka bir uygulama mikrofonu kullanıyor olabilir.';
     }
-    uyariGoster(mesaj);
+    uyariGoster(mesaj, true);
   }
   var uyariZaman = null;
-  function uyariGoster(m) {
+  // kalici: kullanıcı dokunana kadar ekranda kalır (mikrofon sorunları gibi önemli uyarılar)
+  function uyariGoster(m, kalici) {
     var u = $('#uyari');
-    u.textContent = m;
+    u.textContent = kalici ? m + '  (Kapatmak için dokun.)' : m;
+    u.onclick = function () { u.hidden = true; };
     u.hidden = false;
     window.scrollTo(0, 0);
     clearTimeout(uyariZaman);
-    uyariZaman = setTimeout(function () { u.hidden = true; }, 9000);
+    if (!kalici) uyariZaman = setTimeout(function () { u.hidden = true; }, 9000);
   }
 
   var kilit = null;
@@ -433,14 +435,14 @@
   var OLCUMLER = {
     titresim: {
       Olcer: function (st) { return new TitresimOlcer(st); },
-      aciklama: 'Telefon dinler ve dilinin ne kadar süre titrediğini ölçer. Ölçüm deneme aşamasındadır, sessiz bir yerde daha iyi çalışır.',
+      aciklama: 'Telefon dinler ve dilinin ne kadar süre titrediğini tahmin eder. Bu yalnızca bir ipucudur ve yanılabilir (Türkçede r çoğu zaman kısa bir vuruştur). Asıl ölçüt kulağındır: kaydını dinle. Sessiz bir yerde daha iyi çalışır.',
       ayarAnahtar: 'titresim',
       ayarAdim: [{ ses: 'aaaa', yazi: '1/2 · Rahat bir sesle “aaaa” de' }, { ses: 'Rrrrr', yazi: '2/2 · Şimdi güçlü bir “Rrrrr” de' }],
       ayarHesap: function (a, b) { var s = kisiselEsik(a, b); if (s.ok) s.deger = { r: s.r, derinlik: s.derinlik }; return s; },
       sonuc: function (o, oran) {
-        if (oran >= 0.5) return 'Titreşim ' + sn(o.iyi) + ' sn ✓ Dilin güzel titriyor.';
+        if (oran >= 0.5) return 'Titreşim ' + sn(o.iyi) + ' sn ✓ Telefon dilinin titrediğini duydu.';
         if (oran >= 0.15) return 'Titreşim ' + sn(o.iyi) + ' sn. Kesik kesik geliyor; nefesi biraz artır, dili gevşek bırak.';
-        return 'Titreşim duyulmadı. Dil ucunu öne, üst diş etine getir ve güçlü bir nefes ver.';
+        return 'Telefon titreşim yakalayamadı (ölçüm yanılabilir; kaydını da dinle). Dil ucunu öne, üst diş etine getir ve güçlü bir nefes ver.';
       },
       ozet: function (iyi, top) {
         return iyi === top ? 'Bütün turlarda titreşim güzeldi. Hece kartlarına geçmeye hazırsın.'
@@ -450,7 +452,7 @@
     },
     keskinlik: {
       Olcer: function (st) { return new KeskinlikOlcer(st); },
-      aciklama: 'Telefon dinler ve s sesinin ne kadar ince ve net olduğunu ölçer. Doğru s ince ve keskindir; kalınlaşırsa ş’ye benzer. Ölçüm deneme aşamasındadır, sessiz bir yerde daha iyi çalışır.',
+      aciklama: 'Telefon dinler ve s sesinin ne kadar ince ve net olduğunu ölçer. Doğru s ince ve keskindir; kalınlaşırsa ş’ye benzer. Bu yalnızca bir ipucudur; telefonun mikrofonu ve sesinin tonu sonucu etkiler. Asıl ölçüt kulağındır: kaydını dinle. Sessiz bir yerde daha iyi çalışır.',
       ayarAnahtar: 'keskinlik',
       ayarAdim: [{ ses: 'şşşş', yazi: '1/2 · “şşşş” de' }, { ses: 'ssss', yazi: '2/2 · Şimdi en ince “ssss” sesini çıkar' }],
       ayarHesap: keskinlikKisisel,
@@ -534,7 +536,7 @@
     var g = rutinVeri().goruldu, bugun = gunStr();
     return agirlikliSec(liste, Math.min(n, liste.length), function (x) {
       var t = g[anahtar ? anahtar(x) : x], w = 1;
-      if (zor) trKucuk(x).split(' ').forEach(function (s) { var k = zor[s]; if (k && k.y > k.d) w += 3 * Math.min(k.y - k.d, 3); });
+      if (zor) trKucuk(x).split(' ').forEach(function (s) { var k = zor[s]; if (k && k.y - k.d >= 2) w += 3 * Math.min(k.y - k.d, 3); });
       if (t && gunFark(t, bugun) < 7) w *= 0.03;
       return w;
     });
@@ -694,6 +696,7 @@
     gunuIsaretle('rutin');
     var sv = rutinSeviye();
     uyariGoster('Tebrikler, bugünkü rutin bitti! 🔥 ' + rutinSeri() + ' gün üst üste. ' +
+      (r.bugun.olcumsuz ? 'Not: nefes adımı ölçümsüz yapıldı (mikrofon açılmadı). ' : '') +
       (ilk && sv > r.bugun.seviye ? 'Yarından itibaren Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] + '.' : 'Yarın yeni harf ve yeni metinler gelecek.'));
     calisKapat();
   }
@@ -742,7 +745,7 @@
     var z = veriCalis().zor, w = 1;
     trKucuk(metin).split(' ').forEach(function (s) {
       var k = z[s];
-      if (k && k.y > k.d) w += 3 * Math.min(k.y - k.d, 3);
+      if (k && k.y - k.d >= 2) w += 3 * Math.min(k.y - k.d, 3);
     });
     return w;
   }
@@ -833,7 +836,7 @@
 
   function zorlukCiz(kutu) {
     var v = veriCalis();
-    var zor = Object.keys(v.zor).filter(function (w) { return v.zor[w].y > v.zor[w].d; })
+    var zor = Object.keys(v.zor).filter(function (w) { return v.zor[w].y - v.zor[w].d >= 2; })
       .sort(function (x, y) { return (v.zor[y].y - v.zor[y].d) - (v.zor[x].y - v.zor[x].d); }).slice(0, 8);
     var oz = Object.keys(v.oz).filter(function (k) { return v.oz[k] > 0 && k !== 'net'; })
       .sort(function (x, y) { return v.oz[y] - v.oz[x]; });
@@ -960,6 +963,7 @@
     kutu.appendChild(ekran);
     var btn = el('button', 'primary', 'Başlat'); btn.type = 'button';
     kutu.appendChild(btn);
+    kutu.appendChild(el('div', 'muted kucuk', 'Telefon süreyi ve dengeyi tahmin eder; telefonun yüzüne uzaklığı ve sesin sönmesi sonucu etkiler. Sonuç bir ipucudur.'));
     var sonuclar = el('div', 'stack'); sonuclar.style.gap = '6px';
     kutu.appendChild(sonuclar);
     var FZ = {
@@ -974,9 +978,14 @@
       ekran.classList.remove('aktif', 'dinlen');
       dolgu.style.width = '0';
       if (!tamam) { faz.textContent = 'Durduruldu'; return; }
-      faz.textContent = 'Bitti! Sonraki adıma geçebilirsin.';
       Rehber.soyle('Tebrikler, bitti', 784);
-      if (!n.dinle) return;
+      if (!n.dinle) {
+        faz.textContent = 'Bitti (ölçümsüz).';
+        sonuclar.appendChild(el('div', 'olcum-satir orta', 'Mikrofon açılmadığı için nefesin ölçülmedi; süreleri ekrandan izledin. Mikrofonu açıp yeniden deneyebilirsin.'));
+        if (Calis.modul && Calis.modul.rutin && veri.rutin && veri.rutin.bugun) { veri.rutin.bugun.olcumsuz = true; kaydet(); }
+        return;
+      }
+      faz.textContent = 'Bitti! Sonraki adıma geçebilirsin.';
       var iyi = turlar.filter(function (d) { return d === 'g'; }).length;
       var ozet = el('div', 'coach');
       ozet.appendChild(el('div', 'label', 'Özet'));
@@ -992,7 +1001,7 @@
       else if (t.verSon < a.ver - 1.2) { durum = 'w'; mesaj = 'Erken bitirdin: ' + sn(t.verSon) + ' sn / ' + a.ver + ' sn. Daha yavaş ver.'; }
       else if (t.verIlk != null && t.verIlk > 2.5) { durum = 'w'; mesaj = 'Geç başladın. “Ver” denince hemen başla.'; }
       else if (cv > 0.6) { durum = 'w'; mesaj = 'Süre iyi ama nefesin dalgalı çıktı. Baştan sona aynı güçte ver.'; }
-      else { durum = 'g'; mesaj = 'Güzel: ' + a.ver + ' saniye, dengeli.'; }
+      else { durum = 'g'; mesaj = 'İyi görünüyor: telefon ' + a.ver + ' saniye dengeli bir nefes duydu.'; }
       if (t.alAktif > 1.5) mesaj += ' Nefes alırken ses duydum; burundan sessizce al.';
       n.turlar.push(durum);
       var satir = el('div', 'card tur');
@@ -1199,7 +1208,7 @@
     hedef = trKucuk(hedef);
     if (!duyulan.length || !duyulan[0]) return { dogru: false, yazi: 'Seni duyamadım. Biraz daha yüksek sesle tekrar dene.' };
     var tum = duyulan.join(' ').split(' ');
-    if (tum.indexOf(hedef) >= 0) return { dogru: true, yazi: '“' + hedef + '” doğru anlaşıldı ✓' };
+    if (tum.indexOf(hedef) >= 0) return { dogru: true, yazi: '“' + hedef + '” doğru anlaşıldı ✓ (telefon bozuk sesi de tamamlayabilir; kaydını dinleyerek kendin de kontrol et)' };
     var ilk = duyulan[0];
     var T = Calis.modul.tanima, hf = T.harf, re = new RegExp(hf, 'g');
     var hH = (hedef.match(re) || []).length, hD = (ilk.match(re) || []).length;
@@ -1891,7 +1900,7 @@
     } else if (cv > 0.6) {
       durum = 'w'; mesaj = 'Süre iyi ama nefesin dengesiz çıktı. Baştan sona aynı güçte vermeye çalış.';
     } else {
-      durum = 'g'; mesaj = 'Güzel: tam süre ve dengeli.';
+      durum = 'g'; mesaj = 'İyi görünüyor: tam süre ve dengeli (telefonun tahmini).';
     }
     if (t.tutAktif > 0.6) mesaj += ' “Tut” sırasında nefes kaçırdın.';
     n.turlar.push(durum);
@@ -1934,7 +1943,7 @@
         $('#nefesOzet').hidden = false;
       }
       nefesAyarCiz();
-      $('#turYazi').textContent = 'Egzersiz tamamlandı.';
+      $('#turYazi').textContent = n.olcer ? 'Egzersiz tamamlandı.' : 'Egzersiz tamamlandı (ölçümsüz: mikrofon kapalıydı).';
     } else {
       $('#fazAd').textContent = 'Hazır';
       nefesAyarCiz();
