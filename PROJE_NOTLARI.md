@@ -135,3 +135,7 @@ bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cac
 
 ## Sürüm 15 (12 Ekim 2026)
 - **Dudak ve dil tembelliği** modülü eklendi (kitap s.89-91): bilgi, 6 ağız hareketi (20 sn'lik sayaçlı ısınma, `birim: 'hareket'`), hızlı hece dizileri (pa-ta-ka vb., 9 dizi), 15 halk tekerlemesi, 16 günlük cümle. Modülde `tanima` yok (tekerlemede tanıma güvenilmez), `sesli: false`.
+
+## Sürüm 16 (12 Ekim 2026) — TASLAK
+- **Konuşmadan önce ısınma** (5 dk) ve **Nefesim yetmiyor** modülleri taslak olarak eklendi (kitap s.66-72, 79-81, 90). Isınma: gevşeme-nefes, dudak-dil, Maaa-Meee, tekerleme. Nefes: doğru nefes bilgisi, kollarla nefes (kısaltılmış), sayılı nefes (6 al / 8-10-12 ver), "/" işaretli cümleler, uzun cümle tek nefeste. Süreler elle ayarlı (her tur sabit saniye), nefesi gerçekten ölçmüyor. Tanıma yok.
+- Eksikler (konuşulacak): nefes ölçümü (mikrofonla verme süresi), ünlü yuvarlağı için ses perdesi, "ğ" ve ulama kuralları, h sesi, sesin renklendirilmesi (Çirozname tekniği), günlük program/hatırlatma.

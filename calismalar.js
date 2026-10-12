@@ -508,6 +508,150 @@ window.CALISMALAR = [
       }
     ]
   },
-  { id: 'isinma', harf: '5 dk', ad: 'Konuşmadan önce ısınma', ozet: 'Gevşeme, dudak-dil hareketleri, Maaa-Meee.', hazir: false },
-  { id: 'nefes', harf: 'Nefes', ad: 'Nefesim yetmiyor', ozet: 'Cümlenin sonunda nefesim bitiyor.', hazir: false }
+  {
+    id: 'isinma', harf: '5 dk', ad: 'Konuşmadan önce ısınma', ozet: 'Taslak: gevşeme, nefes, dudak-dil, Maaa-Meee, tekerleme.',
+    hazir: true,
+    sesli: false,
+    ozKontrol: [
+      { id: 'net', yazi: 'Sesim açıldı, rahatım', iyi: true, tavsiye: 'Harika! Konuşmaya hazırsın.' },
+      { id: 'gergin', yazi: 'Hâlâ gerginim', tavsiye: 'Gevşeme ve nefes adımını bir tur daha yap. Omuzlarını düşür, çeneni gevşet.', adim: 1 },
+      { id: 'agiz', yazi: 'Ağzım ve dilim hâlâ uyuşuk', tavsiye: 'Dudak ve dil hareketlerini tekrarla, ardından tekerlemeyi yavaştan hıza söyle.', adim: 2 },
+      { id: 'ses', yazi: 'Sesim kısık ya da titrek çıkıyor', tavsiye: 'Su iç, Maaa-Meee adımını bağırmadan, rahat bir perdede tekrarla.', adim: 3 }
+    ],
+    adimlar: [
+      {
+        tur: 'bilgi', baslik: 'Beş dakikalık ısınma',
+        metin: ['Önemli bir konuşmadan önce ses de, tıpkı bir sporcunun kası gibi ısınmaya ihtiyaç duyar. Bu sıra yaklaşık 5 dakika sürer.'],
+        maddeler: [
+          '<b>1. Gevşeme ve nefes</b> (1 dk): omuz, boyun, çene ve nefes.',
+          '<b>2. Dudak ve dil</b> (1,5 dk): 6 ağız hareketi.',
+          '<b>3. Ses</b> (1,5 dk): Maaa-Meee-Miii ünlü yuvarlağı.',
+          '<b>4. Tekerleme</b> (1 dk): yavaştan hıza.',
+          'Kısa sürede yapmak istersen sadece 2. ve 4. adımı yap.'
+        ]
+      },
+      {
+        tur: 'tut', baslik: 'Gevşeme ve nefes', fazAd: 'Yap!', birim: 'hareket',
+        maddeler: [
+          '<b>Omuzlar:</b> Omuzlarını kulaklarına doğru kaldır, sonra bırak.',
+          '<b>Boyun:</b> Başını yavaşça sağa, sonra sola yatır. Zorlama.',
+          '<b>Çene:</b> Dişlerini sıkma. Ağzını biraz aç, çeneni gevşet.',
+          '<b>Burundan al:</b> Karnın ve kaburgalar yana doğru açılsın, omuzlar kalkmasın.',
+          '<b>Ağızdan ver:</b> Yavaşça, uzatarak ver.',
+          'Ekranda hangi hareketin sırası olduğunu görürsün.'
+        ],
+        sesler: ['Omuz bırak', 'Boyun yatır', 'Çene gevşet', 'Burundan al', 'Ağızdan ver', 'Burundan al', 'Ağızdan ver'], sure: 8, dinlenme: 1, turSayisi: 1
+      },
+      {
+        tur: 'tut', baslik: 'Dudak ve dil hareketleri', fazAd: 'Yap!', birim: 'hareket',
+        maddeler: [
+          '<b>1 Masaj:</b> Parmak uçlarınla şakaktan çeneye yanak masajı.',
+          '<b>2 Büz-ger:</b> Dudaklarını büz, sonra yanlara ger.',
+          '<b>3 Kıvır:</b> Üst sonra alt dudağını dışarı kıvır.',
+          '<b>4 Dil uzat:</b> Dilini burun, çene, kulaklar yönünde çıkar.',
+          '<b>5 Dil dayama:</b> Dil ucunu üst ve alt dişlerin arkasına dayayıp ger.',
+          '<b>6 Diş temizle:</b> Dil ucunla dişlerinin arasında gez.'
+        ],
+        sesler: ['1 Masaj', '2 Büz-ger', '3 Kıvır', '4 Dil uzat', '5 Dil dayama', '6 Diş temizle'], sure: 15, dinlenme: 1, turSayisi: 1
+      },
+      {
+        tur: 'tut', baslik: 'Maaa - Meee - Miii', fazAd: 'Söyle!',
+        maddeler: [
+          'Rahat çıkabildiğin bir perdeden başla, bağırma.',
+          'Ağızdan nefes al, sesten sese <b>kayarak ve uzatarak</b> söyle.',
+          'Ses titremesin, incelip kalınlaşmasın. “Sesler su gibi aksın.”',
+          'Önce Maaaaa-Meeeee-Miiiii-Moooo-Muuuu, sonra Laaaa-Leeee-Liii-Looo-Luuu.'
+        ],
+        sesler: ['Maaa-Meee-Miii', 'Mooo-Muuu', 'Laaa-Leee-Liii', 'Looo-Luuu'], sure: 8, dinlenme: 2, turSayisi: 1
+      },
+      {
+        tur: 'cumle', baslik: 'Tekerlemeyle bitir', secim: 3,
+        yonerge: 'Önce yavaş, sonra tempoyu artırarak söyle. Her sesin net çıkması hız kadar önemli.',
+        havuz: [
+          'Ping-pong, ping-pong, ping-pong, ping-pong.',
+          'Ding-dong, ding-dong, ding-dong, ding-dong.',
+          'Şu köşe yaz köşesi, bu köşe kış köşesi, ortada su şişesi.',
+          'Üç tunç tas kayısı hoşafı.',
+          'Kırk kırık küp kırkının da kulpu kırık kara küp.',
+          'Kar kalkar karakartal kalkar, karakartal kalkar kar kalkar.',
+          'Gül dibi bülbül dili gibi, gül dibi bülbül dili gibi.',
+          'Bir berber bir berbere bre berber gel beraber.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'nefes', harf: 'Nefes', ad: 'Nefesim yetmiyor', ozet: 'Taslak: doğru nefes, sayılı nefes, “/” işaretli cümleler.',
+    hazir: true,
+    sesli: false,
+    ozKontrol: [
+      { id: 'net', yazi: 'Cümleyi rahatça bitirdim', iyi: true, tavsiye: 'Harika! Daha uzun cümlelerle dene.' },
+      { id: 'omuz', yazi: 'Nefes alırken omuzlarım kalktı', tavsiye: 'Göğüs nefesi alıyorsun. Elini karnına koy; nefeste karın ve kaburgalar yana açılsın, omuzlar sabit kalsın.', adim: 1 },
+      { id: 'bitti', yazi: 'Cümlenin sonunda nefesim bitti', tavsiye: 'Cümleyi daha erken bir yerde (virgülde ya da anlamı bölmeyen yerde) nefes alacak şekilde böl. Sayılı nefes çalışmasında verme süresini artır.', adim: 2 },
+      { id: 'ortada', yazi: 'Cümlenin ortasında nefes aldım, anlam bölündü', tavsiye: 'Nefesi cümle başında ya da virgülde al. İşaretli cümlelerde “/” yerlerini kullan.', adim: 3 }
+    ],
+    adimlar: [
+      {
+        tur: 'bilgi', baslik: 'Doğru nefes nasıl alınır?',
+        metin: ['Sesin gücü nefesten gelir. Doğru nefeste kaburgalar yana ve yukarı açılır, diyafram aşağı iner; hava önce akciğerin altını doldurur. Göğüs nefesinde yalnız akciğerin üstü dolar ve nefes çabuk biter.'],
+        maddeler: [
+          '<b>Omuzlar kalkıyorsa</b> göğüs nefesi alıyorsun demektir.',
+          'Elini karnına koy: nefes alırken karın hafifçe öne, kaburgalar yana açılır.',
+          'Nefes <b>cümle başında</b> ya da anlamı bölmeyen <b>virgülde</b> alınır.',
+          'Cümle ortasında nefes almak anlamı böler; nefes yetmezse cümle sonu (yüklem) duyulmaz.',
+          'Konuşurken nefes <b>ağızdan</b> ve belli etmeden alınır.',
+          'Doğru nefes anlatmakla değil, bedenle çalışarak öğrenilir. Günde birkaç dakika yeter.'
+        ],
+        dene: { yonerge: 'Önce kendini yokla: Aşağıdakileri tek nefeste söyle ve kaydet.', sozler: ['Sabahları erken kalkıp güne sakin başlamak insana çok iyi gelir.'] }
+      },
+      {
+        tur: 'tut', baslik: 'Kollarla nefes', fazAd: 'Yap!', birim: 'hareket',
+        maddeler: [
+          '<b>Yana aç:</b> Kolları yavaşça iki yana açarken burundan nefes al; kollar omuz hizasında nefes dolsun. İndirirken ağızdan yavaşça ver, verişi uzat.',
+          '<b>Yukarı ger:</b> Kolları yukarı kaldır, ayak ucunda yüksel, burundan derin nefes al, 3 say, gevşerken ağızdan ver.',
+          '<b>Öne yukarı:</b> Kolları paralel öne-yukarı kaldırırken nefes al, indirirken ağızdan yavaşça ver.',
+          'Kollar gergin olmasın, “uçar gibi” gevşek. Omuzlar kalkmasın.',
+          'Hepsi toplam 5 dakika; burada kısaltılmış hâli var. Günde birkaç kez, 4-5 hafta yap.'
+        ],
+        sesler: ['Yana aç', 'Yukarı ger', 'Öne yukarı'], sure: 25, dinlenme: 3, turSayisi: 1
+      },
+      {
+        tur: 'tut', baslik: 'Sayılı nefes', fazAd: 'Yap!', birim: 'tur',
+        maddeler: [
+          'Burundan <b>6 sayıda</b> nefes al (omuzlar sabit).',
+          'Ağızdan <b>8 sayıda</b> ver. Sonra verme sayısını ikişer ikişer artır: 10, 12, 14…',
+          'Alma sayısı hep 6 kalır.',
+          'Nefes bitti sanılan yerde biraz daha zorlamadan ver.',
+          'Her tur 14 saniyedir: önce 6 sayı al, sonra yavaşça ver.'
+        ],
+        sesler: ['Al 6 · Ver 8', 'Al 6 · Ver 10', 'Al 6 · Ver 12'], sure: 14, dinlenme: 3, turSayisi: 1
+      },
+      {
+        tur: 'cumle', baslik: '“/” işaretinde nefes al', secim: 4,
+        yonerge: 'Yalnızca “/” işaretinde, ağızdan ve belli etmeden nefes al. Cümleyi anlam bölünmeden, rahat bir sesle oku.',
+        havuz: [
+          'Sabahları erken kalkmak, / güne sakin başlamak / ve acele etmemek / insana iyi gelir.',
+          'Sınıfa girdiğimde / önce herkesi selamlıyorum, / sonra günün planını / kısaca anlatıyorum.',
+          'Bugün sizinle / yeni bir konuyu konuşacağız, / ama önce / geçen haftayı hatırlayalım.',
+          'Konuşurken acele etmeyin, / sesinizi güçlü tutun / ve her cümlenin sonunu / net söyleyin.',
+          'Toplantıya geldiğiniz için teşekkür ederim, / çocuklarımızın başarısı için / birlikte çalışacağız.',
+          'Akşam eve gelince / çayımı koyuyor, / biraz dinleniyor / sonra yarının hazırlığına başlıyorum.',
+          'Her yeni gün, / öğrenmek için / yeni bir fırsattır.',
+          'Güzel konuşmanın sırrı, / doğru nefes almak / ve cümleyi / zamanında bölmektir.'
+        ]
+      },
+      {
+        tur: 'cumle', baslik: 'Uzun cümleyi tek nefeste', secim: 3,
+        yonerge: 'Cümleyi önce içinden oku. Nefes al, sonra tek nefeste söyle. Yetmezse virgülden önce nefes al ve bir sonraki sefer cümleyi daha erken parçala.',
+        havuz: [
+          'Sabah erkenden kalkıp çayımı içtim, çocukları okula bıraktım ve işe yetişmek için acele ettim.',
+          'Toplantıda konuşulan bütün konuları not alıp arkadaşlarımıza gönderdim.',
+          'Bu hafta sonu ailemle birlikte sahile gidip uzun uzun yürüyüş yapmayı düşünüyoruz.',
+          'Öğrencilerimin her birinin güçlü yanlarını fark edip onları destekleyerek ilerlemeyi seviyorum.',
+          'Yağmur yağınca sokaklar sessizleşti, insanlar evlerine çekildi ve şehir bir an için durdu.',
+          'Konuşurken nefesimi iyi yönetirsem cümlelerim daha güçlü ve daha anlaşılır oluyor.'
+        ]
+      }
+    ]
+  }
 ];
