@@ -172,3 +172,24 @@ Kullanıcı: "Nefes al, sssss diye ver" ve nefes verişi kontrol edilsin; 6-8 iy
 - **Günlük rutin:** tekerlemeden sonra, bitiş kaydından önce "Günün şiiri" adımı (11 adım, ~14 dk). Bölümler: Nefes, harf sesi, Dudak-dil, Tekerleme, Şiir, Bitiş. Şiir `rutinSec` ile seçilir (son 7 gün ağırlık ×0.03, anahtar `siir:<id>`); uzunluk sınırı: Seviye 1 ≤ 14 dize, Seviye 2 ≤ 24, Seviye 3 sınırsız. RUTIN_SURUM 3 (bugünkü set yeniden kurulur). Öz değerlendirme adım eşlemesi (esle) değişmedi; şiir adımı sonda olduğu için indeksler aynı.
 - **Belirsiz sözcükler (taramada):** Hürriyete doğru'da "ıpların çalkantısında" (görüntüdeki yazım kullanıldı); Kaldırımlar son kıtada "Asla buz gibi taşlar alnımdan" (görüntüdeki "Asla" kullanıldı; başka basımlarda "Alsa" olabilir). Ayrıca kitaptaki olası baskı yazımları aynen bırakıldı: Ben sana mecburum'da "Ne vakit bir yaşamak düşünsen", Anabel Lee'de "rüzgarından" (düzeltme işaretsiz).
 - Sürüm: ?v=20, önbellek diksiyon-v20. jsdom ile rutin akışı (11 adım), şiir adımının işaretli çizimi, 3 seviyede şiir seçimi, Metin sekmesi şiir kategorisi ve kategori sırası test edildi; JS hatası yok.
+
+## Sürüm 21 (12 Ekim 2026): telifi bitmiş 14 şiir
+- **p18-p31 eklendi** (metinler.js; kat: 'siir'). Kaynak: tr.wikisource.org (metin sözcük sözcük korundu, yalnızca `/ | ||` işaretleri eklendi; imza ve sayfa numarası gibi şiir dışı satırlar alınmadı). Şairlerin hepsi 1955 ve öncesinde ölmüş ya da yüzyıllar öncesinden halk ozanı.
+  - p18 Bedava, p19 Güzel havalar, p20 Anlatamıyorum, p21 Sokakta giderken · Orhan Veli Kanık (öl. 1950)
+  - p22 Bir içim su, p23 Ağustos böceği ile karınca · Tevfik Fikret (öl. 1915)
+  - p24 Çıktım erik dalına, p25 İlim ilim bilmektir · Yunus Emre
+  - p26 Dağı taşı yandırır · Karacaoğlan; p27 Kalktı göç eyledi Avşar illeri · Dadaloğlu; p28 Yürü bre yalan dünya · Pir Sultan Abdal
+  - p29 Merdiven · Ahmet Haşim (öl. 1933); p30 Bülbül (ilk bölüm) · Mehmet Âkif Ersoy (öl. 1936); p31 Lisân · Ziya Gökalp (öl. 1924)
+- **Atlanan yok.** Telifli olduğu için bilerek eklenmeyenler: Ahmet Arif, Yaşar Kemal, Özdemir Asaf (yeni şiir). Zaten var olan "O gece" (Özdemir Asaf, p14) kitap izniyle duruyor.
+- **Bülbül:** kaynakta 46 dize; 45'i aştığı için ilk 30 dize (anlam bütünlüğü: "...serseriyim öz diyarımda!") alındı, başlıkta "(ilk bölüm)". Kalan 16 dize eklenmedi.
+- **İşaretleme:** `||` her kıta ve şiir sonunda; halk şiirlerinde dörtlük örüntüsü `|`, `/`, `|`, `||`. Kıtalar kaynakta boşlukla ayrılmışsa aynen, ayrılmamışsa anlama göre (Bedava, Ağustos böceği, Çıktım erik dalına 4'lü, İlim ilim 4'lü, Bülbül) bölündü. Ton oku ve vurgu yok.
+- **Kaynakta görülen belirsizlikler:**
+  - Güzel havalar, Anlatamıyorum, Sokakta giderken: Vikikaynak "Kaynaksız metinler" etiketi taşıyor (kaynak belge yazılmamış).
+  - Bir içim su: Vikikaynak sayfasında "düzenlenmeli" uyarısı var; metin antoloji.com ile aynı (iki kaynakta uyumlu).
+  - Ağustos böceği: sayfada "düzenlenmeli" uyarısı var; eski yazım korundu ("gaayet", "hodgam", "Hodkam", "Ianenize").
+  - Çıktım erik dalına: Vikikaynak metni her sözcüğü büyük harfle yazıyor; aynen korundu. Dağı taşı yandırır'da da aynı büyük harf düzeni var ve 8. dizede "Bağı Yandır" yazımı kaynakta böyle (aynen bırakıldı).
+  - Yunus Emre "İlim ilim bilmektir": eski yazım ("bilmekdir", "ma’nâ") aynen.
+  - Lisân: kaynak sayfa Osmanlıca ve Latin yazılı iki sütun; yalnız Latin yazımlı metin alındı.
+- **Seviye 1 (≤14 dize) şiir sayısı:** 6'dan 15'e çıktı; 24 dizeye kadar 21, toplam 31 şiir.
+- Sürüm: ?v=21, önbellek diksiyon-v21. app.js değişmedi.
+- Test: `node --check`, belirteç ve kıta kontrolü (her şiirde son dize `||`, kıta sayısı kadar `||`), kaynakla sözcük karşılaştırması (kıta kıta), jsdom ile Metin sekmesinde 31 şiirin işaretli çizimi ve günlük rutinin 11 adımı; JS hatası yok.
