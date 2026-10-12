@@ -26,7 +26,7 @@ Telefon ve tablette kullanılacak. Kullanıcı işleri yalnızca telefondan yap�
 
 ## Sürüm 2 (11 Ekim 2026): Can Gürzap kitabına göre güncelleme
 Kaynak: Can Gürzap, Söz Söyleme ve Diksiyon (Remzi Kitabevi). Kitap taranmış PDF; Diksiyon (s.105-131), Söyleyiş Yanlışları (s.147-151) ve Genel Çalışmalar başı okundu.
-Telif nedeniyle kitaptan metin kopyalanmadı; yöntem ve kurallar özetlendi, tüm metinler özgün.
+Telif nedeniyle kitaptan metin kopyalanmadı; yöntem ve kurallar özetlendi, tüm metinler özgün. (Sürüm 1-3 için; sürüm 20'den itibaren p4-p17 şiirleri kitaptan alınmıştır, ayrıntı Sürüm 20.)
 - Yeni **Dersler** sekmesi: çalışma yöntemi, vurgu (sözcük + cümle), tonlama, durak/nefes, sık söyleyiş hataları tablosu.
 - Metin kütüphanesine 3 kategori: **Vurgu** (6), **Tonlama** (7), **Söyleyiş** (6). Toplam 43 metin, 9 kategori.
 - Ders sayfalarındaki düğmeler ilgili metin kategorisini açar.
@@ -41,9 +41,9 @@ Ayrıntılı özetler kullanıcının Obsidian kasasında (Ders Kitabı Özetler
   **Heyecan ve korku**, Söyleyiş (gruplu tablolar + doğru sözcük seçimi), **Doğru mu yanlış mı testi** (18 soru, karışık sıra).
 - Düzeltme: olumsuz soruda vurgu (kitaptaki örneklere göre olumsuzluk hecesinde: oturMAZ mısınız).
 - Metin ekranına "Kime? Ne istiyorum? Ne hissediyorum?" ipucu.
-- 30 yeni özgün metin: masallar, veli görüşmeleri, diyalog, duygu geçişli monolog, seminer, vurgu, tonlama, söyleyiş. Toplam 73 metin.
+- (Sürüm 1-3 için; sürüm 20'den itibaren p4-p17 şiirleri kitaptan alınmıştır, ayrıntı Sürüm 20.) 30 yeni özgün metin: masallar, veli görüşmeleri, diyalog, duygu geçişli monolog, seminer, vurgu, tonlama, söyleyiş. Toplam 73 metin.
 - Önbellek sürümü diksiyon-v3.
-- Kitaptaki monolog, şiir ve masalların neredeyse hepsi telifli; uygulamaya konmadı.
+- Kitaptaki monolog, şiir ve masalların neredeyse hepsi telifli; uygulamaya konmadı. (Sürüm 3 için; sürüm 20'de kitabevi izni bildirimiyle 14 şiir eklendi, bkz. Sürüm 20.)
 - Fikir olarak bekleyenler: iki dereceli vurgu işareti, uzatma (:) ve hızlı/ağır işaretleri, "Metin ekle", "sunum öncesi 1 dk nefes" modu,
   hazırlıklı konuşma (konu + ipucu) bölümü, kitabın Nefes/Ses/Boğumlanma bölümleri (s.57-104) henüz okunmadı.
 
@@ -200,3 +200,19 @@ Kullanıcı: "Nefes al, sssss diye ver" ve nefes verişi kontrol edilsin; 6-8 iy
 - Tanıyıcının tek yanlışı artık "zor sözcük" yapmıyor: en az 2 fazla yanlış gerekir (zorAgirlik, rutinSec, zorlukCiz).
 - Mikrofon hatası iki nedeni birlikte söylüyor (izin verilmedi / ekranda yüzen simge izin penceresini engelliyor) ve dokunulana kadar ekranda kalıyor (`uyariGoster(m, true)`).
 - Mikrofon açılmazsa nefes adımı "Bitti (ölçümsüz)" der, rutin kaydında `bugun.olcumsuz` işaretlenir ve bitiş mesajında belirtilir; Nefes sekmesi "ölçümsüz" yazar. Gün yine sayılır (mikrofon hiç çalışmazsa seri hiç oluşmasın diye), ama artık gizli değil.
+
+## Sürüm çıkarma kontrol listesi
+1. `sh araclar/surum.sh N` (index.html'deki dört `?v=` ve sw.js'deki `diksiyon-vN` birlikte N olur; aracı argümansız çalıştırmak yalnızca listeler ve tutarsızsa 1 döner)
+2. `node --check app.js` (ve `metinler.js`, `sw.js`)
+3. jsdom akış testi (günlük rutin 11 adım, Metin sekmesi, Gelişim)
+4. Bu dosyaya sürüm notu
+5. commit
+
+## Sürüm 23 (12 Ekim 2026): çürütücü düzeltmeleri, Parti 1
+- **Düzeltilen ifadeler:** Dersler sekmesinin altındaki kaynak dipnotu artık "metinler bu uygulama için yazılmıştır" demiyor; açıklamaların kitaptaki yöntemden özetlendiğini, yalnızca veli/öğretmen/seminer metinlerinin uygulama için yazıldığını, tekerlemelerin halk tekerlemesi olduğunu ve şiir kaynaklarının Gelişim > "Kaynaklar ve izinler"de olduğunu söylüyor. Bu dosyadaki Sürüm 2-3 satırlarına "(Sürüm 1-3 için; sürüm 20'den itibaren p4-p17 şiirleri kitaptan alınmıştır)" notu eklendi (tarihsel kayıt silinmedi). metinler.js başındaki yorum: "yayın izni kullanıcı tarafından kitabevinden alındığı bildirildi (12 Ekim 2026); yazılı belge elimizde yok". README'de benzer ifade yoktu.
+- **Künye:** metinler.js sonunda `window.KUNYE` (gruplar + metne özel notlar). p4-p17 kitap grubu, p18-p31 Vikikaynak grubu, p1-p3 üçüncü grup (p1-p2 Yunus Emre dörtlüğü, kaynak belirtilmemiş; p3 uygulama için yazılmış). Notlar: p19-p21 Vikikaynak "kaynaksız", p22-p23 "düzenlenmeli". İfadeler "kullanıcı bildirdi" biçimindedir, hukuki görüş değildir.
+- **Gösterim (app.js):** `kunyeYazi(id)` (metne özel not, yoksa grup adı). Metin sekmesinde yalnızca şiir kategorisinde başlık altında soluk tek satır (`#metinKunye`); rutindeki şiir adımında (`siirCiz`) aynı satır. Gelişim sekmesinin altında `<details id="kaynakKart">` "Kaynaklar ve izinler" (`kaynakCiz`: grup adı, not, şiir başlıkları, metne özel notlar, "hukuki görüş değildir" dipnotu).
+- **Sürüm satırı:** Gelişim sekmesinde `#surumSatiri` (`surumCiz`): sayfa sürümü `app.js?v=N`'den, önbellek `caches.keys()` içindeki `diksiyon-v*` adından; farklıysa "Eski dosya açık olabilir; uygulamayı kapatıp yeniden aç." `caches` yoksa ya da hata olursa yalnızca "Sürüm N".
+- **Sürüm aracı:** `araclar/surum.sh` (POSIX sh, geçici dosya + mv). Depoda yayınlanır, sw.js önbellek listesinde değildir.
+- **sw.js:** kurulumda `addAll` artık `new Request(u, { cache: 'reload' })` ile HTTP önbelleğini atlar (eski dosyanın yeni önbelleğe girmesini önler). Sürüm: ?v=23, önbellek diksiyon-v23.
+- Test: `node --check`; surum.sh tutarlıda 0, bozulmuş kopyada 1; jsdom'da künye satırları (p4 kitap grubu, p19 "kaynaksız"), 31 şiirin hepsi bir grupta, #kaynakKart dolu, #surumSatiri "Sürüm 23", rutin 11 adım, JS hatası yok.

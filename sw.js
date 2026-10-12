@@ -1,12 +1,12 @@
 // Çevrimdışı çalışma: önce ağdan dene (güncel sürüm gelsin), olmazsa önbellekten aç.
-var ONBELLEK = 'diksiyon-v22';
+var ONBELLEK = 'diksiyon-v23';
 var DOSYALAR = [
   './', './index.html', './style.css', './app.js', './metinler.js', './calismalar.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'
 ];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(ONBELLEK).then(function (c) { return c.addAll(DOSYALAR); }));
+  e.waitUntil(caches.open(ONBELLEK).then(function (c) { return c.addAll(DOSYALAR.map(function (u) { return new Request(u, { cache: 'reload' }); })); }));
   self.skipWaiting();
 });
 

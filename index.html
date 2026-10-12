@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap">
-<link rel="stylesheet" href="style.css?v=22">
+<link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 <div class="app">
@@ -123,6 +123,7 @@
       <div>
         <div class="metin-baslik" id="metinBaslik"></div>
         <div class="muted kucuk" id="metinHedef"></div>
+        <div class="muted kucuk" id="metinKunye" hidden></div>
       </div>
       <button class="secondary kucuk-btn" type="button" id="baskaMetin">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
@@ -379,7 +380,7 @@
       <button class="primary" type="button" id="testSonraki" hidden>Sonraki soru</button>
     </div>
 
-    <p class="muted kucuk kaynak">Kaynak: Can Gürzap, <i>Söz Söyleme ve Diksiyon</i> (Remzi Kitabevi). Açıklamalar kitaptaki yöntemden kendi cümlelerimizle özetlenmiş, metinler bu uygulama için yazılmıştır.</p>
+    <p class="muted kucuk kaynak">Kaynak: Can Gürzap, <i>Söz Söyleme ve Diksiyon</i> (Remzi Kitabevi). Açıklamalar ve egzersizler, Can Gürzap'ın Söz Söyleme ve Diksiyon kitabındaki yöntemden kendi cümlelerimizle özetlenmiştir. Veli, öğretmen ve seminer metinleri bu uygulama için yazılmıştır. Tekerlemeler halk tekerlemeleridir. Şiirlerin kaynakları ve izin durumu için Gelişim sekmesindeki “Kaynaklar ve izinler” bölümüne bak.</p>
   </section>
 
   <!-- ============ GELİŞİM ============ -->
@@ -400,6 +401,11 @@
       <h2 class="h2">Kayıtlarım</h2>
       <div id="kayitListe" class="stack" style="gap:8px"></div>
     </div>
+    <details id="kaynakKart" class="card">
+      <summary><b>Kaynaklar ve izinler</b></summary>
+      <div id="kaynakIcerik" class="stack" style="gap:8px"></div>
+    </details>
+    <div id="surumSatiri" class="muted kucuk"></div>
   </section>
 </div>
 
@@ -415,8 +421,8 @@
 </nav>
 
 <audio id="oynatici" preload="auto" playsinline></audio>
-<script src="metinler.js?v=22"></script>
-<script src="calismalar.js?v=22"></script>
-<script src="app.js?v=22"></script>
+<script src="metinler.js?v=23"></script>
+<script src="calismalar.js?v=23"></script>
+<script src="app.js?v=23"></script>
 </body>
 </html>

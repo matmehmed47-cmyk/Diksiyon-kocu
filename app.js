@@ -826,6 +826,8 @@
     var m = window.METINLER.filter(function (x) { return x.id === a.siirId; })[0];
     if (!m) { kutu.appendChild(el('p', 'muted calis-p', 'Şiir bulunamadı.')); return; }
     var bas = el('p', 'calis-p'); bas.appendChild(el('b', null, m.baslik)); kutu.appendChild(bas);
+    var kn = kunyeYazi(m.id);
+    if (kn) kutu.appendChild(el('p', 'muted kucuk calis-p', kn));
     var lg = el('div', 'legend');
     lg.innerHTML = '<span><span class="mk-n">/</span> nefes</span><span><span class="mk-d">|</span> kısa durak</span><span><span class="mk-d">||</span> uzun durak</span><span><b class="vurgu">kalın</b> vurgu</span>';
     kutu.appendChild(lg);
@@ -2142,11 +2144,79 @@
     });
     return { kelime: kelime, isaret: isaret };
   }
+  // Şiirin künye satırı: şiire özel not varsa onu, yoksa grubun adını döndürür
+  function kunyeYazi(id) {
+    var k = window.KUNYE;
+    if (!k) return '';
+    if (k.notlar && k.notlar[id]) return k.notlar[id];
+    var g = (k.gruplar || []).filter(function (x) { return x.ids.indexOf(id) >= 0; })[0];
+    return g ? g.ad : '';
+  }
+  // Gelişim sekmesi: "Kaynaklar ve izinler" bölümünü doldurur
+  function kaynakCiz() {
+    var kutu = $('#kaynakIcerik');
+    var k = window.KUNYE;
+    if (!kutu || !k) return;
+    kutu.textContent = '';
+    var baslik = function (id) {
+      var m = window.METINLER.filter(function (x) { return x.id === id; })[0];
+      return m ? m.baslik : id;
+    };
+    (k.gruplar || []).forEach(function (g) {
+      kutu.appendChild(el('b', null, g.ad));
+      if (g.not) kutu.appendChild(el('p', 'muted kucuk', g.not));
+      kutu.appendChild(el('p', 'muted kucuk', g.ids.map(baslik).join('; ')));
+    });
+    var idler = Object.keys(k.notlar || {});
+    if (idler.length) {
+      kutu.appendChild(el('b', null, 'Metne özel notlar'));
+      idler.forEach(function (id) {
+        kutu.appendChild(el('p', 'muted kucuk', baslik(id) + ': ' + k.notlar[id]));
+      });
+    }
+    kutu.appendChild(el('p', 'muted kucuk', 'Bu bölüm hukuki görüş değildir; izin durumu kullanıcı beyanına dayanır.'));
+  }
+  // Gelişim sekmesi: sayfa sürümü ve önbellek sürümü satırı
+  function surumCiz() {
+    var kutu = $('#surumSatiri');
+    if (!kutu) return;
+    var sayfa = null;
+    try {
+      var s = document.querySelector('script[src*="app.js"]');
+      var e = s && /[?&]v=(\d+)/.exec(s.getAttribute('src') || '');
+      if (e) sayfa = parseInt(e[1], 10);
+    } catch (x) { /* yok */ }
+    var yaz = function (onb) {
+      var t = 'Sürüm ' + (sayfa === null ? '?' : sayfa);
+      if (onb !== null && onb !== undefined) {
+        t += ' · önbellek: v' + onb;
+        if (sayfa !== null && onb !== sayfa) t += '. Eski dosya açık olabilir; uygulamayı kapatıp yeniden aç.';
+      }
+      kutu.textContent = t;
+    };
+    yaz(null);
+    try {
+      if (window.caches && caches.keys) {
+        caches.keys().then(function (adlar) {
+          var v = adlar.filter(function (a) { return a.indexOf('diksiyon-v') === 0; })
+            .map(function (a) { return parseInt(a.slice(10), 10); })
+            .filter(function (n) { return !isNaN(n); });
+          if (v.length) yaz(Math.max.apply(null, v));
+        }).catch(function () { /* sadece sayfa sürümü */ });
+      }
+    } catch (x) { /* yok */ }
+  }
   // İşaretli metni ekrana çizer; kelime ve işaret sayısını döndürür
   function metinCiz(m) {
     var kat = katBul(m.kat);
     $('#metinBaslik').textContent = m.baslik;
     $('#metinHedef').textContent = kat.ad + (kat.hedef ? ' · hedef hız ' + kat.hedef[0] + '–' + kat.hedef[1] + ' kelime/dk' : ' · önce yavaş, sonra hızlan');
+    var kn = $('#metinKunye');
+    if (kn) {
+      var yazi = m.kat === 'siir' ? kunyeYazi(m.id) : '';
+      kn.textContent = yazi;
+      kn.hidden = !yazi;
+    }
     var alan = $('#metinAlan');
     var say = isaretliYaz(alan, m.metin);
     var kelime = say.kelime, isaret = say.isaret;
@@ -2549,6 +2619,8 @@
       ? 'Toplam ' + veri.nefesler.length + ' egzersiz, son 7 günde ' + son7 + '. Seri: ' + seriHesapla() + ' gün.'
       : 'Henüz nefes egzersizi yapmadın.';
     kayitListesiCiz();
+    kaynakCiz();
+    surumCiz();
   }
   function kayitListesiCiz() {
     var kutu = $('#kayitListe');

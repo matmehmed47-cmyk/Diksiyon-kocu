@@ -5,7 +5,7 @@
   hedef: kelime/dakika aralığı (null = hız hedefi yok)
   Kaynak: p4-p17 şiirleri Can Gürzap, "Söz Söyleme ve Diksiyon" kitabından (s.177-189).
   p18+ : telifi bitmiş şiirler, kaynak: tr.wikisource.org; şairler 1955 ve öncesinde ölmüş / halk ozanı.
-  Yayın izni kullanıcı tarafından alındı (12 Ekim 2026).
+  Yayın izni kullanıcı tarafından kitabevinden alındığı bildirildi (12 Ekim 2026); yazılı belge elimizde yok.
   Şiir işaretleri: /  nefes (anlam birimi bitince)  |  kısa durak  ||  kıta sonu.
 */
 window.KATEGORILER = [
@@ -257,3 +257,24 @@ window.METINLER = [
   { id: 'sy15', kat: 'soyleyis', baslik: 'Şahane bir dönem · uzun sesler',
     metin: 'Bu dönem sonuçlarınız *şahane*! ↗ || *Harikulade* bir emek verdiniz. ↘ || Çalışmakta *ısrar* ettiniz, | vazgeçmediniz. ↘ || Birincilik alan arkadaşınız da | çok *mütevazı* bir çocuk. ↘ ||' }
 ];
+
+// Künye: şiirlerin kaynak ve izin bilgisi (kullanıcı beyanına dayanır; hukuki görüş değildir)
+window.KUNYE = {
+  gruplar: [
+    { ad: 'Can Gürzap, Söz Söyleme ve Diksiyon, s.177-189 (kitap şiirleri)',
+      ids: ['p4','p5','p6','p7','p8','p9','p10','p11','p12','p13','p14','p15','p16','p17'],
+      not: 'Kitabevinden yayın izni alındığı kullanıcı tarafından bildirildi (12 Ekim 2026); yazılı belge yok. Şairlerin çoğu telif süresi içindedir.' },
+    { ad: 'tr.wikisource.org (Vikikaynak): telifi bitmiş şiirler',
+      ids: ['p18','p19','p20','p21','p22','p23','p24','p25','p26','p27','p28','p29','p30','p31'],
+      not: 'Şairler 1955 ve öncesinde ölmüş ya da halk ozanıdır.' },
+    { ad: 'Yunus Emre dörtlükleri ve uygulama için yazılmış metin', ids: ['p1','p2','p3'],
+      not: 'p1-p2 Yunus Emre dörtlükleridir, kaynak belirtilmemiş; p3 (Sabah) bu uygulama için yazılmıştır.' }
+  ],
+  notlar: {
+    p19: 'Vikikaynak bu metni "kaynaksız" olarak işaretlemiş; sözcükler orijinal basımdan farklı olabilir.',
+    p20: 'Vikikaynak bu metni "kaynaksız" olarak işaretlemiş; sözcükler orijinal basımdan farklı olabilir.',
+    p21: 'Vikikaynak bu metni "kaynaksız" olarak işaretlemiş; sözcükler orijinal basımdan farklı olabilir.',
+    p22: 'Vikikaynak sayfasında "düzenlenmeli" uyarısı var; metin başka bir kaynakla (antoloji.com) uyumlu.',
+    p23: 'Vikikaynak sayfasında "düzenlenmeli" uyarısı var; eski yazım korundu.'
+  }
+};
