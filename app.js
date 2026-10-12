@@ -513,6 +513,8 @@
   }
   function calisSoyle(metin) {
     if (!('speechSynthesis' in window) || !Rehber.ses) return false;
+    // Kısa sözcükleri telefon harf harf okuyabiliyor; modül en az uzunluk isteyebilir
+    if (Calis.modul && Calis.modul.sesliMin && metin.length < Calis.modul.sesliMin) return false;
     try {
       var u = new SpeechSynthesisUtterance(metin);
       u.voice = Rehber.ses; u.lang = Rehber.ses.lang; u.rate = 0.8;

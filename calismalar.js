@@ -289,7 +289,125 @@ window.CALISMALAR = [
       }
     ]
   },
-  { id: 'z', harf: 'Z', ad: 'Z zorluğu', ozet: 'Z sesi bulanık çıkıyor.', hazir: false },
+  {
+    id: 'z', harf: 'Z', ad: 'Z zorluğu', ozet: 'Z sesi s gibi ya da bulanık çıkıyor.',
+    hazir: true,
+    sesliMin: 5,
+    tanima: {
+      harf: 'z',
+      karisma: [
+        { harf: 's', yazi: 'Z, s gibi çıkmış olabilir. Z’de ses telleri titrer; elini boğazına koyup titreşimi hisset.' },
+        { harf: 'j', yazi: 'Z, j gibi çıkmış olabilir. Dudaklarını öne yuvarlama, hafif gülümseyerek söyle.' },
+        { harf: 'c', yazi: 'Z, c gibi kesik çıkmış olabilir. Havayı kesmeden, akıtarak ver.' }
+      ],
+      eksik: 'Z sesi duyulmadı ya da zayıf kaldı. Önce s’yi söyle, sonra ses tellerini katarak z’ye geç.',
+      genel: 'Z sesini titreşimli ve net söyle; hava dilin ortasından çıksın.'
+    },
+    ozKontrol: [
+      { id: 'net', yazi: 'Z’ler titreşimli ve net duyuldu', iyi: true, tavsiye: 'Harika! Tempoyu bir kademe artırıp yeniden dene.' },
+      { id: 'sgibi', yazi: 'Z’ler s gibi çıktı (titreşim yoktu)', tavsiye: 'Z, s’nin sesli hâlidir. Elini boğazına koy; Sssss’den Zzzzz’ye geçerken titreşimi hissetmelisin. Isınmayı tekrar yap.', adim: 1 },
+      { id: 'pel', yazi: 'Z’ler peltek çıktı (dil dişlerin arasına kaçtı)', tavsiye: 'Dil ucunu alt ön dişlerin arkasında tut, dişlerin arasından dışarı çıkarma. Dişlerini hafifçe kapat. Aynaya bakarak çalış.', adim: 1 },
+      { id: 'bulanik', yazi: 'Z’ler bulanık, hışırtılı çıktı', tavsiye: 'Hava dilin iki yanından kaçıyor olabilir. Dil ucunu sivriltip havayı ortadan ver. Önce yavaş hece kartlarını çalış.', adim: 2 },
+      { id: 'sz', yazi: 'S ile Z’yi karıştırdım', tavsiye: 'Sa-za hece dizisini ve S ile Z cümlelerini çalış. Tek fark: Z’de boğaz titrer, S’de titremez.', adim: 4 },
+      { id: 'hiz', yazi: 'Hızlı okudum, sesler karıştı', tavsiye: 'Tempoyu Yavaş’a al. Her heceyi ayrı ve net söyle.', adim: 2 }
+    ],
+    adimlar: [
+      {
+        tur: 'bilgi', baslik: 'Z sesi nasıl çıkar?',
+        metin: [
+          'Z, s ile aynı yerden çıkar: dil büzülür, dil ucu sivrilip alt ön dişlerin arkasına yaklaşır, hava ortadan ince bir şerit gibi geçer. Tek fark: S’de ses telleri titremez, Z’de titrer.'
+        ],
+        maddeler: [
+          '<b>Elini boğazına koy.</b> Sssss derken titreşim yok, Zzzzz derken var.',
+          'S’yi iyi söyleyebiliyorsan z’yi de söyleyebilirsin: önce s’yi söyle, sesini katıp z’ye geç.',
+          '<b>S bozuksa z de genelde bozuktur.</b> İkisini birlikte çalışmak işe yarar.',
+          '<b>Dil ucu dişlerin arasından çıkarsa</b> z peltek olur.',
+          '<b>Titreşim yoksa</b> z, s gibi duyulur: “güzel” yerine “güsel”.'
+        ],
+        dene: { yonerge: 'Önce kendini yokla: Aşağıdakileri sesli söyle ve kaydet. Çalışmanın sonunda bir daha kaydedip karşılaştırırsın.', sozler: ['zil', 'güzel', 'yüz', 'Zeynep’in gözleri', 'Zeki sizi zaman zaman arıyor.'] }
+      },
+      {
+        tur: 'tut', baslik: 'Isınma: Sssss → Zzzzz', fazAd: 'Söyle!',
+        maddeler: [
+          'Mümkünse aynaya bak. Elini boğazına koy.',
+          'Önce s’yi söyle: Sssssss. Boğazda titreşim olmamalı.',
+          'Sonra sesini katarak z’ye geç: Zzzzzzz. Boğazda titreşim hissedeceksin.',
+          'Dil yeri değişmesin; sadece ses telleri çalışsın.',
+          'Sssszzzzssssszzzz diye gidip gel.'
+        ],
+        sesler: ['Sss → Zzz', 'Zzzzzzz'], sure: 6, dinlenme: 4, turSayisi: 2
+      },
+      {
+        tur: 'kart', baslik: 'Hece kartları', hece: true, sabitDizi: 1, secimDizi: 5,
+        yonerge: 'Her heceyi titreşimli ve net söyle. Önce yavaş, ısındıkça tempoyu artır. Her açışta farklı diziler gelir.',
+        diziler: [
+          { ad: 'za - ze - zi', ogeler: ['za', 'ze', 'zi', 'zo', 'zu', 'zı', 'zö', 'zü'] },
+          { ad: 'zaz - zez - ziz', ogeler: ['zaz', 'zez', 'ziz', 'zoz', 'zuz', 'zız', 'zöz', 'züz'] },
+          { ad: 'aza - eze - izi', ogeler: ['aza', 'eze', 'izi', 'ozo', 'uzu', 'ızı', 'özö', 'üzü'] },
+          { ad: 'zar - zer - zir', ogeler: ['zar', 'zer', 'zir', 'zor', 'zur', 'zır', 'zör', 'zür'] },
+          { ad: 'az - ez - iz', ogeler: ['az', 'ez', 'ız', 'iz', 'oz', 'öz', 'uz', 'üz'] },
+          { ad: 'sa - za (ayırma)', ogeler: ['sa', 'za', 'se', 'ze', 'si', 'zi', 'so', 'zo', 'su', 'zu'] },
+          { ad: 'asa - aza (ayırma)', ogeler: ['asa', 'aza', 'ese', 'eze', 'isi', 'izi', 'oso', 'ozo', 'usu', 'uzu'] },
+          { ad: 'maz - mez - miz', ogeler: ['maz', 'mez', 'mız', 'miz', 'moz', 'möz', 'muz', 'müz'] },
+          { ad: 'taz - tez - tiz', ogeler: ['taz', 'tez', 'tız', 'tiz', 'toz', 'töz', 'tuz', 'tüz'] }
+        ]
+      },
+      {
+        tur: 'kart', baslik: 'Sözcükler', tanima: true, secim: 8,
+        yonerge: 'Her sözcükte z titreşimli ve net duyulsun. Her açışta farklı sözcükler gelir; zorlandıkların daha sık çıkar.',
+        havuz: [
+          { ad: 'Başta z', ogeler: ['zaman', 'zarf', 'zayıf', 'zengin', 'zeytin', 'zil', 'zor', 'zarar', 'zeka', 'zafer', 'zemin', 'zürafa', 'zincir', 'ziyaret', 'zihin', 'zirve', 'zarif', 'zehir', 'zümrüt', 'zıt', 'zahmet', 'zam', 'zeminde', 'zorluk', 'zevk', 'zembil', 'zeytinyağı', 'zamanla', 'zarfı', 'zorba'] },
+          { ad: 'Ortada z', ogeler: ['gazete', 'kazak', 'pazar', 'mezar', 'kuzu', 'yazı', 'güzel', 'özür', 'düzen', 'hazır', 'bozuk', 'sezon', 'mezun', 'uzun', 'ezber', 'yüzük', 'dizi', 'tuzluk', 'süzgeç', 'kazanç', 'lezzet', 'tazı', 'bozulmuş', 'kuzey', 'pazu', 'kaza', 'azık', 'kızım', 'bozulmak'] },
+          { ad: 'Sonda z', ogeler: ['yüz', 'kız', 'göz', 'söz', 'buz', 'tuz', 'saz', 'yaz', 'kaz', 'düz', 'toz', 'boz', 'koz', 'diz', 'siz', 'biz', 'deniz', 'beyaz', 'sensiz', 'temiz', 'çiz', 'kurnaz', 'haz', 'ceviz', 'tez', 'kez', 'köz', 'az', 'iz', 'öz'] },
+          { ad: 'Ünsüzle yan yana', ogeler: ['gözlük', 'sözlük', 'yazlık', 'tuzlu', 'buzlu', 'kızgın', 'dizgin', 'özgür', 'ezme', 'azmi', 'kuzgun', 'yüzme', 'gezgin', 'düzlük', 'sızlanmak', 'uzman', 'tezgâh', 'çizgi', 'ezgi', 'bozguncu'] }
+        ]
+      },
+      {
+        tur: 'cumle', baslik: 'S ile Z’yi ayır', tanima: true, secim: 5,
+        yonerge: 'S’de boğaz titremez, Z’de titrer. Bu cümlelerde iki ses yan yana geliyor; ikisini karıştırmadan söyle.',
+        havuz: [
+          'Sezin sabah erkenden zili çalıp bizi uyandırdı.',
+          'Zeynep sessizce sözlüğü açıp yazıyı inceledi.',
+          'Sizinle bu zor soruyu birlikte çözeriz.',
+          'Zafer, sınıftaki sesi duyunca gözlerini kıstı.',
+          'Zeytinyağlı salatayı sofraya sen koy, ben suyu getireyim.',
+          'Seher, sepetteki kızıl elmaları sezonun sonunda topladı.',
+          'Susuz kalan zeytin ağacı yazın sararıp soldu.',
+          'Zeki sana sözünü hatırlatmak istedi.',
+          'Sokaktaki zil sesini herkes duyunca sustu.',
+          'Bu sabah gazeteyi masanın üstünde bulamadım.',
+          'Yazın deniz kıyısında uzun yürüyüşler yaparız.',
+          'Sizin sesiniz çok güzel ve net çıkıyor.',
+          'Zarf masada kalmış, sakın unutma.',
+          'Sessiz sokakta zayıf bir ses duyuldu.'
+        ]
+      },
+      {
+        tur: 'cumle', baslik: 'Tekerleme ve cümleler', tanima: true, secim: 6,
+        yonerge: 'Önce yavaş ve her z titreşimli duyulacak şekilde oku. Sonra hızlan, ama z s’ye dönmesin. Her açışta farklı cümleler gelir.',
+        havuz: [
+          'Zeynep zeytinin zararını zekice anlattı, Zeki ise zeytinyağının zevkine vardı.',
+          'Yüzü güzel kızın gözleri hep yazı yazıyordu.',
+          'Gazetede güzel bir yazı çıkmış, hepimiz bayıldık.',
+          'Zil çalınca herkes bahçeye zıpladı.',
+          'Dizilerin sonunda uzun, güzel bir şarkı çaldı.',
+          'Kızım gözlüğünü masaya bıraktı, sözlüğü açtı.',
+          'Zamanı iyi kullanan, zorluğun üstesinden gelir.',
+          'Tuzlu su, buzlu limonata, kızarmış zeytin.',
+          'Uzun bir yazın ardından düzenli bir kışa girdik.',
+          'Bozuk saati zahmetle tamir ettirdi.',
+          'Zürafa, sazlığın yanındaki uzun ağacı yedi.',
+          'Hazırlıklarımız tamam, zamanımız bol, yüzümüz gülüyor.',
+          'Pazar günü kuzuları gezdirip gazetelerimizi okuduk.',
+          'Zeynep’in kazağı, Zeki’nin gözlüğü ile aynı masada duruyordu.',
+          'Gözümüz ufukta, sözümüz dosdoğru, yüzümüz hep güleç.',
+          'Zorlukları sevgiyle ve sabırla aşabiliriz.',
+          'Güzel konuşmak, düzenli çalışmanın ürünüdür.',
+          'Zeytin ağacının altında bir saz çalındı.'
+        ]
+      }
+    ]
+  },
   { id: 'dudak', harf: 'Ağız', ad: 'Dudak ve dil tembelliği', ozet: 'Sesler yuvarlanıyor, net çıkmıyor.', hazir: false },
   { id: 'isinma', harf: '5 dk', ad: 'Konuşmadan önce ısınma', ozet: 'Gevşeme, dudak-dil hareketleri, Maaa-Meee.', hazir: false },
   { id: 'nefes', harf: 'Nefes', ad: 'Nefesim yetmiyor', ozet: 'Cümlenin sonunda nefesim bitiyor.', hazir: false }

@@ -128,3 +128,7 @@ bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cac
 - Cümle adımı açılırken sesli okuma kapalı başlar; alt nota "tanıma ipucudur, kesin değil" uyarısı eklendi.
 - İçerik: dilbilgisi düzeltmeleri; R listelerinde şeker (sonda), kardeş yerine tarak; R ısınmasına "abartı sadece ısınma içindir" notu.
 - Nefes ekranında "Tut" fazı sesli "Nefesi tut" der (ekranda "Tut" kalır).
+
+## Sürüm 14 (12 Ekim 2026)
+- **Z zorluğu** eklendi (kitap s.97): bilgi (s'nin sesli hâli, boğaz titreşimi), "Sss → Zzz" ısınması (ölçersiz), 9 hece dizisi (sa-za ayırma dahil), 4 kategoride ~120 günlük sözcük, "S ile Z'yi ayır" cümleleri, tekerleme ve günlük cümleler. Kayıt, öz değerlendirme, "Söyle, kontrol edeyim" diğerleri gibi.
+- Modül alanı `sesliMin: 5`: telefon 5 harften kısa sözcükleri okumaz (harf harf okuma riski).
