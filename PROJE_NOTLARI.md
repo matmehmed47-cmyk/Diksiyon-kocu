@@ -139,3 +139,7 @@ bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cac
 ## Sürüm 16 (12 Ekim 2026) — TASLAK
 - **Konuşmadan önce ısınma** (5 dk) ve **Nefesim yetmiyor** modülleri taslak olarak eklendi (kitap s.66-72, 79-81, 90). Isınma: gevşeme-nefes, dudak-dil, Maaa-Meee, tekerleme. Nefes: doğru nefes bilgisi, kollarla nefes (kısaltılmış), sayılı nefes (6 al / 8-10-12 ver), "/" işaretli cümleler, uzun cümle tek nefeste. Süreler elle ayarlı (her tur sabit saniye), nefesi gerçekten ölçmüyor. Tanıma yok.
 - Eksikler (konuşulacak): nefes ölçümü (mikrofonla verme süresi), ünlü yuvarlağı için ses perdesi, "ğ" ve ulama kuralları, h sesi, sesin renklendirilmesi (Çirozname tekniği), günlük program/hatırlatma.
+
+## Sürüm 17 (12 Ekim 2026)
+- İki ajanın topladığı halk tekerlemeleri eklendi (vault: Notlar/Araştırmalar/Tekerleme Derlemesi - 1. ve 2. Ajan). Kısa/orta zor olanlar sesine göre R, S, Z ve Dudak-dil havuzlarına; kolay çocuk/oyun tekerlemeleri Isınma'ya; uzun diksiyon metinleri yeni **Zor metinler** modülüne.
+- Doğrulanamayanlar, sayı/matematik temalılar ve uygunsuz bulunanlar alınmadı. "Şemsi Paşa pasajında sesi büzüşesiceler" gerçek bir tekerleme, S havuzuna geri kondu.

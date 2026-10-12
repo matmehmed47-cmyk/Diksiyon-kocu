@@ -153,7 +153,13 @@ window.CALISMALAR = [
           'Arkadaşlar, ders bitti; sıraları toparlayıp kapıya doğru yürüyelim.',
           'Sarı, turuncu ve kırmızı yapraklar rüzgârla birlikte uçuştu.',
           'Torunu, dedesine bahçedeki erik ağacını gösterdi.',
-          'Hırkanı al, akşamları hava serin oluyor.'
+          'Hırkanı al, akşamları hava serin oluyor.',
+          "Bu kara kantar kırk kilo kara katran tartar.",
+          "Tek tek tekerleme, içi dolu şekerleme, bunu bilmeyen kertenkele.",
+          "Kırk kantar, kırkar kırkar, kantar tartar.",
+          "Gagavuz kuşunun gagası gerdandan sarkar, ger ger gerilen gergefin gültası Galata'dan galat gergedana gül atar.",
+          "Dört deryanın deresini dört dergâhın derbendine devrederlerse, dört deryadan dört dert, dört dergâhtan dört dev çıkar.",
+          "İki kel kör kirpinin yırtık kürkünü dişi kel kör kirpinin yırtık kürküne eklemişler."
         ]
       }
     ]
@@ -284,7 +290,12 @@ window.CALISMALAR = [
           'Sıcak bir sohbetin sonunda herkes mutlu ayrıldı.',
           'Sabırsızlanma, sıran gelince seni çağıracaklar.',
           'Eski dostlar, yıllar sonra sahildeki pastanede buluştu.',
-          'Sınav sabahı sakin olmak, soruları daha rahat çözmeni sağlar.'
+          'Sınav sabahı sakin olmak, soruları daha rahat çözmeni sağlar.',
+          "Şemsi Paşa pasajında sesi büzüşesiceler.",
+          "Falcı, falcının falına fasa fiso dedi.",
+          "Sudan çıktı iki su şadısı, biri erkek şu şadısı, diğeri dişi şu şadısı.",
+          "Bu evi yıkıp yapsak da mı otursak, yoksa yıkmasak onarsak da mı otursak?",
+          "Kara kızın kısa kayışını kasışına kızmayışına şaşmamışsın da, kuru kazın kızıp kayısı kazışına şaşmış kalmışsın."
         ]
       }
     ]
@@ -403,7 +414,10 @@ window.CALISMALAR = [
           'Gözümüz ufukta, sözümüz dosdoğru, yüzümüz hep güleç.',
           'Zorlukları sevgiyle ve sabırla aşabiliriz.',
           'Güzel konuşmak, düzenli çalışmanın ürünüdür.',
-          'Zeytin ağacının altında bir saz çalındı.'
+          'Zeytin ağacının altında bir saz çalındı.',
+          "Çarşıda koza ucuz, çarşıda darı ucuz, çarşıda boza da ucuz mu?",
+          "Bu bankaya eski veznedar gelecek, bu bankaya eski vezne dar gelecek.",
+          "Zihni, zihnini Zeki'nin zikzak çizen zevzek züğürt sözleriyle uzun uzun zorladı."
         ]
       }
     ]
@@ -481,7 +495,22 @@ window.CALISMALAR = [
           'El alem aladanalandı da biz bir aladana alıp aladanalanamadık.',
           'Çarık çorap dolak, ben sana çarık çorap dolak mı dedim.',
           'Gül dibi bülbül dili gibi, gül dibi bülbül dili gibi.',
-          'Değirmene girdi köpek, değirmenci çaldı kötek, hem kepek yedi köpek hem kötek yedi köpek.'
+          'Değirmene girdi köpek, değirmenci çaldı kötek, hem kepek yedi köpek hem kötek yedi köpek.',
+          "Hakkı Hakkı'dan hakkını istedi, Hakkı Hakkı'nın hakkını vermeyince, Hakkı Hakkı'nın hakkından geldi.",
+          "Ooo eveleme geveleme, karakuşu kovalama, karakuş miskin, gagası keskin, ne zaman geldin, yazın geldim, yazılsın çizilsin, bir tahtaya dizilsin, al çık bal çık, sana dedim sen çık.",
+          "Mutfakta neler oluyor, bezelyeler bize bakıyor. Çatlak patlak yusyuvarlak, kremalı börek, sütlü çörek, çek yavrum çek.",
+          "Ali dayının keçileri kıyır kıyır kişniyor, arpa saman istiyor, arpa saman yok, kilimcide çok, kilimci kilim dokur, içinde bülbül okur, o bülbül benim olsa, iki kardeşim olsa, biri ay biri yıldız, biri oğlan biri kız.",
+          "Laleli Belkıs, içeriye gel kız, ipten dut kız, dışarıya çık kız. Yağar yağar yağmur, teknede hamur, tarlada çamur, ver Allah'ım yağmur.",
+          "O piti piti, karamela sepeti, terazi lastik jimnastik, biz size geldik bitlendik, hamama gittik temizlendik, dik dik dik, anne bana çorap dik.",
+          "Üşüdüm üşüdüm, daldan elma düşürdüm, elmamı yediler, bana cüce dediler, cücelikten çıktım, ablama çıktım, ablam pilav pişirmiş, içine fare kaçırmış, bu fareyi ne yapmalı, minareden atmalı, minarede kuş var, kanadında gümüş var, amcamın cebinde türlü türlü yemiş var.",
+          "Kapıdan tavşan geçti mi? Geçti. Tuttun mu? Tuttum. Kestin mi? Kestim. Tuzladın mı? Tuzladım. Pişirdin mi? Pişirdim. Bana ayırdın mı? Ayırdım. Hangi dolaba koydun? Çıt çıtlı dolaba koydum. Haydi al getir. Getiremem. Neden getiremezsin? Kara kediler yemiş.",
+          "Komşu komşu, oğlun geldi mi? Geldi. Ne getirdi? İnci, boncuk. Kime kime? Sana, bana. Başka kime? Kara kediye. Kara kedi nerde? Ağaca çıktı. Ağaç nerde? Balta kesti. Balta nerde? Suya düştü. Su nerde? İnek içti. İnek nerde? Dağa kaçtı. Dağ nerde? Yandı bitti kül oldu.",
+          "Götür küpü, dök küpü. Getir küpü, dök küpü.",
+          "Keşkekçinin keşkeklenmiş keşkek kepçesi.",
+          "Kapıyı kıcır gattırıcılardan mısın, ocağı kıvılcımlattırıcılardan mısın? Ne kapıyı kıcırdattırıcılardanım ne ocağı kıvılcımlattırıcılardanım.",
+          "Uykucu Ülkü, ucu tüllü üç örtüyü ütüyle ütüleyip de mi üstüne örtünmeli, üç örtünün ucunu tülleyip ütüleyip de mi üstüne örtünmeli?",
+          "Gece penceredeki benekli tekir kedi tenceresindeki eti yedi.",
+          "İbiş ile Memiş mahkemeye gitmiş, mahkemeleşmiş mi, mahkemeleşmemiş mi?"
         ]
       },
       {
@@ -504,6 +533,62 @@ window.CALISMALAR = [
           'Her sorunun mutlaka bir çözümü olduğunu unutmayın.',
           'Yanlış söylediysem düzeltmenizi rica ediyorum.',
           'Sözlerimi bitirirken hepinize teşekkür etmek istiyorum.'
+        ]
+      }
+    ]
+  },
+  {
+    id: 'zormetin', harf: 'Metin', ad: 'Zor metinler', ozet: 'Uzun ve zor tekerlemeler; ısındıktan sonra, yavaştan hıza.',
+    hazir: true,
+    sesli: false,
+    ozKontrol: [
+      { id: 'net', yazi: 'Sesler net kaldı, takılmadan bitirdim', iyi: true, tavsiye: 'Harika! Daha hızlı tempoyla dene.' },
+      { id: 'takildi', yazi: 'Bazı yerlerde takıldım', tavsiye: 'Takıldığın kısmı ayrı ayrı yavaşça söyle, sonra baştan al. Takılmak bu metinlerde normaldir.', adim: 1 },
+      { id: 'yuvarlak', yazi: 'Hız artınca sesler yuvarlandı', tavsiye: 'Tempoyu düşür. Hızdan çok net söyleyiş önemli.', adim: 1 },
+      { id: 'nefes', yazi: 'Nefesim yetmedi', tavsiye: 'Cümleyi virgüllerden böl ve her bölümün başında nefes al.', adim: 1 }
+    ],
+    adimlar: [
+      {
+        tur: 'bilgi', baslik: 'Zor metinler nasıl çalışılır?',
+        metin: ['Bu uzun tekerlemelerde amaç hız değil, her sesin net çıkmasıdır. Önce yavaş, parça parça çalış; ısındıkça tempoyu artır.'],
+        maddeler: [
+          '<b>Önce ısın:</b> Dudak ve dil ya da Isınma çalışmasını yap.',
+          '<b>Parçala:</b> Uzun metni virgüllerden bölüp her parçayı ayrı söyle.',
+          '<b>Yavaştan hıza:</b> Önce çok yavaş, sonra normal, sonra hızlı.',
+          '<b>Kayıt al:</b> Dinle, takıldığın yeri not et.',
+          'Birçok metinde sözcük farkı olabilir; siteler arasında küçük farklar normaldir.'
+        ]
+      },
+      {
+        tur: 'cumle', baslik: 'Uzun tekerlemeler', secim: 3,
+        yonerge: 'Önce yavaş, parçalara bölerek oku. Sonra tek soluk ve tempoyu artırarak dene. Takılırsan yeniden başla.',
+        havuz: [
+          "Hakkı haklının hakkını yemiş. Haklı, Hakkı'dan hakkını istemiş. Hakkı, haklıya hakkını vermeyince haklı da Hakkı'nın hakkından gelmiş.",
+          "Gide gide yün buldum, yünün içinde tarak buldum, tarağı nineye verdim, nine bana ekmek verdi, ekmeği köpeğe attım, köpek bana enik verdi, eniği çobana verdim, çoban bana kuzu verdi, kuzuyu misafire kestim, misafir bana kamçı verdi, kamçıyı yere vurdum, yer bana su kabı verdi, su kabını ırmağa attım, ırmak bana köpük verdi, köpüğü rafa koydum.",
+          "Kınıklı kılıbık kırpıntı Kıyasettin, Kırımlı kılkuyruk kıtmiri kıkır kıkır kıkırdatarak küskütük küçümen küfeci külhaniyle külüstür Kürşat'ı külünklü küngür üstüne küttedek devirdi.",
+          "Be birader buraya bak, başı bereli burma bıyıklı bastı bacak bayan berberiyle bizim Bedri bey birlikte bir pirinci birinci buluşta birbirine dizip Bursa pazarına indi.",
+          "Bir pirinci birinci buluşta bir inci gibi birbirine bağlayıp, Perlepe berberi bastıbacak Bedri ile beraber Balıkesir pazarına parasız giden bu paytak budala, babası topal Badi'den biberli bir papara yedi.",
+          "İbibiklerin ibiklerini iyice iyileştirmek için İstinyeli istifçi İbiş'in istif istiridyeleri mi, yoksa İskilipli İspinoz işportacı İshak'ın işliğindeki ibrişimleri mi daha iyi, bilemiyorum.",
+          "Ilım ılınan, ılıcalı ılıcalı akan ılık ılık Iğdır ırmağı'nın kıyıları ıkır tıkır ığrıp ağaçlarıyla kaplıdır.",
+          "Kokorozlanan koca köstek, kostak kostak kostaklanmış, kök sökmek, kösnül kösnül bakmak da ne oluyor, demiş.",
+          "Yalancıoğlu yalıncık Yayla Dağı'nın yahnisini yağsız yiyebilirse de Yayla Dağı'nın yağlı yoğurdundan, Yüksekova'nın yusyumru yumurta yumurtlayan tavuklarından, bir de yörük ayranıyla yufkasından asla vazgeçemez.",
+          "Sizin damda var beş boz başlı beş boz ördek, bizim damda var beş boz başlı beş boz ördek. Sizin damdaki beş boz başlı beş boz ördek, bizim damdaki beş boz başlı beş boz ördeğe, \"siz de bizcileyin beş boz başlı beş boz ördek misiniz\" demiş.",
+          "Şu tarlaya bir şinik kekere mekere ekmişler. Şu tarlaya ekilen bir şinik kekere mekereye dadanan boz ala boz başlıklı pis porsuk, bu tarlaya ekilen bir şinik kekere mekereye dadanan boz ala boz başlıklı pis porsuğa demiş ki: \"Ben bu tarlaya ekilen bir şinik kekere mekereye dadanan boz ala boz başlıklı pis porsuğum.\"",
+          "Taşlı tarladaki terasta talaşlar tutuşunca başlayan telaş, talaşların tamamıyla ve büsbütün tutuşmasıyla artmış. Tutuşan talaşları görüp tellaklar telaş ettikçe talaşlar tutuşmuş, talaşlar tutuştukça tellaklar telaş etmiş ve terasın trabzanına tutunmuş bakan Trabzonlu teşrifatçı titiz Tahsin Tevfik, talaşlar tutuştukça telaş eden tellaklara \"boşuna telaş ediyorsunuz\" demiş.",
+          "Cırcır böceği çeneli ciciannenin çıtır pıtır kızının çıtı pıtı çıtkırıldım çocuğu için çıtı pıtı hanım, ciciannesine çatmış, çıkışmış.",
+          "Sason'un susuz sazlıklarında sadece soğanla sarımsak yetişebileceğini söyleyen Samsunlu sebzecilerin sözüne sizler de sessizce ve sezgilerinize sığınarak inanabilirsiniz.",
+          "Sazende Şazi ile Zifos Zihni zaman zaman sizin sokağın sağ köşesinde sinsi sinsi fiskoslaşarak sizi zibidi Suzi'ye sonsuz ve sorumsuz bir hayasızlıkla ikide bir şikayet ederler.",
+          "Sedat Tınaz'ın bütün tasası suratsız teyzesine rastlamadan önce set üstünde sırtını zerzevat sepetinin pis tepesine sürten sıska sülük tazısını tuz tortusu tütsüsüne tutmasıydı.",
+          "Şavşatlı Şaban, Şarkışlalı şipşakçı Şekip ve Şıpsevdi Şehime; Şişhane'den şeytankuşu mu, şömine maşası mı, masa şemsiyesi mi, şoson mu, şezlong mu ne, bir şeyler almaya gitmişler.",
+          "Safranbolulu Safinazla Salihlili Salih Sivrihisar'da soğuk almışlar, sinüzit olmuşlar, sonra sımsıkı sarınarak söylenmesiz Seyitgazi'ye varıp, sarımsaklı suteresini susarımsağı ile karıştırarak suyunu süzmüşler.",
+          "Vırvırcı Vedia ile vıdı vıdıcı Veli, velînimeti vatman Vahit'e vilâyette veda edip Vefa'ya doğru velespitle, vaveylâsız volta vururlarken, voleybolcu Volkan, virtüöz Vicdanî ve Viranşehirli vatansever viyolonselist Vecibe ile karşılaştılar.",
+          "Çapakçurlu çapaçul çarkçıbaşı çaylak Zülküf, Çatalcalı çakmakçı çivit Cahit'e: \"Behey çaçabalığı çepiç, çerçi, çakaloz, çayırhorozu, çöpçatan, çurçur, çirişotu\" demiş.",
+          "Ertenekli Örtenekli, Ergene'nin ecesi, Esentepe'nin eğlencesi, Erdenler erkete Erdem'le bize geldiler.",
+          "Dadaylı dayımın Dodurgalı düdük deli dedesi, diline doladığı debdebeli dedim dedisiyle, dırdırını dilinden düşürüp de bir kez olsun doya doya düden diyemeden, düdenin dallara doldurduğu doyumlu yemişlerden doyasıya yiyemeden dar dünyadan göçüp gitti.",
+          "Babaeskili bonboncu Bilal'le Bigalı bıngıldak Bahir'in bön bön bakışlarına, bomboş büyülü, büyük büyük laflarına kızıyordu. Bir berbere, bir bibere bre berber beri gel biber al, diyordu.",
+          "Hayrabolulu hamamzade Hamitle, Hayrettin'in hanımı Halide Harputlu, has undan hamur açıp Halâskârgazi'de hassa alayından müteakit hamurkâr Hüsnü Hayrettin ile halası Hayrünisa Hanım'ın hem hayretine sebep oldu, hem de hayranlığını kazanıp hayır duasını aldı.",
+          "Titiz, temiz, tendürüst dadım, tadını tattığı tere demedini dide dide dağıttı da, hiddetinden hem dut dalında takılı duran dirilti düdüğünü öttürdü, hem de didine didine dedim dedi, dedim dedi, dedi durdu.",
+          "Sizin dala konmuş, hallu, bellu, gabellu, kabak baş bel baykuşu; bizim dala konmuş, hallu, bellu, gabellu, kabak baş bel baykuşuna \"Sen nasıl bir hallu, bellu, gabellu, kabak baş bel baykuşusun\" demiş."
         ]
       }
     ]
@@ -575,7 +660,35 @@ window.CALISMALAR = [
           'Kırk kırık küp kırkının da kulpu kırık kara küp.',
           'Kar kalkar karakartal kalkar, karakartal kalkar kar kalkar.',
           'Gül dibi bülbül dili gibi, gül dibi bülbül dili gibi.',
-          'Bir berber bir berbere bre berber gel beraber.'
+          'Bir berber bir berbere bre berber gel beraber.',
+          "Evvel zaman içinde, kalbur saman içinde, develer tellal iken, pireler berber iken, ben anamın beşiğini tıngır mıngır sallar iken.",
+          "Yağ yağ yağmur, tarlada çamur, teknede hamur, ver Allah'ım ver, sicim gibi yağmur.",
+          "Portakalı soydum, başucuma koydum, ben bir yalan uydurdum, duma duma dum, kırmızı mum, dolapta pekmez, yala yala bitmez, Ayşecik cik cik cik, Fatmacık cık cık cık, sen bu oyundan çık.",
+          "İğne battı, canımı yaktı, tombul kuş, arabaya koş, arabanın tekeri, İstanbul'un şekeri, hop hop altın top, bundan başka oyun yok.",
+          "Ebe ebe nerede, su doldurur derede, dere boyu çalılık, şu ebe de ne alık, ebe suya dalamaz, arasa da bulamaz, ene nene bulamaz, ben sana küstüm.",
+          "Ebe ebe gel bize, uzaktan vur elimize, eğer vuramazsan ebesin ebe.",
+          "Ah ne süslü kelebek, üstü mavi altı benek, aman tutsam şunu ben, hemen uçup gitmeden.",
+          "Uç uç böceğim, yarın düğün olacak, annem sana terlik pabuç alacak.",
+          "Horoz öttü, tavuk tepti, bülbül kızı selamına dua etti.",
+          "Incık mıncık, sen dur sen çık.",
+          "Karnım aç, karnına kapak aç, değirmene kaç.",
+          "Kızın adı Hediye, ekmek vermez kediye, kedi gider kadıya.",
+          "Bir gün bir gün bir çocuk, eve de gelmiş kimse yok, açmış bakmış dolabı, şeker de sanmış ilacı, yemiş yemiş bitirmiş, akşama sancı başlamış, kıvrım kıvrım kıvranmış, hastaneyi boylamış.",
+          "Gökte ne var? Gök boncuk. Yerde ne var? Yer boncuk. Dalda ne var? Elmacık. Babanın adı ne? Yusufçuk. Annenin adı ne? Fatmacık. Kaldır beni hoppacık.",
+          "Fatma, pabucu yarım, çık dışarıya, oynayalım.",
+          "Kuzu kuzu me, bin tepeme, hadi gidelim Hacı dedeme, Hacı dedem hasta, çorbası tasta, dedem çorba içti, oyun vakti geçti.",
+          "Çıkalım çayıra, yem vereyim ördeğe, ördek yemini yemeden, cıyak mıyak demeden, çıktım çıkardım.",
+          "Denizde dalga, hoş geldin abla, eteğini topla, üç kere atla.",
+          "Ahmet Paşa leyleği, geymiş keten gömleği, keten gömlek dizinde, gözü vezir kızında.",
+          "Belimi büke büke girdim hana, hancı dedi \"siz de bize, biz de size.\"",
+          "Leylek leylek lekirdek, hani bana çekirdek? Çekirdeğin içi yok, koca kızın saçı yok.",
+          "Adem madene gitmiş. Adem madende badem yemiş. Madem ki Adem madende badem yemiş, niye bize getirmemiş.",
+          "Leylek leylek havada, yumurtası tavada, gel bizim hayata, hayat kapısı kitli, leyleğin başı bitli.",
+          "Mustafa, Mıstık, arabaya kıstık, üç mum yaktık, seyrine baktık.",
+          "Karga karga \"gak\" dedi, \"çık şu dala bak\" dedi, karga seni tutarım, kanadını yolarım.",
+          "Saksağan sek sek, kuyruğu tümsek, kuyruğuna binelim, bizim köye gidelim.",
+          "Fış fış kayıkçı, kayıkçının küreği, hop hop (bazı sitelerde \"tıp tıp\") eder yüreği, akşama fincan böreği.",
+          "Makas, makas, makas, Ali dayı, noktaya bas, trampetler çalınıyor, yüzbaşılar darılıyor, darılmayın yüzbaşılar, can yürekten ayrılmıyor."
         ]
       }
     ]
