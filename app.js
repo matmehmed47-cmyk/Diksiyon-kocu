@@ -506,12 +506,12 @@
     window.scrollTo(0, 0);
   }
 
-  // ---------- Günlük rutin: nefes → günün harfi → dudak-dil → tekerleme → bitiş kaydı ----------
+  // ---------- Günlük rutin: nefes → günün harfi → dudak-dil → tekerleme → şiir → bitiş kaydı ----------
   // Harf her gün sırayla değişir; son 7 günde görülen sözcük ve cümleler pek gelmez.
   // Seviye, tamamlanan gün sayısıyla artar (7 gün → Orta, 14 gün → İleri).
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 2;
+  var RUTIN_SURUM = 3;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -595,8 +595,18 @@
       yonerge: 'Önce yavaş, her ses net çıksın. Sonra tempoyu artır. Takılırsan yavaşlayıp yeniden başla.' +
         (sv >= 3 ? ' Sonuncusu uzun bir metin; virgüllerden bölerek oku.' : '') });
 
-    // 5) Bitiş kaydı
-    adimlar.push({ tur: 'cumle', bolum: 4, baslik: 'Bitiş kaydı',
+    // 5) Günün şiiri: işaretli (nefes / durak) okunur; seviyeye göre uzunluk sınırı
+    var dizeSinir = [14, 24, 100000][i];
+    var siirler = window.METINLER.filter(function (m) { return m.kat === 'siir'; });
+    var kisa = siirler.filter(function (m) { return m.metin.split('\n').length <= dizeSinir; });
+    var siir = sec(kisa.length ? kisa : siirler, 1, function (m) { return 'siir:' + m.id; })[0];
+    if (siir) {
+      adimlar.push({ tur: 'siir', bolum: 4, baslik: 'Günün şiiri', siirId: siir.id,
+        yonerge: 'Düz yazı gibi, doğal oku. Nefesi sadece / işaretinde al. | kısa durak, || uzun durak.' });
+    }
+
+    // 6) Bitiş kaydı
+    adimlar.push({ tur: 'cumle', bolum: siir ? 5 : 4, baslik: 'Bitiş kaydı',
       cumleler: sec(D.adimlar[4].havuz.concat(N.adimlar[4].havuz), 1),
       yonerge: 'Bu cümleyi doğal sesinle oku ve aşağıdaki kırmızı düğmeyle kendini kaydet. Kayıtların birikir; ilk kaydınla karşılaştırabilirsin.' });
 
@@ -627,7 +637,7 @@
     return {
       id: 'rutin', veriId: b.harf, rutin: true, harf: 'Rutin', ad: 'Günlük rutin', sesli: false,
       tanima: H.tanima, ozKontrol: b.ozKontrol, adimlar: b.adimlar,
-      bolumler: ['Nefes', H.harf + ' sesi', 'Dudak-dil', 'Tekerleme', 'Bitiş']
+      bolumler: ['Nefes', H.harf + ' sesi', 'Dudak-dil', 'Tekerleme', 'Şiir', 'Bitiş']
     };
   }
   function rutinAc() {
@@ -666,7 +676,7 @@
     ust.appendChild(el('b', 'grow', 'Bugünün rutini'));
     if (seri > 0) ust.appendChild(el('span', 'pill', '🔥 ' + seri + ' gün'));
     kart.appendChild(ust);
-    kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Dudak-dil → Tekerleme · yaklaşık 12 dk'));
+    kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Dudak-dil → Tekerleme → Şiir · yaklaşık 14 dk'));
     kart.appendChild(el('span', 'muted kucuk', 'Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] +
       (svSimdi < 3 ? ' · Seviye ' + (svSimdi + 1) + ' için ' + (svSimdi * 7 - rutinTamamSayisi()) + ' gün daha' : '')));
     var durum;
@@ -801,10 +811,24 @@
     if (a.tur === 'nefesOlc') nefesOlcCiz(kutu, a);
     if (a.tur === 'kart') kartCiz(kutu, a);
     if (a.tur === 'cumle') cumleCiz(kutu, a);
+    if (a.tur === 'siir') siirCiz(kutu, a);
     $('#calisOnceki').disabled = Calis.adim === 0;
     $('#calisSonraki').textContent = Calis.adim === m.adimlar.length - 1 ? 'Bitir ✓' : 'Sonraki →';
     var ust = $('#calisDetay');
     if (ust.getBoundingClientRect().top < 0) ust.scrollIntoView({ block: 'start' });
+  }
+
+  // ---------- Günün şiiri: nefes ve durak işaretli ----------
+  function siirCiz(kutu, a) {
+    var m = window.METINLER.filter(function (x) { return x.id === a.siirId; })[0];
+    if (!m) { kutu.appendChild(el('p', 'muted calis-p', 'Şiir bulunamadı.')); return; }
+    var bas = el('p', 'calis-p'); bas.appendChild(el('b', null, m.baslik)); kutu.appendChild(bas);
+    var lg = el('div', 'legend');
+    lg.innerHTML = '<span><span class="mk-n">/</span> nefes</span><span><span class="mk-d">|</span> kısa durak</span><span><span class="mk-d">||</span> uzun durak</span><span><b class="vurgu">kalın</b> vurgu</span>';
+    kutu.appendChild(lg);
+    var kart = el('div', 'card passage');
+    isaretliYaz(kart, m.metin);
+    kutu.appendChild(kart);
   }
 
   function zorlukCiz(kutu) {
@@ -2079,15 +2103,11 @@
     $('#kayitci').hidden = false;
     oynatmayiDurdur();
   }
-  // İşaretli metni ekrana çizer; kelime ve işaret sayısını döndürür
-  function metinCiz(m) {
-    var kat = katBul(m.kat);
-    $('#metinBaslik').textContent = m.baslik;
-    $('#metinHedef').textContent = kat.ad + (kat.hedef ? ' · hedef hız ' + kat.hedef[0] + '–' + kat.hedef[1] + ' kelime/dk' : ' · önce yavaş, sonra hızlan');
-    var alan = $('#metinAlan');
+  // İşaretli metni (/ | || ton *vurgu*) verilen alana çizer; kelime ve işaret sayısını döndürür
+  function isaretliYaz(alan, metin) {
     alan.textContent = '';
     var kelime = 0, isaret = 0, vurguAcik = false;
-    m.metin.split('\n').forEach(function (satir, si) {
+    metin.split('\n').forEach(function (satir, si) {
       if (si > 0) alan.appendChild(document.createElement('br'));
       satir.split(/\s+/).filter(Boolean).forEach(function (tok) {
         var span;
@@ -2111,6 +2131,16 @@
         alan.appendChild(document.createTextNode(' '));
       });
     });
+    return { kelime: kelime, isaret: isaret };
+  }
+  // İşaretli metni ekrana çizer; kelime ve işaret sayısını döndürür
+  function metinCiz(m) {
+    var kat = katBul(m.kat);
+    $('#metinBaslik').textContent = m.baslik;
+    $('#metinHedef').textContent = kat.ad + (kat.hedef ? ' · hedef hız ' + kat.hedef[0] + '–' + kat.hedef[1] + ' kelime/dk' : ' · önce yavaş, sonra hızlan');
+    var alan = $('#metinAlan');
+    var say = isaretliYaz(alan, m.metin);
+    var kelime = say.kelime, isaret = say.isaret;
     m._kelime = kelime;
     m._isaret = isaret;
   }
