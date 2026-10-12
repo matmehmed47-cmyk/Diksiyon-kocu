@@ -9,6 +9,6 @@
 - **Dersler:** Vurgu, tonlama, durak, konuşma hızı, heyecanla baş etme, sık yapılan söyleyiş hataları ve kısa bir test. Kaynak yöntem: Can Gürzap, *Söz Söyleme ve Diksiyon*.
 - **Gelişimim:** Ölçüm grafikleri ve tüm kayıtlar.
 
-Ses kayıtları ve ölçümler yalnızca telefonda saklanır, hiçbir sunucuya gönderilmez. Tek istisna: Çalış bölümündeki isteğe bağlı “Söyle, kontrol edeyim” düğmesi tarayıcının konuşma tanımasını kullanır (Chrome'da ses Google'a gönderilir); ilk kullanımda izin istenir.
+Ses kayıtları ve ölçümler yalnızca telefonda saklanır, hiçbir sunucuya gönderilmez. Tek istisna: Çalış bölümündeki isteğe bağlı “Söyle, kontrol edeyim” düğmesi tarayıcının konuşma tanımasını kullanır (ses telefonun tanıma hizmetine gönderilir: Android'de genellikle Google, iPhone'da Apple); ilk kullanımda izin istenir.
 
 Kurulum gerektirmez: dosyalar herhangi bir HTTPS sitesinde (ör. GitHub Pages) yayınlanabilir.

@@ -35,26 +35,77 @@
 
   // ================= Kalıcı veri (telefonda) =================
   var ANAHTAR = 'dk.v1';
+  var VERI_SURUM = 1;
+  // Depolama sağlığı: kayıt hatası, kalıcılık, kullanılan yer (Gelişim > Ayarlar ve veri'de gösterilir)
+  var Saglik = { kayitHata: null, kayitUyarildi: false, kalici: null, kullanilan: null, bozuk: false };
+  function nesneMi(x) { return !!x && typeof x === 'object' && !Array.isArray(x); }
   function bosVeri() {
-    return { olcumler: [], nefesler: [], gunler: {}, sonMetin: {}, ayarlar: { rehber: 'sesli', seviye: 'baslangic', kategori: 'veli' } };
+    return { surum: VERI_SURUM, olcumler: [], nefesler: [], gunler: {}, sonMetin: {}, ayarlar: { rehber: 'sesli', seviye: 'baslangic', kategori: 'veli' } };
+  }
+  // Eski ya da eksik veriyi bugünkü biçime getirir (alan silmez, yalnızca ekler/düzeltir)
+  function migrasyon(v) {
+    if (!nesneMi(v)) v = {};
+    if (typeof v.surum !== 'number') v.surum = 0;
+    if (!Array.isArray(v.olcumler)) v.olcumler = [];
+    if (!Array.isArray(v.nefesler)) v.nefesler = [];
+    ['gunler', 'sonMetin', 'calis', 'rutin', 'ayarlar'].forEach(function (a) {
+      if (!nesneMi(v[a])) v[a] = {};
+    });
+    v.surum = VERI_SURUM;
+    return v;
+  }
+  // Okunamayan ham metni ayrı anahtara kopyalar; en fazla 3 bozuk kopya tutulur
+  function bozukKopyala(ham) {
+    try {
+      var on = 'dk.v1.bozuk.', anahtarlar = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var a = localStorage.key(i);
+        if (a && a.indexOf(on) === 0) anahtarlar.push(a);
+      }
+      anahtarlar.sort();
+      while (anahtarlar.length > 2) localStorage.removeItem(anahtarlar.shift());
+      localStorage.setItem(on + Date.now(), ham);
+    } catch (e) { /* yer yok ya da erişim yok */ }
   }
   var veri = (function () {
-    var v = bosVeri();
-    try {
-      var k = JSON.parse(localStorage.getItem(ANAHTAR));
-      if (k) {
+    var v = bosVeri(), ham = null;
+    try { ham = localStorage.getItem(ANAHTAR); } catch (e) { ham = null; }
+    if (ham !== null && ham !== '') {
+      var k = null;
+      try { k = JSON.parse(ham); } catch (e) { k = null; }
+      if (nesneMi(k)) {
+        k = migrasyon(k);
         v = Object.assign(v, k);
-        v.ayarlar = Object.assign(bosVeri().ayarlar, k.ayarlar || {});
+        v.ayarlar = Object.assign(bosVeri().ayarlar, k.ayarlar);
+      } else {
+        Saglik.bozuk = true;
+        bozukKopyala(ham);
       }
-    } catch (e) { /* boş başla */ }
+    }
     return v;
   })();
-  function kaydet() { try { localStorage.setItem(ANAHTAR, JSON.stringify(veri)); } catch (e) { /* yer yok */ } }
+  function kaydet() {
+    try {
+      localStorage.setItem(ANAHTAR, JSON.stringify(veri));
+      return true;
+    } catch (e) {
+      Saglik.kayitHata = (e && e.name) || 'Hata';
+      if (!Saglik.kayitUyarildi) {
+        Saglik.kayitUyarildi = true;
+        uyariGoster('Verin telefona kaydedilemedi (yer dolmuş olabilir). Yedeği indirmeni öneririm.', true);
+      }
+      return false;
+    }
+  }
   function gunuIsaretle(adim) {
     var g = gunStr();
     veri.gunler[g] = veri.gunler[g] || {};
     veri.gunler[g][adim] = true;
     kaydet();
+  }
+  function kayitYazilamadi() {
+    Saglik.kayitHata = Saglik.kayitHata || 'DepoHatasi';
+    uyariGoster('Kayıt telefona yazılamadı (yer dolmuş olabilir).', true);
   }
 
   // Ses kayıtları IndexedDB'de
@@ -77,6 +128,7 @@
           var sonuc = fn(t.objectStore('kayitlar'));
           t.oncomplete = function () { res(sonuc && sonuc.result !== undefined ? sonuc.result : undefined); };
           t.onerror = function () { rej(t.error); };
+          t.onabort = function () { rej(t.error); };
         });
       });
     },
@@ -84,7 +136,15 @@
     hepsi: function () { return this.islem('readonly', function (s) { return s.getAll(); }).then(function (r) { return r || []; }); },
     sil: function (id) { return this.islem('readwrite', function (s) { s.delete(id); }); }
   };
-  if (navigator.storage && navigator.storage.persist) { navigator.storage.persist().catch(function () {}); }
+  // Kalıcı depolama izni ve kullanılan yer (API yoksa Saglik alanları null kalır)
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then(function (ok) { Saglik.kalici = !!ok; depoSatiriYaz(); }).catch(function () {});
+  }
+  if (navigator.storage && navigator.storage.estimate) {
+    navigator.storage.estimate().then(function (e) {
+      if (e && typeof e.usage === 'number') { Saglik.kullanilan = e.usage; depoSatiriYaz(); }
+    }).catch(function () {});
+  }
 
   // ================= Ses altyapısı =================
   var Ses = {
@@ -1150,11 +1210,13 @@
     return v;
   }
   function tanimaVar() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  function tanimaAcik() { return veri.ayarlar.tanima === true && veri.ayarlar.tanimaSurum === 2; }
   function tanimaIzni() {
-    if (veri.ayarlar.tanima) return true;
-    var tamam = window.confirm('Söylediğini kontrol etmek için telefonun konuşma tanıması kullanılacak. ' +
-      'Bunun için ses kaydın Google’a gönderilip yazıya çevrilir. Diğer kayıtların telefonda kalmaya devam eder.\n\nKabul ediyor musun?');
-    if (tamam) { veri.ayarlar.tanima = true; kaydet(); }
+    if (tanimaAcik()) return true;
+    var tamam = window.confirm('Söylediğini kontrol etmek için telefonunun konuşma tanıması kullanılacak. ' +
+      'Sesin, telefonunun tanıma hizmetine (Android’de genellikle Google, iPhone’da Apple) internet üzerinden gönderilip yazıya çevrilir. ' +
+      'Bu uygulama sesi kendi başına saklamaz ya da başka yere göndermez. Mikrofon kayıtların telefonda kalır.\n\nKabul ediyor musun?');
+    if (tamam) { veri.ayarlar.tanima = true; veri.ayarlar.tanimaSurum = 2; kaydet(); }
     return tamam;
   }
   var SAYI_BIR = ['sıfır','bir','iki','üç','dört','beş','altı','yedi','sekiz','dokuz'];
@@ -1185,8 +1247,16 @@
     var r = new R(), bitti = false, sonuc = [];
     r.lang = 'tr-TR'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false;
     r.onresult = function (e) {
-      var res = e.results[0];
-      for (var i = 0; i < res.length; i++) sonuc.push(trKucuk(res[i].transcript));
+      // e.results birikimlidir: her çağrıda listeyi baştan kur.
+      // İlk aday: her sonucun en iyi alternatiflerinin birleşimi; sonra ilk sonucun kalan alternatifleri.
+      var en = [], i;
+      for (i = 0; i < e.results.length; i++) {
+        var q = e.results[i];
+        if (q && q.length) en.push(q[0].transcript);
+      }
+      sonuc = [trKucuk(en.join(' '))];
+      var ilkS = e.results[0];
+      if (ilkS) for (i = 1; i < ilkS.length; i++) sonuc.push(trKucuk(ilkS[i].transcript));
     };
     r.onerror = function (e) { if (!bitti) { bitti = true; Calis.tanima = null; cb({ hata: e.error }); } };
     r.onend = function () { if (!bitti) { bitti = true; Calis.tanima = null; cb({ duyulan: sonuc }); } };
@@ -1487,7 +1557,9 @@
         if (MK.sonKayit && MK.sonKayit.id === k.id) { MK.sonKayit = null; $('#mkSonKutu').hidden = true; $('#mkOz').hidden = true; }
         Depo.sil(k.id).then(mkListeYenile);
       });
-      satir.appendChild(cal); satir.appendChild(bilgi); satir.appendChild(sil);
+      var ind = el('button', 'secondary kucuk-btn', 'İndir'); ind.type = 'button';
+      ind.addEventListener('click', function () { sesIndir(k); });
+      satir.appendChild(cal); satir.appendChild(bilgi); satir.appendChild(ind); satir.appendChild(sil);
       kutu.appendChild(satir);
     });
     if (l.length > 1) {
@@ -1552,7 +1624,7 @@
       });
       kaydet();
       kayit.oz = secilen.map(function (o) { return o.id; });
-      if (kayit.ses) Depo.ekle(kayit).catch(function () {});
+      if (kayit.ses) Depo.ekle(kayit).catch(kayitYazilamadi);
       b.disabled = true; b.textContent = 'Değerlendirildi';
     });
     kutu.appendChild(b);
@@ -1580,9 +1652,7 @@
     };
     MK.sonKayit = kayit;
     ozKontrolCiz(kayit);
-    blob.arrayBuffer().then(function (buf) { kayit.ses = buf; return Depo.ekle(kayit); }).then(mkListeYenile).catch(function () {
-      uyariGoster('Kayıt telefona kaydedilemedi (depolama dolu olabilir).');
-    });
+    blob.arrayBuffer().then(function (buf) { kayit.ses = buf; return Depo.ekle(kayit); }).then(mkListeYenile).catch(kayitYazilamadi);
   }
   $('#mkBtn').addEventListener('click', function () {
     if (MK.aktif) { mkDurdur(); return; }
@@ -1748,6 +1818,19 @@
         : 'Chrome’da sağ üstteki üç noktaya dokun, sonra “Ana ekrana ekle” ya da “Uygulamayı yükle”yi seç.';
       $('#kurulum').hidden = false;
     } else $('#kurulum').hidden = true;
+    yedekNotCiz();
+  }
+  // Bugün ekranında soluk tek satır: yedek yoksa ya da eskiyse (uyarı penceresi yok)
+  function yedekNotCiz() {
+    var n = $('#yedekNot');
+    if (!n) return;
+    var gun = Object.keys(veri.gunler).length, m = '';
+    var son = veri.ayarlar.sonYedek, fark = null;
+    if (son) { var t = new Date(son).getTime(); if (!isNaN(t)) fark = Math.floor((Date.now() - t) / 864e5); }
+    if (fark === null) m = 'Henüz yedek almadın.';
+    else if (fark > 14) m = 'Son yedek ' + fark + ' gün önce.';
+    if (m && gun > 5) { n.textContent = m + ' Gelişim > Ayarlar ve veri.'; n.hidden = false; }
+    else { n.textContent = ''; n.hidden = true; }
   }
 
   // ================= Nefes egzersizi =================
@@ -2344,9 +2427,7 @@
     blob.arrayBuffer().then(function (buf) {
       kayit.ses = buf;
       return Depo.ekle(kayit);
-    }).catch(function () {
-      uyariGoster('Kayıt telefona kaydedilemedi (depolama dolu olabilir). Şimdilik bu ekranda dinleyebilirsin.');
-    });
+    }).catch(kayitYazilamadi);
   }
 
   // Zarftan konuşma, durak ve hız çıkarır
@@ -2618,13 +2699,198 @@
     $('#gNefes').textContent = veri.nefesler.length
       ? 'Toplam ' + veri.nefesler.length + ' egzersiz, son 7 günde ' + son7 + '. Seri: ' + seriHesapla() + ' gün.'
       : 'Henüz nefes egzersizi yapmadın.';
+    ayarKartiCiz();
     kayitListesiCiz();
     kaynakCiz();
     surumCiz();
   }
+  // ---------- Ayarlar ve veri: yedek, tanıma izni, depolama ----------
+  var sesListesiOnbellek = null;
+  // Yedeğe yalnızca ses kaydının künyesi girer (ses dosyasının kendisi girmez)
+  function sesListesi(liste) {
+    return liste.map(function (k) {
+      return { id: k.id, tarih: k.tarih, baslik: k.baslik, sure: k.sure, mime: k.mime, boyut: k.ses && k.ses.byteLength ? k.ses.byteLength : 0 };
+    });
+  }
+  function dosyaAdiTemizle(s) {
+    s = String(s || 'kayit').replace(/[\\\/:*?"<>|\s]+/g, '-').replace(/^-+|-+$/g, '');
+    return s.slice(0, 60) || 'kayit';
+  }
+  function sesUzanti(mime) {
+    mime = String(mime || '').toLowerCase();
+    if (mime.indexOf('webm') >= 0) return 'webm';
+    if (mime.indexOf('ogg') >= 0) return 'ogg';
+    if (mime.indexOf('mp4') >= 0 || mime.indexOf('m4a') >= 0 || mime.indexOf('aac') >= 0) return 'm4a';
+    return 'm4a';
+  }
+  function sesIndir(k) {
+    if (!k.ses) { uyariGoster('Bu kaydın ses dosyası yok.'); return; }
+    var ad = dosyaAdiTemizle(k.baslik) + '-' + String(k.tarih || '').slice(0, 10) + '.' + sesUzanti(k.mime);
+    dosyaIndir(ad, new Blob([k.ses], { type: k.mime || 'audio/mp4' }));
+  }
+  var yedekAlan = null;
+  // Önce paylaş (telefonlarda dosyaya kaydetme/Drive seçeneği), olmazsa a[download], o da olmazsa metni göster.
+  // tamam: indirme/paylaşma başarılı olunca çağrılır. metin: yalnızca JSON yedeği için son çare gösterimi.
+  function dosyaIndir(ad, blob, tamam, metin) {
+    var dosya = null;
+    try { dosya = new File([blob], ad, { type: blob.type }); } catch (e) { dosya = null; }
+    function anchor() {
+      try {
+        var a = document.createElement('a');
+        if (!('download' in a) || !window.URL || !URL.createObjectURL) throw new Error('yok');
+        var u = URL.createObjectURL(blob);
+        a.href = u; a.download = ad; a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(u); }, 4000);
+        if (tamam) tamam();
+      } catch (e) {
+        if (metin != null) metinGoster(metin, tamam);
+        else uyariGoster('Bu tarayıcı dosya indirmeyi desteklemiyor.');
+      }
+    }
+    var paylasilabilir = false;
+    try { paylasilabilir = !!(dosya && navigator.canShare && navigator.share && navigator.canShare({ files: [dosya] })); } catch (e) { paylasilabilir = false; }
+    if (paylasilabilir) {
+      try {
+        navigator.share({ files: [dosya] }).then(function () { if (tamam) tamam(); }).catch(function (e) {
+          if (e && e.name === 'AbortError') return;  // kullanıcı vazgeçti
+          anchor();
+        });
+        return;
+      } catch (e) { /* aşağıda anchor */ }
+    }
+    anchor();
+  }
+  function metinGoster(metin, tamam) {
+    var kutu = $('#ayarKart');
+    if (!kutu) return;
+    var eski = $('#yedekMetin'); if (eski) eski.parentNode.removeChild(eski);
+    var w = el('div', 'stack'); w.id = 'yedekMetin'; w.style.gap = '8px';
+    w.appendChild(el('div', 'muted kucuk', 'Dosya indirilemedi. Aşağıdaki metni kopyalayıp bir yere (ör. notlar) yapıştır.'));
+    var ta = document.createElement('textarea');
+    ta.readOnly = true; ta.value = metin; ta.rows = 6; ta.style.width = '100%';
+    w.appendChild(ta);
+    var kop = el('button', 'secondary kucuk-btn', 'Kopyala'); kop.type = 'button';
+    kop.addEventListener('click', function () {
+      ta.focus(); ta.select();
+      var tmm = false;
+      try { tmm = document.execCommand('copy'); } catch (e) { tmm = false; }
+      if (!tmm && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(metin).then(function () { uyariGoster('Kopyalandı.'); }).catch(function () {});
+      } else uyariGoster(tmm ? 'Kopyalandı.' : 'Metni elle seçip kopyala.');
+      if (tamam) { var t = tamam; tamam = null; t(); }
+    });
+    w.appendChild(kop);
+    kutu.appendChild(w);
+  }
+  function yedekHazirla() {
+    return {
+      uygulama: 'diksiyon-kocu', yedekSurum: 1, tarih: new Date().toISOString(), veriSurum: VERI_SURUM,
+      veri: veri, sesler: sesListesiOnbellek || []
+    };
+  }
+  function yedekIndir() {
+    var yedek = yedekHazirla();
+    var metin = JSON.stringify(yedek);
+    var blob = new Blob([metin], { type: 'application/json' });
+    dosyaIndir('diksiyon-yedek-' + gunStr() + '.json', blob, function () {
+      veri.ayarlar.sonYedek = new Date().toISOString();
+      kaydet();
+      ayarKartiCiz();
+    }, metin);
+  }
+  function yedekYukle(dosya) {
+    var fr = new FileReader();
+    fr.onerror = function () { uyariGoster('Dosya okunamadı. Veri değişmedi.'); };
+    fr.onload = function () {
+      var y = null;
+      try { y = JSON.parse(String(fr.result)); } catch (e) { y = null; }
+      if (!nesneMi(y) || y.uygulama !== 'diksiyon-kocu' || !nesneMi(y.veri) || !Array.isArray(y.veri.olcumler)) {
+        uyariGoster('Bu dosya bir Diksiyon Koçu yedeği değil. Veri değişmedi.', true);
+        return;
+      }
+      var yv = migrasyon(y.veri);
+      var tarih = '';
+      try { tarih = new Date(y.tarih).toLocaleDateString('tr-TR'); } catch (e) { tarih = ''; }
+      var gunSayi = Object.keys(yv.gunler).length;
+      var onay = window.confirm('Yedek ' + (tarih && tarih !== 'Invalid Date' ? tarih : '(tarihsiz)') + ': ' + yv.olcumler.length + ' ölçüm, ' +
+        yv.nefesler.length + ' nefes, ' + gunSayi + ' gün. Telefondaki mevcut veri bunun yerine geçsin mi? (Ses kayıtların silinmez.)');
+      if (!onay) return;
+      // Önce mevcut ham veriyi ayrı anahtara kopyala
+      try {
+        var onceki = localStorage.getItem(ANAHTAR);
+        if (onceki === null) onceki = JSON.stringify(veri);
+        localStorage.setItem('dk.v1.onceki', onceki);
+      } catch (e) {
+        uyariGoster('Mevcut verin ayrıca saklanamadığı için yedek yüklenmedi (yer dolmuş olabilir). Veri değişmedi.', true);
+        return;
+      }
+      Object.keys(veri).forEach(function (a) { delete veri[a]; });
+      Object.assign(veri, bosVeri(), yv);
+      veri.ayarlar = Object.assign(bosVeri().ayarlar, yv.ayarlar);
+      if (!kaydet()) return;
+      try { location.reload(); } catch (e) { /* yok */ }
+    };
+    fr.readAsText(dosya);
+  }
+  function depoSatiriYaz() {
+    var s = $('#depoSatiri');
+    if (!s) return;
+    var parca = [];
+    if (Saglik.kalici === true) parca.push('Depolama: kalıcı ✓');
+    else if (Saglik.kalici === false) parca.push('Depolama: kalıcı değil. Tarayıcı uzun süre açılmayan siteleri silebilir; ana ekrana ekle ve yedek al.');
+    if (Saglik.kullanilan != null) parca.push('Kullanılan: ' + (Saglik.kullanilan / 1048576).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' MB');
+    if (Saglik.kayitHata) parca.push('Son kayıt hatası: ' + Saglik.kayitHata);
+    s.textContent = parca.join(' · ');
+    s.hidden = !parca.length;
+  }
+  function ayarKartiCiz() {
+    var kart = $('#ayarKart');
+    if (!kart) return;
+    kart.textContent = '';
+    kart.appendChild(el('b', null, 'Ayarlar ve veri'));
+    var satir = el('div', 'stack'); satir.style.gap = '8px';
+    var ind = el('button', 'secondary kucuk-btn', 'Yedeği indir'); ind.type = 'button';
+    ind.addEventListener('click', yedekIndir);
+    var yuk = el('button', 'secondary kucuk-btn', 'Yedek yükle'); yuk.type = 'button';
+    var gir = document.createElement('input');
+    gir.type = 'file'; gir.accept = '.json,application/json'; gir.hidden = true;
+    gir.addEventListener('change', function () {
+      var d = gir.files && gir.files[0];
+      gir.value = '';
+      if (d) yedekYukle(d);
+    });
+    yuk.addEventListener('click', function () { gir.click(); });
+    satir.appendChild(ind); satir.appendChild(yuk); satir.appendChild(gir);
+    kart.appendChild(satir);
+    var son = veri.ayarlar.sonYedek, sonYazi = 'Henüz yedek almadın.';
+    if (son) {
+      try { sonYazi = new Date(son).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { sonYazi = String(son); }
+    }
+    kart.appendChild(el('div', 'muted kucuk', 'Son yedek: ' + sonYazi));
+    kart.appendChild(el('div', 'muted kucuk', 'Yedeğe ölçümler, günler ve ayarlar girer. Ses kayıtlarının yalnızca listesi girer; sesleri kayıt listesindeki “İndir” ile ayrı kaydedebilirsin.'));
+    var et = el('label', 'check');
+    var c = document.createElement('input'); c.type = 'checkbox';
+    c.checked = tanimaAcik();
+    c.addEventListener('change', function () {
+      if (c.checked) { if (!tanimaIzni()) c.checked = false; }
+      else { veri.ayarlar.tanima = false; kaydet(); }
+    });
+    et.appendChild(c);
+    et.appendChild(document.createTextNode(' Konuşma tanımayı kullan (Söyle, kontrol edeyim)'));
+    kart.appendChild(et);
+    kart.appendChild(el('div', 'muted kucuk', 'Kapatırsan açana kadar tanıma kullanılmaz.'));
+    var ds = el('div', 'muted kucuk'); ds.id = 'depoSatiri'; ds.hidden = true;
+    kart.appendChild(ds);
+    depoSatiriYaz();
+    // Yedekteki ses listesi için kayıt künyelerini önceden hazırla (indirme dokunma olayında beklemesin)
+    Depo.hepsi().then(function (l) { sesListesiOnbellek = sesListesi(l); }).catch(function () {});
+  }
   function kayitListesiCiz() {
     var kutu = $('#kayitListe');
     Depo.hepsi().then(function (liste) {
+      sesListesiOnbellek = sesListesi(liste);
       kutu.textContent = '';
       if (!liste.length) {
         kutu.appendChild(el('div', 'bos', 'Henüz kayıt yok. Metin sekmesinde bir metin okuyup kaydet.'));
@@ -2644,6 +2910,10 @@
         var kat = katBul(k.kat);
         bilgi.appendChild(el('div', 's', tarihYaz(k.tarih) + ' · ' + sure(k.sure) + (k.hiz ? ' · ' + k.hiz + ' k/dk' : '') + (kat ? ' · ' + kat.ad : (k.kat === 'calis' ? ' · Çalış' : ''))));
         c.appendChild(bilgi);
+        var ind = el('button', 'secondary kucuk-btn', 'İndir');
+        ind.type = 'button';
+        ind.addEventListener('click', function () { sesIndir(k); });
+        c.appendChild(ind);
         var sil = el('button', 'secondary kucuk-btn danger', 'Sil');
         sil.type = 'button';
         sil.addEventListener('click', function () {
@@ -2673,6 +2943,9 @@
   metinSec(false);
   goster('bugun');
   rehberNotu();
+  if (Saglik.bozuk) {
+    uyariGoster('Kayıtlı verin okunamadı. Bir kopyası ayrı saklandı. Yedeğin varsa Gelişim > Ayarlar ve veri’den yükleyebilirsin.', true);
+  }
 
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
