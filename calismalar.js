@@ -408,7 +408,106 @@ window.CALISMALAR = [
       }
     ]
   },
-  { id: 'dudak', harf: 'Ağız', ad: 'Dudak ve dil tembelliği', ozet: 'Sesler yuvarlanıyor, net çıkmıyor.', hazir: false },
+  {
+    id: 'dudak', harf: 'Ağız', ad: 'Dudak ve dil tembelliği', ozet: 'Sesler yuvarlanıyor, net çıkmıyor.',
+    hazir: true,
+    sesli: false,
+    ozKontrol: [
+      { id: 'net', yazi: 'Sesler net ve rahat çıktı', iyi: true, tavsiye: 'Harika! Tempoyu bir kademe artırıp yeniden dene.' },
+      { id: 'yuvarlak', yazi: 'Sesler yuvarlandı, birbirine karıştı', tavsiye: 'Yavaşla ve her sesi abartarak söyle. Hece kartlarında Yavaş tempoyla başla; ağzını normalden fazla aç.', adim: 2 },
+      { id: 'cene', yazi: 'Çenem ve yüzüm gerildi', tavsiye: 'Çeneyi gevşet, dişlerini sıkma. Isınmadaki yüz masajını yap ve hareketleri zorlamadan, yumuşak yap.', adim: 1 },
+      { id: 'dil', yazi: 'Dilim dolaştı, takıldım', tavsiye: 'Tempoyu düşür. Takıldığın yeri ayrı ayrı yavaşça söyle, sonra tekrar hızlan. Takılmak tekerlemede normaldir.', adim: 3 },
+      { id: 'yorgun', yazi: 'Dudağım ve dilim çabuk yoruldu', tavsiye: 'Normal. Her gün 1–2 dakika, düzenli yap. Süreyi zamanla artırırsın.', adim: 1 }
+    ],
+    adimlar: [
+      {
+        tur: 'bilgi', baslik: 'Dudak ve dil neden çalışır?',
+        metin: [
+          'Konuşurken dudak, dil, yanak ve çene kasları çalışır. Bu kaslar tembel kalırsa sesler yuvarlanır, sözcüklerin sonu yutulur. Her gün birkaç dakika çalışmak bunları canlı ve esnek tutar.'
+        ],
+        maddeler: [
+          '<b>Önce yüzün ve çenen gevşek olsun.</b> Hareketleri zorlamadan, yumuşak yap.',
+          '<b>Kalemi dişle sıkıp konuşmak yanlıştır.</b> Dudak çalışır ama çene sertleşir.',
+          'Mümkünse <b>ayna karşısında</b> yap.',
+          '1–2 hafta, her gün en az bir kez çalış.',
+          '<b>Önemli bir konuşmadan önce</b> en az 1, 2, 5 ve 6. hareketleri yap.',
+          'Hızlı çalışmalarda amaç <b>hız değil</b>, her sesin tam çıkmasıdır.'
+        ],
+        dene: { yonerge: 'Önce kendini yokla: Aşağıdakileri sesli söyle ve kaydet. Çalışmanın sonunda bir daha kaydedip karşılaştırırsın.', sozler: ['Bir berber bir berbere bre berber gel beraber.', 'Yarın veli toplantısına geliyor musunuz?', 'Kapıyı kapatıp pencereyi açabilir misiniz?'] }
+      },
+      {
+        tur: 'tut', baslik: 'Isınma: 6 ağız hareketi', fazAd: 'Yap!', birim: 'hareket',
+        maddeler: [
+          '<b>1 Masaj:</b> Parmak uçlarınla şakaklardan başlayıp yanaklardan çeneye doğru masaj yap. Ağzın biraz açık olsun.',
+          '<b>2 Büz-ger:</b> Dudaklarını büzüp ileri çıkar, sonra yanlara doğru ger. Bir süre sonra hızlan.',
+          '<b>3 Kıvır:</b> Önce üst, sonra alt dudağını dışarı doğru kıvırıp gevşet. Diğer dudağın oynamasın.',
+          '<b>4 Dil uzat:</b> Dilini burun, çene ve kulaklar yönünde birkaç kez çıkarıp ger, gevşet.',
+          '<b>5 Dil dayama:</b> Dilinin ön kısmını önce üst, sonra alt arka dişlerine ve diş etine dayayıp ger, gevşet.',
+          '<b>6 Diş temizle:</b> Dişlerinin arasına yemek girmiş gibi dil ucunla temizle; üst-alt, ön-arka bütün dişlerine uğra.',
+          'Her harekete 20 saniye ayrılır. Ekranda hangi harekette olduğunu görürsün.'
+        ],
+        sesler: ['1 Masaj', '2 Büz-ger', '3 Kıvır', '4 Dil uzat', '5 Dil dayama', '6 Diş temizle'], sure: 20, dinlenme: 3, turSayisi: 1
+      },
+      {
+        tur: 'kart', baslik: 'Hızlı hece dizileri', hece: true, sabitDizi: 1, secimDizi: 5,
+        yonerge: 'Üç heceyi kesintisiz, düzgün bir ritimle söyle. Önce yavaş, ısındıkça tempoyu artır. Her sesin net çıkmasına dikkat et.',
+        diziler: [
+          { ad: 'pa-ta-ka', ogeler: ['pa-ta-ka', 'pe-te-ke', 'pı-tı-kı', 'pi-ti-ki', 'po-to-ko', 'pö-tö-kö', 'pu-tu-ku', 'pü-tü-kü'] },
+          { ad: 'ba-da-ga', ogeler: ['ba-da-ga', 'be-de-ge', 'bı-dı-gı', 'bi-di-gi', 'bo-do-go', 'bö-dö-gö', 'bu-du-gu', 'bü-dü-gü'] },
+          { ad: 'pa-ba-ma', ogeler: ['pa-ba-ma', 'pe-be-me', 'pı-bı-mı', 'pi-bi-mi', 'po-bo-mo', 'pö-bö-mö', 'pu-bu-mu', 'pü-bü-mü'] },
+          { ad: 'la-na-da', ogeler: ['la-na-da', 'le-ne-de', 'lı-nı-dı', 'li-ni-di', 'lo-no-do', 'lö-nö-dö', 'lu-nu-du', 'lü-nü-dü'] },
+          { ad: 'ra-la-na', ogeler: ['ra-la-na', 're-le-ne', 'rı-lı-nı', 'ri-li-ni', 'ro-lo-no', 'rö-lö-nö', 'ru-lu-nu', 'rü-lü-nü'] },
+          { ad: 'şa-ça-ja', ogeler: ['şa-ça-ca', 'şe-çe-ce', 'şı-çı-cı', 'şi-çi-ci', 'şo-ço-co', 'şö-çö-cö', 'şu-çu-cu', 'şü-çü-cü'] },
+          { ad: 'fa-va-ha', ogeler: ['fa-va-ha', 'fe-ve-he', 'fı-vı-hı', 'fi-vi-hi', 'fo-vo-ho', 'fö-vö-hö', 'fu-vu-hu', 'fü-vü-hü'] },
+          { ad: 'bap-dat-gak', ogeler: ['bap-dat-gak', 'bep-det-gek', 'bıp-dıt-gık', 'bip-dit-gik', 'bop-dot-gok', 'böp-döt-gök', 'bup-dut-guk', 'büp-düt-gük'] },
+          { ad: 'kapı-tepe-pike', ogeler: ['kapı', 'tepe', 'pike', 'kutu', 'pati', 'tuğba', 'kakule', 'tıpkı'] }
+        ]
+      },
+      {
+        tur: 'cumle', baslik: 'Tekerlemeler', secim: 5,
+        yonerge: 'Önce yavaş ve her ses tam çıkacak şekilde söyle; sonra tempoyu artır. Takılırsan normal, yavaşlayıp yeniden başla. Amaç hız değil net söyleyiş.',
+        havuz: [
+          'Bir berber bir berbere bre berber gel beraber bir berber dükkânı açalım demiş.',
+          'Şu köşe yaz köşesi, bu köşe kış köşesi, ortada su şişesi.',
+          'Barınaksız baykuşların bağırdığı bakir ormanda bakkallar baş başa sallandılar.',
+          'Karamürselli kara kaptan kadehiyle kasabanın kaynağından kana kana su içti.',
+          'Al şu takatukaları takatukacıya götür. Takatukacı takatukaları takatukalamam derse takatukaları takatukalatmadan al da gel.',
+          'Çatalca’da topal çoban çatal yapıp çatal satar.',
+          'Şu karşıdaki kara kuru kavak, karardın mı ey kara kuru kavak, sarardın mı ey kara kuru kavak.',
+          'Kar kalkar karakartal kalkar, karakartal kalkar kar kalkar.',
+          'Üç tunç tas kayısı hoşafı.',
+          'Kırk kırık küp kırkının da kulpu kırık kara küp.',
+          'A be kuru dayı, ne kuru sarı darı bu darı, a be kuru dayı.',
+          'El alem aladanalandı da biz bir aladana alıp aladanalanamadık.',
+          'Çarık çorap dolak, ben sana çarık çorap dolak mı dedim.',
+          'Gül dibi bülbül dili gibi, gül dibi bülbül dili gibi.',
+          'Değirmene girdi köpek, değirmenci çaldı kötek, hem kepek yedi köpek hem kötek yedi köpek.'
+        ]
+      },
+      {
+        tur: 'cumle', baslik: 'Günlük konuşma cümleleri', secim: 6,
+        yonerge: 'Doğal bir hızda ama her sözcüğün başını ve sonunu net söyle. Sözcük sonlarını yutma: “geliyorsunuz” de, “geliyosunuz” deme.',
+        havuz: [
+          'Yarın veli toplantısına geliyor musunuz?',
+          'Kapıyı kapatıp pencereyi açabilir misiniz?',
+          'Toplantıya katılamayacağımı bildirmek istiyorum.',
+          'Çocukların sorularını sabırla dinleyip cevapladı.',
+          'Bu hafta içinde ödevleri toplayıp değerlendireceğim.',
+          'Öğrencilerimizin başarısını birlikte değerlendireceğiz.',
+          'Lütfen herkes yerine oturup defterini açsın.',
+          'Sizi dinlerken çok şey öğrendiğimi söylemeliyim.',
+          'Gelecek hafta okulda bir etkinlik düzenlenecek.',
+          'Bu konuyu daha sonra yeniden konuşabiliriz.',
+          'Teşekkür ederim, çok güzel bir konuşma yaptınız.',
+          'Arkadaşlar, dikkatinizi çekmek istediğim önemli bir konu var.',
+          'Sınıfa girerken kapıyı yavaşça kapatıp yerinize geçin.',
+          'Her sorunun mutlaka bir çözümü olduğunu unutmayın.',
+          'Yanlış söylediysem düzeltmenizi rica ediyorum.',
+          'Sözlerimi bitirirken hepinize teşekkür etmek istiyorum.'
+        ]
+      }
+    ]
+  },
   { id: 'isinma', harf: '5 dk', ad: 'Konuşmadan önce ısınma', ozet: 'Gevşeme, dudak-dil hareketleri, Maaa-Meee.', hazir: false },
   { id: 'nefes', harf: 'Nefes', ad: 'Nefesim yetmiyor', ozet: 'Cümlenin sonunda nefesim bitiyor.', hazir: false }
 ];

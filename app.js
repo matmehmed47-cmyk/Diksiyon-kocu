@@ -641,7 +641,9 @@
     var ekran = el('div', 'tut-ekran');
     var ses = el('div', 'tut-ses', a.sesler[0]);
     var faz = el('div', 'tut-faz', 'Hazır');
-    var bilgi = el('div', 'muted kucuk', a.sesler.length + ' ses × ' + a.turSayisi + ' tur · her tur ' + a.sure + ' saniye');
+    var bilgi = el('div', 'muted kucuk', a.birim
+      ? a.sesler.length + ' ' + a.birim + ' · her biri ' + a.sure + ' saniye'
+      : a.sesler.length + ' ses × ' + a.turSayisi + ' tur · her tur ' + a.sure + ' saniye');
     ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi);
     kutu.appendChild(ekran);
     var OL = a.olcum ? OLCUMLER[a.olcum] : null;

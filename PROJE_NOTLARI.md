@@ -132,3 +132,6 @@ bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cac
 ## Sürüm 14 (12 Ekim 2026)
 - **Z zorluğu** eklendi (kitap s.97): bilgi (s'nin sesli hâli, boğaz titreşimi), "Sss → Zzz" ısınması (ölçersiz), 9 hece dizisi (sa-za ayırma dahil), 4 kategoride ~120 günlük sözcük, "S ile Z'yi ayır" cümleleri, tekerleme ve günlük cümleler. Kayıt, öz değerlendirme, "Söyle, kontrol edeyim" diğerleri gibi.
 - Modül alanı `sesliMin: 5`: telefon 5 harften kısa sözcükleri okumaz (harf harf okuma riski).
+
+## Sürüm 15 (12 Ekim 2026)
+- **Dudak ve dil tembelliği** modülü eklendi (kitap s.89-91): bilgi, 6 ağız hareketi (20 sn'lik sayaçlı ısınma, `birim: 'hareket'`), hızlı hece dizileri (pa-ta-ka vb., 9 dizi), 15 halk tekerlemesi, 16 günlük cümle. Modülde `tanima` yok (tekerlemede tanıma güvenilmez), `sesli: false`.
