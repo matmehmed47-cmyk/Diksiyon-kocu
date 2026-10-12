@@ -511,7 +511,7 @@
   // Seviye, tamamlanan gün sayısıyla artar (7 gün → Orta, 14 gün → İleri).
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 1;
+  var RUTIN_SURUM = 2;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -555,17 +555,16 @@
 
     // 1) Nefes
     adimlar.push(kopya(N.adimlar[1], { bolum: 0, baslik: 'Kollarla nefes', sure: [18, 22, 25][i], maddeler: N.adimlar[1].maddeler.slice(0, 4) }));
-    var ver = [[8, 10, 12], [10, 12, 14], [12, 14, 16]][i], nSure = 6 + ver[2];
-    adimlar.push(kopya(N.adimlar[2], {
-      bolum: 0, sure: nSure,
-      sesler: ver.map(function (v) { return 'Al 6 · Ver ' + v; }),
+    var ver = [8, 10, 12][i];
+    adimlar.push({
+      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, sssss diye ver', al: 6, ver: ver, turSayisi: 5,
       maddeler: [
-        'Burundan <b>6 sayıda</b> nefes al (omuzlar sabit).',
-        'Ağızdan <b>' + ver.join(', ') + '</b> sayıda ver; her turda biraz daha uzun.',
-        'Nefes bitti sanılan yerde biraz daha zorlamadan ver.',
-        'Her tur ' + nSure + ' saniye. Erken biterse sonraki turu bekle.'
+        'Elini karnına koy. Burundan <b>6 saniyede</b> sessizce nefes al; omuzların kalkmasın, karın ve kaburgalar açılsın.',
+        '“Ver” denince <b>sssss</b> diye, <b>' + ver + ' saniye</b> boyunca aynı güçte ver.',
+        'Telefonu yüzünden bir karış uzakta tut. Mikrofon her turda nefes verişini dinler ve ne olduğunu yazar.',
+        'Mikrofon omzunu ya da karnını göremez; onu elinle ya da aynada kontrol et.'
       ]
-    }));
+    });
 
     // 2) Günün harfi
     adimlar.push(kopya(H.adimlar[1], { bolum: 1, turSayisi: [2, 2, 3][i] }));
@@ -799,6 +798,7 @@
     }
     if (a.tur === 'bilgi' && Calis.adim === 0) zorlukCiz(kutu);
     if (a.tur === 'tut') tutCiz(kutu, a);
+    if (a.tur === 'nefesOlc') nefesOlcCiz(kutu, a);
     if (a.tur === 'kart') kartCiz(kutu, a);
     if (a.tur === 'cumle') cumleCiz(kutu, a);
     $('#calisOnceki').disabled = Calis.adim === 0;
@@ -922,6 +922,122 @@
       Ses.mikrofon().then(function (stream) { basla(OL.Olcer(stream)); })
         .catch(function (e) { mikrofonHatasi(e); basla(null); });
     });
+  }
+
+  // ---------- Dinlemeli nefes: "al" sessiz, "ver" sssss (mikrofon dinler) ----------
+  function nefesOlcCiz(kutu, a) {
+    var ekran = el('div', 'tut-ekran');
+    var ses = el('div', 'tut-ses', a.al + ' · ' + a.ver);
+    var faz = el('div', 'tut-faz', 'Hazır');
+    var bilgi = el('div', 'muted kucuk', a.turSayisi + ' tur · ' + a.al + ' sn al, ' + a.ver + ' sn sssss diye ver');
+    var cubuk = el('div', 'seviye-cubuk'), dolgu = el('span');
+    cubuk.appendChild(dolgu);
+    ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi); ekran.appendChild(cubuk);
+    kutu.appendChild(ekran);
+    var btn = el('button', 'primary', 'Başlat'); btn.type = 'button';
+    kutu.appendChild(btn);
+    var sonuclar = el('div', 'stack'); sonuclar.style.gap = '6px';
+    kutu.appendChild(sonuclar);
+    var FZ = {
+      al: { ad: 'Nefes al', soz: 'Nefes al', zil: 523, sn: a.al },
+      ver: { ad: 'Sssss diye ver', soz: 'Yavaşça ver', zil: 440, sn: a.ver }
+    };
+
+    function bitir(tamam, n) {
+      var turlar = n ? n.turlar : [];
+      calisDurdur();
+      btn.textContent = 'Yeniden başlat';
+      ekran.classList.remove('aktif', 'dinlen');
+      dolgu.style.width = '0';
+      if (!tamam) { faz.textContent = 'Durduruldu'; return; }
+      faz.textContent = 'Bitti! Sonraki adıma geçebilirsin.';
+      Rehber.soyle('Tebrikler, bitti', 784);
+      if (!n.dinle) return;
+      var iyi = turlar.filter(function (d) { return d === 'g'; }).length;
+      var ozet = el('div', 'coach');
+      ozet.appendChild(el('div', 'label', 'Özet'));
+      ozet.appendChild(el('p', null, a.turSayisi + ' turun ' + iyi + ' tanesi tam süre ve dengeli. ' +
+        (iyi === a.turSayisi ? 'Harika!' : iyi >= 3 ? 'İyi gidiyorsun; uyarı aldığın turlara dikkat et.' : 'Acele etme; nefesi daha yavaş ve eşit ver.')));
+      sonuclar.appendChild(ozet);
+      veri.nefesler.push({ tarih: new Date().toISOString(), seviye: 'rutin', dinlendi: true, turlar: turlar });
+      gunuIsaretle('nefes');
+    }
+    function turYaz(n) {
+      var t = n.turVeri, durum, mesaj, cv = degiskenlik(t.verRms);
+      if (t.verAktif < 0.8) { durum = 'b'; mesaj = 'Nefes verişini duyamadım. Telefonu yüzüne yaklaştır ve “sssss” diye duyulur şekilde ver.'; }
+      else if (t.verSon < a.ver - 1.2) { durum = 'w'; mesaj = 'Erken bitirdin: ' + sn(t.verSon) + ' sn / ' + a.ver + ' sn. Daha yavaş ver.'; }
+      else if (t.verIlk != null && t.verIlk > 2.5) { durum = 'w'; mesaj = 'Geç başladın. “Ver” denince hemen başla.'; }
+      else if (cv > 0.6) { durum = 'w'; mesaj = 'Süre iyi ama nefesin dalgalı çıktı. Baştan sona aynı güçte ver.'; }
+      else { durum = 'g'; mesaj = 'Güzel: ' + a.ver + ' saniye, dengeli.'; }
+      if (t.alAktif > 1.5) mesaj += ' Nefes alırken ses duydum; burundan sessizce al.';
+      n.turlar.push(durum);
+      var satir = el('div', 'card tur');
+      satir.appendChild(el('span', 'badge ' + durum, String(n.tur)));
+      satir.appendChild(el('p', null, mesaj));
+      sonuclar.appendChild(satir);
+    }
+    function fazaGir(n, f) {
+      n.faz = f; n.fazBas = performance.now();
+      if (f === 'al') n.turVeri = { alAktif: 0, verAktif: 0, verIlk: null, verSon: null, verRms: [] };
+      ses.textContent = FZ[f].ad;
+      ekran.classList.toggle('aktif', f === 'ver');
+      ekran.classList.toggle('dinlen', f === 'al');
+      Rehber.soyle(FZ[f].soz, FZ[f].zil);
+    }
+    function tik(n) {
+      var simdi = performance.now(), dt = Math.min(0.25, (simdi - n.son) / 1000);
+      n.son = simdi;
+      var gecen = (simdi - n.fazBas) / 1000, uzunluk = n.faz === 'hazir' ? 2 : FZ[n.faz].sn;
+      if (n.olcer) {
+        var r = n.olcer.rms();
+        dolgu.style.width = Math.round((n.esik ? Math.min(1, r / (n.esik * 6)) : Math.min(1, r * 30)) * 100) + '%';
+        if (n.faz === 'hazir') { if (!Rehber.mesgul()) n.kalib.push(r); }
+        else if (n.esik && !Rehber.mesgul() && r > n.esik) {
+          var t = n.turVeri;
+          if (n.faz === 'al') t.alAktif += dt;
+          else { t.verAktif += dt; t.verRms.push(r); if (t.verIlk == null) t.verIlk = gecen; t.verSon = gecen; }
+        }
+      }
+      faz.textContent = n.faz === 'hazir' ? (n.olcer ? 'Sessiz kal, ortamı dinliyorum…' : 'Hazırlan…')
+        : Math.max(1, Math.ceil(uzunluk - gecen)) + ' · ' + n.tur + '. tur / ' + a.turSayisi;
+      if (gecen < uzunluk) return;
+      if (n.faz === 'hazir') { if (n.olcer) n.esik = esikHesapla(medyan(n.kalib)); fazaGir(n, 'al'); }
+      else if (n.faz === 'al') fazaGir(n, 'ver');
+      else {
+        if (n.olcer) turYaz(n);
+        if (n.tur >= a.turSayisi) { bitir(true, n); return; }
+        n.tur++; fazaGir(n, 'al');
+      }
+    }
+    function basla(stream) {
+      var n = { dinle: !!stream, stream: stream, olcer: stream ? Olcer(stream, 1500) : null, tur: 1, faz: 'hazir',
+        fazBas: performance.now(), son: performance.now(), kalib: [], esik: null, turVeri: null, turlar: [], zaman: null };
+      // calisDurdur() bu nesnenin kapat()'ını çağırarak her şeyi durdurur
+      Calis.olcer = { kapat: function () {
+        clearInterval(n.zaman);
+        if (n.olcer) n.olcer.kapat();
+        akisiKapat(n.stream);
+        Rehber.durdur();
+        ekranKilidiBirak();
+      } };
+      Calis.tutCalisiyor = true;
+      btn.textContent = 'Durdur';
+      ses.textContent = 'Hazırlan';
+      ekraniAcikTut();
+      Rehber.soyle('Hazırlan', 600);
+      n.zaman = setInterval(function () {
+        tik(n);
+      }, 50);
+      btn.onclick = function () { if (Calis.tutCalisiyor) bitir(false, n); else baslat(); };
+    }
+    function baslat() {
+      calisDurdur(); mkDurdur();
+      sonuclar.textContent = '';
+      Ses.baglam(); Rehber.uyandir();
+      faz.textContent = 'Mikrofon açılıyor…';
+      Ses.mikrofon().then(basla).catch(function (e) { mikrofonHatasi(e); basla(null); });
+    }
+    btn.onclick = baslat;
   }
 
   // ---------- Titreşim ölçeri kişinin sesine göre ayarlama ----------

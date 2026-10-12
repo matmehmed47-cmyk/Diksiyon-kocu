@@ -153,3 +153,12 @@ Kullanıcı: günde 10-15 dk, her gün harf ve metinler değişsin, nefes başta
 - Seri: veri.rutin.gunler ile ayrı "🔥 N gün" sayacı. Seviye tamamlanan gün sayısına göre: 0-6 Başlangıç, 7-13 Orta, 14+ İleri. Seviye artınca nefes verme sayıları, ısınma turu, dizi/sözcük/cümle sayısı, hareket süresi ve tekerleme uzunluğu artar; İleri'de bir "Zor metin" eklenir.
 - Kayıtlar calis: 'rutin' altında; tanıma ve zor sözcük verisi harfin kendi modülüne yazılır (modul.veriId).
 - jsdom ile akış, ertesi gün harf değişimi, tekrar etmeme, seri, seviye ve devam testi yapıldı. Gerçek telefonda denenmedi.
+
+## Sürüm 19 (12 Ekim 2026): rutinde dinlemeli nefes
+Kullanıcı: "Nefes al, sssss diye ver" ve nefes verişi kontrol edilsin; 6-8 iyi, seviyeyle zorlaşsın.
+- Rutinin 2. adımı yeni adım türü `nefesOlc` (nefesOlcCiz): 2 sn ortam ölçümü, sonra 5 tur 6 sn al / 8-10-12 sn (seviyeye göre) "sssss" ver.
+  Nefes sekmesindeki ölçümle aynı yöntem (1500 Hz yüksek geçiren süzgeç, esikHesapla): duyamadım / erken bitirdin / geç başladın / dalgalı / güzel; "al" sırasında 1,5 sn'den fazla ses varsa uyarı.
+  Özet + veri.nefesler'e kayıt (seviye: 'rutin'). Mikrofon izni yoksa sadece rehberli çalışır.
+- Telefon "Yavaşça ver" der (TTS "Sss"yi harf harf okur), ekranda "Sssss diye ver" yazar.
+- RUTIN_SURUM 2: bugünkü kayıtlı set yeniden kurulur (harf aynı kalır).
+- jsdom'da sahte mikrofonla test edildi (erken bırakılan tur yakalandı).
