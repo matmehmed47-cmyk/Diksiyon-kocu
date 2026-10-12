@@ -489,6 +489,7 @@
   function calisAc(id) {
     Calis.modul = calisBul(id);
     Calis.adim = 0;
+    Calis.sesli = false;
     Calis.set = {};
     $('#calisListe').hidden = true;
     $('#calisDetay').hidden = false;
@@ -518,6 +519,7 @@
     } catch (e) { return false; }
   }
   function bip(frekans) {
+    if (veri.ayarlar.bip === false) return;
     try {
       var c = Ses.baglam(), o = c.createOscillator(), g = c.createGain();
       o.frequency.value = frekans; g.gain.value = 0.08;
@@ -640,6 +642,12 @@
     kutu.appendChild(ekran);
     var OL = a.olcum ? OLCUMLER[a.olcum] : null;
     if (OL) kutu.appendChild(el('div', 'muted kucuk', OL.aciklama));
+    var bipEt = el('label', 'check');
+    var bipKutu = document.createElement('input'); bipKutu.type = 'checkbox'; bipKutu.checked = veri.ayarlar.bip !== false;
+    bipEt.appendChild(bipKutu);
+    bipEt.appendChild(document.createTextNode(' Bip seslerini çal (kapatırsan sadece ekrandaki yazıyı izlersin)'));
+    bipKutu.addEventListener('change', function () { veri.ayarlar.bip = bipKutu.checked; kaydet(); });
+    kutu.appendChild(bipEt);
     var btn = el('button', 'primary', 'Başlat');
     btn.type = 'button';
     kutu.appendChild(btn);
@@ -941,7 +949,7 @@
     kutu.appendChild(kontrol);
     kutu.appendChild(ayar);
     // Telefonun konuşma sesi kısa heceleri harf harf okuyor ("rö" → "R, Ö"); hecelerde sesli okuma yok
-    if (!a.hece) kutu.appendChild(sesliEt);
+    if (!a.hece && Calis.modul.sesli !== false) kutu.appendChild(sesliEt);
     if (a.tanima) {
       var tSonuc = el('div', 'tanima-sonuc'); tSonuc.hidden = true;
       kutu.insertBefore(tanimaDugmesi('Söyle, kontrol edeyim', function () { return dizi().ogeler[Calis.kart]; },
@@ -1017,7 +1025,7 @@
       b.appendChild(el('span', 'grow', c));
       b.addEventListener('click', function () {
         b.classList.toggle('okundu');
-        if (Calis.sesli && b.classList.contains('okundu')) calisSoyle(c);
+        if (Calis.sesli && Calis.modul.sesli !== false && b.classList.contains('okundu')) calisSoyle(c);
       });
       sar.appendChild(b);
       if (a.tanima) {
@@ -1383,7 +1391,7 @@
   var FAZ = {
     al: { ad: 'Nefes al', soz: 'Nefes al', zil: 523, olcek: 1 },
     tut: { ad: 'Tut', soz: 'Tut', zil: 659, olcek: 1 },
-    ver: { ad: 'Yavaşça ver', soz: 'Sss diye ver', zil: 440, olcek: 0.62 }
+    ver: { ad: 'Yavaşça ver', soz: 'Yavaşça ver', zil: 440, olcek: 0.62 }
   };
 
   function segCiz(kutu, secenekler, secili, degisti) {

@@ -160,6 +160,7 @@ window.CALISMALAR = [
   {
     id: 's', harf: 'S', ad: 'S zorluğu', ozet: 'S sesi peltek, hışırtılı ya da ş’ye benzer çıkıyor.',
     hazir: true,
+    sesli: false,
     tanima: {
       harf: 's',
       karisma: [
@@ -227,8 +228,8 @@ window.CALISMALAR = [
         havuz: [
           { ad: 'Başta s', ogeler: ['sabah', 'sabun', 'saat', 'sabır', 'saç', 'sağlık', 'sahil', 'salı', 'salata', 'sandalye', 'sarı', 'sayfa', 'sebze', 'ses', 'sevgi', 'sıcak', 'sınıf', 'simit', 'sinema', 'soğuk', 'sokak', 'soru', 'söz', 'su', 'süt', 'sevinç', 'sepet', 'sohbet', 'sonbahar', 'sessiz'] },
           { ad: 'Ortada s', ogeler: ['masa', 'kasa', 'kese', 'misafir', 'resim', 'hasta', 'pasta', 'istasyon', 'kestane', 'mesaj', 'posta', 'yastık', 'aslan', 'masal', 'mısır', 'kısa', 'basit', 'yasak', 'pasaport', 'kusur', 'isim', 'insan', 'bisiklet', 'istek', 'hesap', 'mesafe', 'eskiden', 'yüksek'] },
-          { ad: 'Sonda s', ogeler: ['ses', 'kas', 'bas', 'kes', 'süs', 'dans', 'otobüs', 'ders', 'his', 'tenis', 'kaktüs', 'hırs', 'kurs', 'ters', 'kafes', 'nefes', 'heves', 'vals', 'kampüs', 'tas', 'pas', 'sus'] },
-          { ad: 'Ünsüzle yan yana', ogeler: ['dost', 'üst', 'test', 'spor', 'skor', 'slogan', 'fıstık', 'pastırma', 'eski', 'uskumru', 'iskele', 'kasket', 'basket', 'kostüm', 'istiridye', 'aspirin', 'istasyon', 'ustalık', 'kısmet', 'pastane'] }
+          { ad: 'Sonda s', ogeler: ['kas', 'bas', 'kes', 'süs', 'dans', 'otobüs', 'ders', 'his', 'tenis', 'kaktüs', 'hırs', 'kurs', 'ters', 'kafes', 'nefes', 'heves', 'vals', 'kampüs', 'tas', 'pas', 'sus'] },
+          { ad: 'Ünsüzle yan yana', ogeler: ['dost', 'üst', 'test', 'spor', 'skor', 'slogan', 'fıstık', 'pastırma', 'eski', 'uskumru', 'iskele', 'kasket', 'basket', 'kostüm', 'istiridye', 'aspirin', 'ustalık', 'kısmet', 'pastane'] }
         ]
       },
       {
@@ -240,7 +241,7 @@ window.CALISMALAR = [
           'Selin şarkı söylerken sesini hiç yükseltmedi.',
           'Şu sepetteki sebzeler taze mi?',
           'Sonbaharda şemsiyeni yanından ayırma.',
-          'Şemsi Paşa pasajında sesi büzüşesiceler.',
+          'Şemsi Paşa, pasajdaki sessiz sedasız sokakta şiir okudu.',
           'Sesini duyunca çok şaşırdım.',
           'Şimdi sıra sende, sakin ol.',
           'Simitçi sabah erkenden şehre indi.',
@@ -282,7 +283,7 @@ window.CALISMALAR = [
           'Sıcak bir sohbetin sonunda herkes mutlu ayrıldı.',
           'Sabırsızlanma, sıran gelince seni çağıracaklar.',
           'Eski dostlar, yıllar sonra sahildeki pastanede buluştu.',
-          'Sınav sabahı sakin olmak, soruları daha rahat çözdürür.'
+          'Sınav sabahı sakin olmak, soruları daha rahat çözmeni sağlar.'
         ]
       }
     ]

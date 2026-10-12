@@ -111,3 +111,9 @@ bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cac
 3. "Metin ekle" özelliği: kullanıcının kendi metinleri sadece telefonunda saklanır.
 4. Metin sayısını artırmak (kategori başına 10-15, ses odaklı metinler: r, ş/s, kelime sonları).
 5. Sonraki sürüm: "Dersler" bölümü (sık hatalar), yapay zekâ ile telaffuz hatası tespiti, metin üretme, koç yorumu.
+
+## Sürüm 12 (12 Ekim 2026)
+- S çalışmasında telefonun sesli okuması kapatıldı (modül alanı `sesli: false`); telefon kısa sözcükleri harf harf okuyordu. Sesli okuma ayarı her çalışma açılışında sıfırlanır.
+- Nefes ekranında "Sss diye ver" yerine "Yavaşça ver" (harf harf okuma).
+- Isınma ekranına "Bip seslerini çal" kutusu eklendi (ayar hatırlanır).
+- İçerik: bozuk "büzüşesiceler" cümlesi, "çözdürür" ve tekrar eden "ses"/"istasyon" düzeltildi.
