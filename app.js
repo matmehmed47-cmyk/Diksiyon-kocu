@@ -339,11 +339,12 @@
   TitresimOlcer.prototype.basla = function () {
     var self = this;
     self.titresimli = 0; self.sesli = 0; self.hzler = []; self.kareler = [];
-    self.calisiyor = true; self.son = performance.now();
+    self.calisiyor = true; self.son = performance.now(); self.t0 = self.son;
     (function dongu() {
       if (!self.calisiyor) return;
       var simdi = performance.now(), dt = Math.min((simdi - self.son) / 1000, 0.2);
       self.son = simdi;
+      if (simdi - self.t0 < 450) { requestAnimationFrame(dongu); return; }
       self.an.getFloatTimeDomainData(self.buf);
       var r = titresimAnaliz(self.buf, self.sr);
       if (r.ses) { self.sesli += dt; self.kareler.push({ r: r.r, hz: r.hz, derinlik: r.derinlik }); }
@@ -364,7 +365,7 @@
 
   // Sürtünmeli sesin (s/ş) spektral ağırlık merkezi: s ince (yüksek), ş kalın (düşük)
   function keskinlikAnaliz(db, binHz, rms) {
-    if (rms < 0.003) return { ses: false };
+    if (rms < 0.005) return { ses: false };
     var alt = Math.floor(1500 / binHz), ust = Math.min(db.length - 1, Math.floor(12000 / binHz));
     var top = 0, agir = 0;
     for (var i = alt; i <= ust; i++) {
@@ -392,11 +393,12 @@
   KeskinlikOlcer.prototype.basla = function () {
     var self = this;
     self.ince = 0; self.sesli = 0; self.kareler = [];
-    self.calisiyor = true; self.son = performance.now();
+    self.calisiyor = true; self.son = performance.now(); self.t0 = self.son;
     (function dongu() {
       if (!self.calisiyor) return;
       var simdi = performance.now(), dt = Math.min((simdi - self.son) / 1000, 0.2);
       self.son = simdi;
+      if (simdi - self.t0 < 350) { requestAnimationFrame(dongu); return; }
       self.an.getFloatTimeDomainData(self.zaman);
       var t = 0; for (var i = 0; i < self.zaman.length; i++) t += self.zaman[i] * self.zaman[i];
       self.an.getFloatFrequencyData(self.db);
@@ -421,7 +423,7 @@
     var kUst = yuzdelik(kalin.map(function (k) { return k.merkez; }), 0.9);
     var iOrta = yuzdelik(ince.map(function (k) { return k.merkez; }), 0.5);
     if (iOrta < kUst + 400) {
-      return { ok: false, mesaj: '“ssss” ile “şşşş” seslerin birbirine çok yakın çıktı. Bu, s sesinin ş’ye kaydığını gösterebilir. Genel ayarla devam ediyorum; ısınma ve hece kartlarıyla çalışmaya devam et.' };
+      return { ok: false, mesaj: '“ssss” ile “şşşş” birbirine çok yakın çıktı. Bu, s sesinin ş’ye kaydığını gösterebilir. Genel ayarla devam ediyorum; ısınma ve hece kartlarıyla çalışmaya devam et.' };
     }
     return { ok: true, deger: { esik: Math.round((kUst + iOrta) / 2) },
       mesaj: 'Senin sesine göre ayarlandı ✓ Artık s sesin, kendi “şşşş” sesinden ne kadar ayrıldığına göre ölçülecek.' };
@@ -658,7 +660,7 @@
     var fazlar = [];
     a.sesler.forEach(function (s) {
       for (var t = 1; t <= a.turSayisi; t++) {
-        fazlar.push({ ses: s, ad: a.fazAd || 'Titret!', sn: a.sure, tur: t });
+        fazlar.push({ ses: s, ad: a.fazAd || 'Titret!', sn: a.sure, tur: t, olcumsuz: !!(a.olcumsuz && a.olcumsuz.indexOf(s) >= 0) });
         fazlar.push({ ses: s, ad: 'Dinlen', sn: a.dinlenme, tur: t, dinlen: true });
       }
     });
@@ -668,7 +670,7 @@
       var oran = o.ses > 0 ? o.iyi / Math.max(o.ses, f.sn * 0.6) : 0;
       var satir = el('div', 'olcum-satir ' + (oran >= 0.5 ? 'iyi' : oran >= 0.15 ? 'orta' : 'zayif'));
       var yazi = o.ses < 0.5 ? 'Ses duyamadım. Telefonu biraz daha yakın tut.' : OL.sonuc(o, oran);
-      satir.appendChild(el('b', null, f.ses.slice(0, 4) + ' · ' + f.tur + '. tur: '));
+      satir.appendChild(el('b', null, f.ses + ' · ' + f.tur + '. tur: '));
       satir.appendChild(document.createTextNode(yazi));
       sonuclar.appendChild(satir);
       olcumler.push({ ses: f.ses, oran: oran, sesVar: o.ses >= 0.5 });
@@ -700,7 +702,7 @@
       var f = fazlar[i];
       if (kalan === f.sn) {
         bip(f.dinlen ? 440 : 660);
-        if (!f.dinlen && Calis.olcer) Calis.olcer.basla();
+        if (!f.dinlen && !f.olcumsuz && Calis.olcer) Calis.olcer.basla();
       }
       ses.textContent = f.ses;
       faz.textContent = f.ad + ' ' + kalan + ' · ' + f.tur + '. tur';
@@ -708,7 +710,7 @@
       ekran.classList.toggle('dinlen', !!f.dinlen);
       Calis.zaman = setTimeout(function () {
         if (kalan > 1) { calistir(i, kalan - 1); return; }
-        if (!f.dinlen && Calis.olcer) sonucYaz(f, Calis.olcer.dur());
+        if (!f.dinlen && !f.olcumsuz && Calis.olcer) sonucYaz(f, Calis.olcer.dur());
         calistir(i + 1, i + 1 < fazlar.length ? fazlar[i + 1].sn : 0);
       }, 1000);
     }
@@ -812,8 +814,28 @@
     if (tamam) { veri.ayarlar.tanima = true; kaydet(); }
     return tamam;
   }
+  var SAYI_BIR = ['sıfır','bir','iki','üç','dört','beş','altı','yedi','sekiz','dokuz'];
+  var SAYI_ON  = ['','on','yirmi','otuz','kırk','elli','altmış','yetmiş','seksen','doksan'];
+  function sayiSoz(n) {
+    if (n === 0) return 'sıfır';
+    var p = [], b = Math.floor(n/1000), y = Math.floor(n%1000/100), o = Math.floor(n%100/10), e = n%10;
+    if (b) { if (b > 1) p.push(SAYI_BIR[b]); p.push('bin'); }
+    if (y) { if (y > 1) p.push(SAYI_BIR[y]); p.push('yüz'); }
+    if (o) p.push(SAYI_ON[o]);
+    if (e) p.push(SAYI_BIR[e]);
+    return p.join(' ');
+  }
+  function sayilariCevir(s) {
+    return s.replace(/(\d{1,4})(?:\s*['’]\s*|(?=[a-zçğıöşüâîû]))([a-zçğıöşüâîû]*)|(\d{1,4})(?!\d)/gi,
+      function (m, a, ek, c) {
+        var w = sayiSoz(parseInt(a || c, 10));
+        if (ek) { if (/^[aeıioöuüâîû]/i.test(ek) && /t$/.test(w)) w = w.slice(0, -1) + 'd'; return w + ek; }
+        return w;
+      });
+  }
   function trKucuk(s) {
-    return s.toLocaleLowerCase('tr-TR').replace(/[.,;:!?…"“”'’()\-]/g, ' ').replace(/\s+/g, ' ').trim();
+    s = sayilariCevir(s).toLocaleLowerCase('tr-TR').replace(/â/g,'a').replace(/î/g,'i').replace(/û/g,'u');
+    return s.replace(/[.,;:!?…"“”'’()\-]/g, ' ').replace(/\s+/g, ' ').trim();
   }
   function dinle(cb) {
     var R = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -880,7 +902,7 @@
       if (!tanimaVar()) { uyariGoster('Bu tarayıcı konuşma tanımayı desteklemiyor. Chrome ile açmayı dene.'); return; }
       if (!tanimaIzni()) return;
       clearTimeout(Calis.zaman); Calis.oto = false;
-      mkDurdur();
+      mkDurdur(); Rehber.durdur();
       var hedef = hedefAl();
       b.textContent = '👂 Dinliyorum… söyle';
       b.classList.add('dinliyor');
@@ -953,7 +975,7 @@
     if (a.tanima) {
       var tSonuc = el('div', 'tanima-sonuc'); tSonuc.hidden = true;
       kutu.insertBefore(tanimaDugmesi('Söyle, kontrol edeyim', function () { return dizi().ogeler[Calis.kart]; },
-        function (h, d) { var r = sozcukDegerlendir(h, d); zorIsle(trKucuk(h), r.dogru); return r; }, tSonuc), kontrol);
+        function (h, d) { var r = sozcukDegerlendir(h, d); if (d && d.length && d[0]) zorIsle(trKucuk(h), r.dogru); return r; }, tSonuc), kontrol);
       kutu.insertBefore(tSonuc, kontrol);
     }
 
@@ -1016,6 +1038,7 @@
 
   // ---------- Cümleler ----------
   function cumleCiz(kutu, a) {
+    Calis.sesli = false;
     var liste = el('div', 'stack');
     liste.style.gap = '8px';
     a.cumleler.forEach(function (c, i) {
@@ -1040,7 +1063,7 @@
     });
     kutu.appendChild(liste);
     kutu.appendChild(el('div', 'muted kucuk', a.tanima
-      ? 'Okuduğun cümleye dokunup işaretle. “Söyle, kontrol edeyim” düğmesiyle telefon ' + Calis.modul.tanima.harf + '’li sözcükleri doğru anlayıp anlamadığını söyler.'
+      ? 'Okuduğun cümleye dokunup işaretle. “Söyle, kontrol edeyim” düğmesiyle telefon ' + Calis.modul.tanima.harf + '’li sözcükleri doğru anlayıp anlamadığını söyler. Telefonun tanıması hızlı konuşmada ve tekerlemelerde yanılabilir; sonucu kesin değil, ipucu say.'
       : 'Okuduğun cümleye dokunup işaretle.'));
   }
 
@@ -1390,7 +1413,7 @@
   var TUR_SAYISI = 5;
   var FAZ = {
     al: { ad: 'Nefes al', soz: 'Nefes al', zil: 523, olcek: 1 },
-    tut: { ad: 'Tut', soz: 'Tut', zil: 659, olcek: 1 },
+    tut: { ad: 'Tut', soz: 'Nefesi tut', zil: 659, olcek: 1 },
     ver: { ad: 'Yavaşça ver', soz: 'Yavaşça ver', zil: 440, olcek: 0.62 }
   };
 

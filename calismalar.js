@@ -55,6 +55,7 @@ window.CALISMALAR = [
           'Mümkünse aynaya bak.',
           'Dil ucunu üst ön dişlerin arkasındaki diş etine götür.',
           'Güçlü bir nefes ver ve dilini <b>abartarak</b> titret: Rrrrrrr.',
+          'Bu abartı sadece ısınma içindir; konuşurken r hafif söylenir.',
           'Sonra dudaklarını da katarak dene: Prrrrrr.',
           'Hemen titremezse zorlama. Dilini gevşek bırak, nefesi biraz artır. Her gün denedikçe gelir.'
         ],
@@ -85,8 +86,8 @@ window.CALISMALAR = [
         yonerge: 'Her sözcükte r duyulsun ama sert olmasın. Her açışta farklı sözcükler gelir; zorlandıkların daha sık çıkar.',
         havuz: [
           { ad: 'Başta r', ogeler: ['radyo', 'raf', 'rahat', 'rakam', 'randevu', 'renk', 'resim', 'rica', 'rüzgâr', 'rüya', 'rapor', 'reçel', 'reçete', 'rehber', 'rekor', 'ressam', 'roman', 'rol', 'rota', 'rulo', 'risk', 'rıhtım', 'raket', 'roka', 'rumuz', 'rötar', 'rüküş', 'rimel'] },
-          { ad: 'Ortada r', ogeler: ['araba', 'kurabiye', 'kirpi', 'kardeş', 'karınca', 'burun', 'erik', 'armut', 'portakal', 'dürüst', 'örnek', 'bereket', 'merak', 'harika', 'şeker', 'kiraz', 'haziran', 'kahraman', 'horoz', 'perde', 'terlik', 'yorgan', 'çarşamba', 'cumartesi', 'arkadaş', 'birlikte', 'kırmızı', 'sarı', 'ırmak', 'kara', 'para', 'koro', 'körük', 'kürek', 'teras', 'turuncu', 'yuvarlak', 'serin', 'güvercin'] },
-          { ad: 'Sonda r', ogeler: ['kar', 'var', 'yer', 'her', 'bir', 'duvar', 'bahar', 'çınar', 'pınar', 'sabır', 'fikir', 'şehir', 'nehir', 'kader', 'haber', 'beraber', 'çiçekler', 'kuşlar', 'yıllar', 'gelir', 'gider', 'okur', 'yazar', 'sever', 'bakar', 'çalışır', 'söyler', 'bilir', 'ister', 'kapılar', 'çocuklar', 'zar', 'ter', 'sor', 'tür', 'sür'] },
+          { ad: 'Ortada r', ogeler: ['araba', 'kurabiye', 'kirpi', 'tarak', 'karınca', 'burun', 'erik', 'armut', 'portakal', 'dürüst', 'örnek', 'bereket', 'merak', 'harika', 'kiraz', 'haziran', 'kahraman', 'horoz', 'perde', 'terlik', 'yorgan', 'çarşamba', 'cumartesi', 'arkadaş', 'birlikte', 'kırmızı', 'sarı', 'ırmak', 'kara', 'para', 'koro', 'körük', 'kürek', 'teras', 'turuncu', 'yuvarlak', 'serin', 'güvercin'] },
+          { ad: 'Sonda r', ogeler: ['kar', 'var', 'yer', 'her', 'bir', 'duvar', 'bahar', 'çınar', 'pınar', 'sabır', 'fikir', 'şehir', 'nehir', 'kader', 'haber', 'beraber', 'çiçekler', 'kuşlar', 'yıllar', 'gelir', 'gider', 'okur', 'yazar', 'sever', 'bakar', 'çalışır', 'söyler', 'bilir', 'ister', 'kapılar', 'çocuklar', 'zar', 'ter', 'sor', 'tür', 'sür', 'şeker'] },
           { ad: 'Ünsüzle yan yana', ogeler: ['tren', 'trafik', 'tramvay', 'program', 'proje', 'prens', 'kredi', 'krem', 'kravat', 'brokoli', 'kardeş', 'kırk', 'bardak', 'korku', 'türkü', 'sırt', 'kurt', 'yurt', 'dört', 'hırka', 'ortak', 'perşembe', 'sürpriz', 'priz', 'trafo', 'fırsat', 'firma', 'sarmak'] }
         ]
       },
@@ -165,7 +166,7 @@ window.CALISMALAR = [
       harf: 's',
       karisma: [
         { harf: 'ş', yazi: 'S, ş gibi çıkmış olabilir. Dili üst diş etinden uzaklaştır, dil ucunu alt ön dişlerin arkasına getir.' },
-        { harf: 'z', yazi: 'S yumuşayıp z gibi duyulmuş olabilir. S’de ses tellerin titremez, sadece hava çıkar.' },
+        { harf: 'z', yazi: 'S yumuşayıp z gibi duyulmuş olabilir. S’de ses telleri titremez, sadece hava çıkar.' },
         { harf: 't', yazi: 'S, t gibi kesik çıkmış olabilir. Havayı kesmeden, akıtarak ver.' }
       ],
       eksik: 'S sesi duyulmadı ya da zayıf kaldı. Havayı ortadan, ince bir şerit gibi ver.',
@@ -203,7 +204,7 @@ window.CALISMALAR = [
           'Havayı ortadan, ince bir şerit gibi ver: Ssssss.',
           'Sonra ses tellerini de katarak z’ye geç ve geri dön: Sssszzzzssss. Dil yeri değişmemeli.'
         ],
-        sesler: ['Ssssss', 'Sssszzzz'], sure: 5, dinlenme: 4, turSayisi: 2, olcum: 'keskinlik'
+        sesler: ['Ssssss', 'Sssszzzz'], olcumsuz: ['Sssszzzz'], sure: 5, dinlenme: 4, turSayisi: 2, olcum: 'keskinlik'
       },
       {
         tur: 'kart', baslik: 'Hece kartları', hece: true, sabitDizi: 1, secimDizi: 5,

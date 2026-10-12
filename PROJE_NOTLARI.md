@@ -117,3 +117,14 @@ bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cac
 - Nefes ekranında "Sss diye ver" yerine "Yavaşça ver" (harf harf okuma).
 - Isınma ekranına "Bip seslerini çal" kutusu eklendi (ayar hatırlanır).
 - İçerik: bozuk "büzüşesiceler" cümlesi, "çözdürür" ve tekrar eden "ses"/"istasyon" düzeltildi.
+
+## Sürüm 13 (12 Ekim 2026)
+- Tanıma metni normalleştirme: sayılar sözcüğe çevrilir ("8'de" → "sekizde", "4'ü" → "dördü"), â/î/û → a/i/u ("Rüzgâr" → "rüzgar").
+- Sözcük kartında hiçbir şey duyulmadıysa "zor sözcük" sayacı artmaz.
+- Tanıma başlarken telefonun sesi (Rehber) kesilir.
+- Ölçerler başlangıçtaki bip/ilk anı atlar (Keskinlik 350 ms, Titreşim 450 ms).
+- S ısınmasında "Sssszzzz" fazı ölçülmez (ses telli z); sonuç etiketi tam ses adını gösterir.
+- Keskinlik sessizlik eşiği 0.003 → 0.005.
+- Cümle adımı açılırken sesli okuma kapalı başlar; alt nota "tanıma ipucudur, kesin değil" uyarısı eklendi.
+- İçerik: dilbilgisi düzeltmeleri; R listelerinde şeker (sonda), kardeş yerine tarak; R ısınmasına "abartı sadece ısınma içindir" notu.
+- Nefes ekranında "Tut" fazı sesli "Nefesi tut" der (ekranda "Tut" kalır).
