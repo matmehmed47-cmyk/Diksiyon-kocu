@@ -97,8 +97,8 @@
       return false;
     }
   }
-  function gunuIsaretle(adim) {
-    var g = gunStr();
+  function gunuIsaretle(adim, tarih) {
+    var g = tarih || gunStr();
     veri.gunler[g] = veri.gunler[g] || {};
     veri.gunler[g][adim] = true;
     kaydet();
@@ -570,7 +570,7 @@
 
   // ---------- Günlük rutin: nefes → günün harfi → dudak-dil → tekerleme → şiir → bitiş kaydı ----------
   // Harf her gün sırayla değişir; son 7 günde görülen sözcük ve cümleler pek gelmez.
-  // Seviye, tamamlanan gün sayısıyla artar (7 gün → Orta, 14 gün → İleri).
+  // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
   var RUTIN_SURUM = 3;
@@ -580,13 +580,56 @@
     r.gunler = r.gunler || {}; r.goruldu = r.goruldu || {};
     return r;
   }
-  function rutinTamamSayisi() { return Object.keys(rutinVeri().gunler).length; }
-  function rutinSeviye() { return Math.min(3, 1 + Math.floor(rutinTamamSayisi() / 7)); }
-  function rutinSeri() {
-    var g = rutinVeri().gunler, gun = new Date(), n = 0;
-    if (!g[gunStr(gun)]) gun.setDate(gun.getDate() - 1);
-    while (g[gunStr(gun)]) { n++; gun.setDate(gun.getDate() - 1); }
+  var SEVIYE_ESIK = [0, 8, 16];
+  var HAFTA_HEDEF = 4;
+  var SURE_ESIK = { tam: 240, kisa: 90 };
+  // Geçerli gün: eski kayıt (true) ya da süresi eşiği geçen kayıt.
+  function gunGecerli(v) { return v === true || !!(v && v.sn >= (v.mod === 'kisa' ? SURE_ESIK.kisa : SURE_ESIK.tam)); }
+  // Bugünden başlayıp 27 gün geriye (toplam 28 gün) geçerli günleri sayar.
+  function rutinSonGunSayisi() {
+    var g = rutinVeri().gunler, gun = new Date(), n = 0, i;
+    for (i = 0; i < 28; i++) {
+      if (gunGecerli(g[gunStr(gun)])) n++;
+      gun.setDate(gun.getDate() - 1);
+    }
     return n;
+  }
+  function rutinSeviye() {
+    var n = rutinSonGunSayisi();
+    return n >= SEVIYE_ESIK[2] ? 3 : (n >= SEVIYE_ESIK[1] ? 2 : 1);
+  }
+  function rutinHedef() {
+    var h = veri.ayarlar && Number(veri.ayarlar.haftaHedef);
+    return h > 0 ? h : HAFTA_HEDEF;
+  }
+  // Bu hafta (Pazartesi-Pazar) kayıtlı gün sayısı; süre eşiği aranmaz.
+  function rutinHafta() {
+    var g = rutinVeri().gunler, gun = new Date(), n = 0, i;
+    gun.setDate(gun.getDate() - ((gun.getDay() + 6) % 7));
+    for (i = 0; i < 7; i++) {
+      if (g[gunStr(gun)]) n++;
+      gun.setDate(gun.getDate() + 1);
+    }
+    return n;
+  }
+  // Seri: bugün kayıtlı değilse dünden başlar; tek boş gün bozmaz, ardışık iki boş gün bozar.
+  function rutinSeri() {
+    var g = rutinVeri().gunler, gun = new Date(), n = 0, bos = 0, i;
+    if (!g[gunStr(gun)]) gun.setDate(gun.getDate() - 1);
+    for (i = 0; i < 400; i++) {
+      if (g[gunStr(gun)]) { n++; bos = 0; }
+      else { bos++; if (bos >= 2) break; }
+      gun.setDate(gun.getDate() - 1);
+    }
+    return n;
+  }
+  // Rutinde geçen gerçek süreyi sayar (adım başına en fazla 120 sn).
+  function rutinSureTik() {
+    var b = veri.rutin && veri.rutin.bugun;
+    if (!b) return;
+    var now = Date.now();
+    b.sn = (b.sn || 0) + Math.min(120, Math.max(0, (now - (b.t || now)) / 1000));
+    b.t = now;
   }
   function rutinSiradakiHarf() {
     var r = rutinVeri();
@@ -684,13 +727,16 @@
     return { adimlar: adimlar, ozKontrol: oz };
   }
   function rutinBugun() {
-    var r = rutinVeri(), g = gunStr();
-    if (r.bugun && r.bugun.tarih === g && r.bugun.surum === RUTIN_SURUM) return r.bugun;
+    var r = rutinVeri(), g = gunStr(), o = r.bugun;
+    // Başlanmış günün seti, sürüm değişse bile aynen korunur (ilerleme kaybolmasın).
+    if (o && o.tarih === g) {
+      var basladi = o.bitti || o.adim > 0 || Object.keys(o.tamam || {}).length > 0;
+      if (o.surum === RUTIN_SURUM || basladi) return o;
+    }
     var harf = r.bugun && r.bugun.tarih === g ? r.bugun.harf : rutinSiradakiHarf();
     Object.keys(r.goruldu).forEach(function (k) { if (gunFark(r.goruldu[k], g) > 30) delete r.goruldu[k]; });
     var sv = rutinSeviye(), kur = rutinKur(harf, sv);
-    r.sonHarf = harf;
-    r.bugun = { tarih: g, surum: RUTIN_SURUM, harf: harf, seviye: sv, adim: 0, tamam: {}, bitti: false, adimlar: kur.adimlar, ozKontrol: kur.ozKontrol };
+    r.bugun = { tarih: g, surum: RUTIN_SURUM, harf: harf, seviye: sv, adim: 0, tamam: {}, bitti: !!r.gunler[g], sn: 0, t: Date.now(), adimlar: kur.adimlar, ozKontrol: kur.ozKontrol };
     kaydet();
     return r.bugun;
   }
@@ -704,6 +750,7 @@
   }
   function rutinAc() {
     var b = rutinBugun();
+    b.t = Date.now();
     Calis.modul = rutinModul();
     Calis.adim = b.bitti ? 0 : Math.min(b.adim || 0, b.adimlar.length - 1);
     Calis.sesli = false;
@@ -733,29 +780,42 @@
     var r = rutinVeri(), b = r.bugun && r.bugun.tarih === gunStr() ? r.bugun : null;
     var H = calisBul(b ? b.harf : rutinSiradakiHarf());
     var sv = b ? b.seviye : rutinSeviye(), seri = rutinSeri(), svSimdi = rutinSeviye();
+    var sonGun = rutinSonGunSayisi(), hafta = rutinHafta(), hedef = rutinHedef();
+    var bitti = !!(b && (b.bitti || r.gunler[b.tarih]));
     var kart = el('button', 'rutin-kart'); kart.type = 'button';
     var ust = el('span', 'satir');
     ust.appendChild(el('b', 'grow', 'Bugünün rutini'));
-    if (seri > 0) ust.appendChild(el('span', 'pill', '🔥 ' + seri + ' gün'));
+    ust.appendChild(el('span', 'pill', (seri > 0 ? '🔥 ' + seri + ' gün · bu hafta ' : 'Bu hafta ') + hafta + ' / ' + hedef));
     kart.appendChild(ust);
     kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Dudak-dil → Tekerleme → Şiir · yaklaşık 14 dk'));
-    kart.appendChild(el('span', 'muted kucuk', 'Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] +
-      (svSimdi < 3 ? ' · Seviye ' + (svSimdi + 1) + ' için ' + (svSimdi * 7 - rutinTamamSayisi()) + ' gün daha' : '')));
+    kart.appendChild(el('span', 'muted kucuk', 'Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] + ' · son 28 günde ' + sonGun + ' gün' +
+      (svSimdi < 3 ? ' · Seviye ' + (svSimdi + 1) + ' için ' + Math.max(1, SEVIYE_ESIK[svSimdi] - sonGun) + ' gün daha' : '')));
+    if (hafta >= hedef) kart.appendChild(el('span', 'muted kucuk', '✓ Bu haftanın hedefi tamam'));
+    var dun = new Date(), dunDun = new Date();
+    dun.setDate(dun.getDate() - 1); dunDun.setDate(dunDun.getDate() - 2);
+    if (!r.gunler[gunStr()] && !r.gunler[gunStr(dun)] && r.gunler[gunStr(dunDun)])
+      kart.appendChild(el('span', 'muted kucuk', 'Dün atladın, seri bozulmadı. Bugün devam et.'));
     var durum;
-    if (b && b.bitti) durum = '✓ Bugün bitti. İstersen tekrar yap.';
+    if (bitti) durum = '✓ Bugün bitti. İstersen tekrar yap.';
     else if (b && (b.adim > 0 || Object.keys(b.tamam).length)) durum = 'Kaldığın yerden devam et (' + (b.adim + 1) + ' / ' + b.adimlar.length + ') →';
     else durum = 'Başla →';
-    kart.appendChild(el('span', 'rutin-durum' + (b && b.bitti ? ' bitti' : ''), durum));
+    kart.appendChild(el('span', 'rutin-durum' + (bitti ? ' bitti' : ''), durum));
     kart.addEventListener('click', function () { goster('calis'); rutinAc(); });
     kutu.appendChild(kart);
   }
   function rutinKartlariCiz() { rutinKartCiz($('#rutinKartBugun')); rutinKartCiz($('#rutinKartCalis')); }
   function rutinBitir() {
-    var r = rutinVeri(), g = gunStr(), ilk = !r.gunler[g];
-    r.gunler[g] = true; r.bugun.bitti = true; r.bugun.adim = 0;
-    gunuIsaretle('rutin');
+    var r = rutinVeri(), b = r.bugun, g = b.tarih, ilk = !r.gunler[g];
+    rutinSureTik();
+    // Rutinin günü, başladığı gündür (gece yarısını geçse de).
+    var mod = b.mod || 'tam', sn = Math.round(b.sn || 0), hizli = sn < SURE_ESIK[mod === 'kisa' ? 'kisa' : 'tam'];
+    r.gunler[g] = { sn: sn, mod: mod };
+    r.sonHarf = b.harf;
+    b.bitti = true; b.adim = 0;
+    gunuIsaretle('rutin', g);
     var sv = rutinSeviye();
     uyariGoster('Tebrikler, bugünkü rutin bitti! 🔥 ' + rutinSeri() + ' gün üst üste. ' +
+      (hizli ? 'Bugün çok hızlı geçti; seri için sayıldı ama seviyeyi artırmaz. ' : '') +
       (r.bugun.olcumsuz ? 'Not: nefes adımı ölçümsüz yapıldı (mikrofon açılmadı). ' : '') +
       (ilk && sv > r.bugun.seviye ? 'Yarından itibaren Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] + '.' : 'Yarın yeni harf ve yeni metinler gelecek.'));
     calisKapat();
@@ -849,6 +909,7 @@
     $('#calisAdimYazi').textContent = m.ad + ' · ' + (Calis.adim + 1) + ' / ' + m.adimlar.length;
     $('#calisIlerleme').style.width = Math.round((Calis.adim + 1) / m.adimlar.length * 100) + '%';
     if (m.rutin) {
+      rutinSureTik();
       veri.rutin.bugun.adim = Calis.adim; kaydet();
       rutinBolumCiz(kutu);
     }
@@ -1484,7 +1545,7 @@
   $('#calisOnceki').addEventListener('click', function () { if (Calis.adim > 0) { Calis.adim--; adimCiz(); } });
   $('#calisSonraki').addEventListener('click', function () {
     var m = Calis.modul;
-    if (m.rutin) { veri.rutin.bugun.tamam[Calis.adim] = true; kaydet(); }
+    if (m.rutin) { rutinSureTik(); veri.rutin.bugun.tamam[Calis.adim] = true; kaydet(); }
     if (Calis.adim < m.adimlar.length - 1) { Calis.adim++; adimCiz(); return; }
     if (m.rutin) { rutinBitir(); return; }
     gunuIsaretle('calis');
