@@ -502,7 +502,191 @@
     calisDurdur(); mkDurdur();
     $('#calisDetay').hidden = true;
     $('#calisListe').hidden = false;
+    rutinKartlariCiz();
     window.scrollTo(0, 0);
+  }
+
+  // ---------- Günlük rutin: nefes → günün harfi → dudak-dil → tekerleme → bitiş kaydı ----------
+  // Harf her gün sırayla değişir; son 7 günde görülen sözcük ve cümleler pek gelmez.
+  // Seviye, tamamlanan gün sayısıyla artar (7 gün → Orta, 14 gün → İleri).
+  var RUTIN_HARFLER = ['r', 's', 'z'];
+  var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
+  var RUTIN_SURUM = 1;
+  function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
+  function rutinVeri() {
+    var r = veri.rutin = veri.rutin || {};
+    r.gunler = r.gunler || {}; r.goruldu = r.goruldu || {};
+    return r;
+  }
+  function rutinTamamSayisi() { return Object.keys(rutinVeri().gunler).length; }
+  function rutinSeviye() { return Math.min(3, 1 + Math.floor(rutinTamamSayisi() / 7)); }
+  function rutinSeri() {
+    var g = rutinVeri().gunler, gun = new Date(), n = 0;
+    if (!g[gunStr(gun)]) gun.setDate(gun.getDate() - 1);
+    while (g[gunStr(gun)]) { n++; gun.setDate(gun.getDate() - 1); }
+    return n;
+  }
+  function rutinSiradakiHarf() {
+    var r = rutinVeri();
+    return RUTIN_HARFLER[(RUTIN_HARFLER.indexOf(r.sonHarf) + 1) % RUTIN_HARFLER.length];
+  }
+  function rutinSec(liste, n, anahtar, zor) {
+    var g = rutinVeri().goruldu, bugun = gunStr();
+    return agirlikliSec(liste, Math.min(n, liste.length), function (x) {
+      var t = g[anahtar ? anahtar(x) : x], w = 1;
+      if (zor) trKucuk(x).split(' ').forEach(function (s) { var k = zor[s]; if (k && k.y > k.d) w += 3 * Math.min(k.y - k.d, 3); });
+      if (t && gunFark(t, bugun) < 7) w *= 0.03;
+      return w;
+    });
+  }
+  function rutinKur(harfId, sv) {
+    var H = calisBul(harfId), D = calisBul('dudak'), N = calisBul('nefes'), Z = calisBul('zormetin');
+    var zor = ((veri.calis || {})[harfId] || {}).zor || {};
+    var secilen = [];
+    function sec(liste, n, anahtar, z) {
+      var s = rutinSec(liste, n, anahtar, z);
+      s.forEach(function (x) { secilen.push(anahtar ? anahtar(x) : x); });
+      return s;
+    }
+    function dizi(d) { return 'dizi:' + d.ad; }
+    function kirp(y) { return (y || '').replace(/\s*Her açışta[^.]*\./g, ''); }
+    function kopya(a, ek) { return Object.assign({}, a, ek); }
+    var i = sv - 1, adimlar = [];
+
+    // 1) Nefes
+    adimlar.push(kopya(N.adimlar[1], { bolum: 0, baslik: 'Kollarla nefes', sure: [18, 22, 25][i], maddeler: N.adimlar[1].maddeler.slice(0, 4) }));
+    var ver = [[8, 10, 12], [10, 12, 14], [12, 14, 16]][i], nSure = 6 + ver[2];
+    adimlar.push(kopya(N.adimlar[2], {
+      bolum: 0, sure: nSure,
+      sesler: ver.map(function (v) { return 'Al 6 · Ver ' + v; }),
+      maddeler: [
+        'Burundan <b>6 sayıda</b> nefes al (omuzlar sabit).',
+        'Ağızdan <b>' + ver.join(', ') + '</b> sayıda ver; her turda biraz daha uzun.',
+        'Nefes bitti sanılan yerde biraz daha zorlamadan ver.',
+        'Her tur ' + nSure + ' saniye. Erken biterse sonraki turu bekle.'
+      ]
+    }));
+
+    // 2) Günün harfi
+    adimlar.push(kopya(H.adimlar[1], { bolum: 1, turSayisi: [2, 2, 3][i] }));
+    var hk = H.adimlar[2];
+    adimlar.push(kopya(hk, { bolum: 1, yonerge: kirp(hk.yonerge), secimDizi: null, sabitDizi: null,
+      diziler: hk.diziler.slice(0, 1).concat(sec(hk.diziler.slice(1), [2, 3, 4][i], function (d) { return 'dizi:' + harfId + ':' + d.ad; })) }));
+    var sk = H.adimlar[3], sn = [4, 5, 6][i];
+    adimlar.push(kopya(sk, { bolum: 1, yonerge: kirp(sk.yonerge), havuz: null, secim: null,
+      diziler: sk.havuz.map(function (g) { return { ad: g.ad, ogeler: sec(g.ogeler, sn, null, zor) }; }) }));
+    var ck = H.adimlar[4];
+    adimlar.push(kopya(ck, { bolum: 1, havuz: null, secim: null, cumleler: sec(ck.havuz, [2, 3, 4][i], null, zor) }));
+
+    // 3) Dudak-dil
+    var dh = D.adimlar[1], dSure = [12, 15, 18][i];
+    adimlar.push(kopya(dh, { bolum: 2, sure: dSure, dinlenme: 2,
+      maddeler: dh.maddeler.slice(0, 6).concat(['Her harekete ' + dSure + ' saniye ayrılır.']) }));
+    var dk = D.adimlar[2];
+    adimlar.push(kopya(dk, { bolum: 2, secimDizi: null, sabitDizi: null,
+      diziler: dk.diziler.slice(0, 1).concat(sec(dk.diziler.slice(1), [1, 2, 3][i], dizi)) }));
+
+    // 4) Tekerleme: seviye arttıkça uzar
+    var sinir = [80, 150, 100000][i];
+    function uygun(l) { var f = l.filter(function (x) { return x.length <= sinir; }); return f.length >= 4 ? f : l; }
+    var tek = sec(uygun(H.adimlar[5].havuz), 2, null, zor);
+    tek = tek.concat(sec(uygun(D.adimlar[3].havuz).filter(function (x) { return tek.indexOf(x) < 0; }), 1));
+    if (sv >= 3) tek = tek.concat(sec(Z.adimlar[1].havuz, 1));
+    adimlar.push({ tur: 'cumle', bolum: 3, baslik: 'Tekerlemeler', cumleler: tek,
+      yonerge: 'Önce yavaş, her ses net çıksın. Sonra tempoyu artır. Takılırsan yavaşlayıp yeniden başla.' +
+        (sv >= 3 ? ' Sonuncusu uzun bir metin; virgüllerden bölerek oku.' : '') });
+
+    // 5) Bitiş kaydı
+    adimlar.push({ tur: 'cumle', bolum: 4, baslik: 'Bitiş kaydı',
+      cumleler: sec(D.adimlar[4].havuz.concat(N.adimlar[4].havuz), 1),
+      yonerge: 'Bu cümleyi doğal sesinle oku ve aşağıdaki kırmızı düğmeyle kendini kaydet. Kayıtların birikir; ilk kaydınla karşılaştırabilirsin.' });
+
+    // Öz değerlendirmedeki "adıma git" sıraları rutindeki yerlerine çevrilir
+    var esle = { 1: 2, 2: 3, 3: 4, 4: 5, 5: 8 };
+    var oz = (H.ozKontrol || []).map(function (o) {
+      var k = Object.assign({}, o);
+      if (o.adim != null) { if (esle[o.adim] != null) k.adim = esle[o.adim]; else delete k.adim; }
+      return k;
+    });
+    var bugun = gunStr();
+    secilen.forEach(function (k) { rutinVeri().goruldu[k] = bugun; });
+    return { adimlar: adimlar, ozKontrol: oz };
+  }
+  function rutinBugun() {
+    var r = rutinVeri(), g = gunStr();
+    if (r.bugun && r.bugun.tarih === g && r.bugun.surum === RUTIN_SURUM) return r.bugun;
+    var harf = r.bugun && r.bugun.tarih === g ? r.bugun.harf : rutinSiradakiHarf();
+    Object.keys(r.goruldu).forEach(function (k) { if (gunFark(r.goruldu[k], g) > 30) delete r.goruldu[k]; });
+    var sv = rutinSeviye(), kur = rutinKur(harf, sv);
+    r.sonHarf = harf;
+    r.bugun = { tarih: g, surum: RUTIN_SURUM, harf: harf, seviye: sv, adim: 0, tamam: {}, bitti: false, adimlar: kur.adimlar, ozKontrol: kur.ozKontrol };
+    kaydet();
+    return r.bugun;
+  }
+  function rutinModul() {
+    var b = veri.rutin.bugun, H = calisBul(b.harf);
+    return {
+      id: 'rutin', veriId: b.harf, rutin: true, harf: 'Rutin', ad: 'Günlük rutin', sesli: false,
+      tanima: H.tanima, ozKontrol: b.ozKontrol, adimlar: b.adimlar,
+      bolumler: ['Nefes', H.harf + ' sesi', 'Dudak-dil', 'Tekerleme', 'Bitiş']
+    };
+  }
+  function rutinAc() {
+    var b = rutinBugun();
+    Calis.modul = rutinModul();
+    Calis.adim = b.bitti ? 0 : Math.min(b.adim || 0, b.adimlar.length - 1);
+    Calis.sesli = false;
+    Calis.set = {};
+    $('#calisListe').hidden = true;
+    $('#calisDetay').hidden = false;
+    mkHazirla();
+    adimCiz();
+  }
+  function rutinBolumCiz(kutu) {
+    var b = veri.rutin.bugun, simdi = b.adimlar[Calis.adim].bolum;
+    var s = el('div', 'rutin-bolumler');
+    Calis.modul.bolumler.forEach(function (ad, i) {
+      var sira = [];
+      b.adimlar.forEach(function (a, j) { if (a.bolum === i) sira.push(j); });
+      var bitti = sira.every(function (j) { return b.tamam[j]; });
+      var c = el('button', 'rutin-bolum' + (bitti ? ' bitti' : '') + (i === simdi ? ' simdi' : ''), (bitti ? '✓ ' : '') + ad);
+      c.type = 'button';
+      c.addEventListener('click', function () { Calis.adim = sira[0]; adimCiz(); });
+      s.appendChild(c);
+    });
+    kutu.appendChild(s);
+  }
+  function rutinKartCiz(kutu) {
+    if (!kutu) return;
+    kutu.textContent = '';
+    var r = rutinVeri(), b = r.bugun && r.bugun.tarih === gunStr() ? r.bugun : null;
+    var H = calisBul(b ? b.harf : rutinSiradakiHarf());
+    var sv = b ? b.seviye : rutinSeviye(), seri = rutinSeri(), svSimdi = rutinSeviye();
+    var kart = el('button', 'rutin-kart'); kart.type = 'button';
+    var ust = el('span', 'satir');
+    ust.appendChild(el('b', 'grow', 'Bugünün rutini'));
+    if (seri > 0) ust.appendChild(el('span', 'pill', '🔥 ' + seri + ' gün'));
+    kart.appendChild(ust);
+    kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Dudak-dil → Tekerleme · yaklaşık 12 dk'));
+    kart.appendChild(el('span', 'muted kucuk', 'Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] +
+      (svSimdi < 3 ? ' · Seviye ' + (svSimdi + 1) + ' için ' + (svSimdi * 7 - rutinTamamSayisi()) + ' gün daha' : '')));
+    var durum;
+    if (b && b.bitti) durum = '✓ Bugün bitti. İstersen tekrar yap.';
+    else if (b && (b.adim > 0 || Object.keys(b.tamam).length)) durum = 'Kaldığın yerden devam et (' + (b.adim + 1) + ' / ' + b.adimlar.length + ') →';
+    else durum = 'Başla →';
+    kart.appendChild(el('span', 'rutin-durum' + (b && b.bitti ? ' bitti' : ''), durum));
+    kart.addEventListener('click', function () { goster('calis'); rutinAc(); });
+    kutu.appendChild(kart);
+  }
+  function rutinKartlariCiz() { rutinKartCiz($('#rutinKartBugun')); rutinKartCiz($('#rutinKartCalis')); }
+  function rutinBitir() {
+    var r = rutinVeri(), g = gunStr(), ilk = !r.gunler[g];
+    r.gunler[g] = true; r.bugun.bitti = true; r.bugun.adim = 0;
+    gunuIsaretle('rutin');
+    var sv = rutinSeviye();
+    uyariGoster('Tebrikler, bugünkü rutin bitti! 🔥 ' + rutinSeri() + ' gün üst üste. ' +
+      (ilk && sv > r.bugun.seviye ? 'Yarından itibaren Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] + '.' : 'Yarın yeni harf ve yeni metinler gelecek.'));
+    calisKapat();
   }
   function calisDurdur() {
     clearTimeout(Calis.zaman); Calis.zaman = null;
@@ -592,6 +776,10 @@
     kutu.textContent = '';
     $('#calisAdimYazi').textContent = m.ad + ' · ' + (Calis.adim + 1) + ' / ' + m.adimlar.length;
     $('#calisIlerleme').style.width = Math.round((Calis.adim + 1) / m.adimlar.length * 100) + '%';
+    if (m.rutin) {
+      veri.rutin.bugun.adim = Calis.adim; kaydet();
+      rutinBolumCiz(kutu);
+    }
     kutu.appendChild(el('h2', 'h2', (Calis.adim + 1) + '. ' + a.baslik));
     (a.metin || []).forEach(function (p) { kutu.appendChild(el('p', 'calis-p', p)); });
     if (a.yonerge) kutu.appendChild(el('p', 'muted calis-p', a.yonerge));
@@ -804,7 +992,7 @@
 
   // ---------- Konuşma tanıma: "Doğru anlaşıldı mı?" ----------
   function veriCalis() {
-    var id = Calis.modul.id;
+    var id = Calis.modul.veriId || Calis.modul.id;
     veri.calis = veri.calis || {};
     var v = veri.calis[id] = veri.calis[id] || {};
     v.zor = v.zor || {}; v.oz = v.oz || {}; v.isinma = v.isinma || [];
@@ -1075,7 +1263,9 @@
   $('#calisOnceki').addEventListener('click', function () { if (Calis.adim > 0) { Calis.adim--; adimCiz(); } });
   $('#calisSonraki').addEventListener('click', function () {
     var m = Calis.modul;
+    if (m.rutin) { veri.rutin.bugun.tamam[Calis.adim] = true; kaydet(); }
     if (Calis.adim < m.adimlar.length - 1) { Calis.adim++; adimCiz(); return; }
+    if (m.rutin) { rutinBitir(); return; }
     gunuIsaretle('calis');
     uyariGoster('Tebrikler, ' + m.ad + ' çalışmasını bitirdin! Kaydını ilk kaydınla karşılaştırmayı unutma.');
     calisKapat();
@@ -1264,6 +1454,7 @@
     }).catch(mikrofonHatasi);
   });
   calisListeCiz();
+  rutinKartlariCiz();
 
   // ================= Dersler =================
   $$('[data-ders]').forEach(function (b) {
@@ -1353,6 +1544,7 @@
     return { son: l[l.length - 1], ilk: l[0], liste: l };
   }
   function bugunCiz() {
+    rutinKartlariCiz();
     var bugun = veri.gunler[gunStr()] || {};
     var adimlar = ['nefes', 'olcum', 'metin'];
     var tamam = 0, siradakiBulundu = false;

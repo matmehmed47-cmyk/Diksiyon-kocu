@@ -143,3 +143,13 @@ bağlantılarında `?v=N` var ve sw.js aynı kaynaktan gelenleri `cache: 'no-cac
 ## Sürüm 17 (12 Ekim 2026)
 - İki ajanın topladığı halk tekerlemeleri eklendi (vault: Notlar/Araştırmalar/Tekerleme Derlemesi - 1. ve 2. Ajan). Kısa/orta zor olanlar sesine göre R, S, Z ve Dudak-dil havuzlarına; kolay çocuk/oyun tekerlemeleri Isınma'ya; uzun diksiyon metinleri yeni **Zor metinler** modülüne.
 - Doğrulanamayanlar, sayı/matematik temalılar ve uygunsuz bulunanlar alınmadı. "Şemsi Paşa pasajında sesi büzüşesiceler" gerçek bir tekerleme, S havuzuna geri kondu.
+
+## Sürüm 18 (12 Ekim 2026): Günlük rutin
+Kullanıcı: günde 10-15 dk, her gün harf ve metinler değişsin, nefes başta, sıra nefes → harf → dudak-dil → tekerleme; seri sayacı ve zorlaşma istendi.
+- "Bugünün rutini" kartı hem Bugün hem Çalış ekranının en üstünde. 10 adım, ~12 dk: kollarla nefes, sayılı nefes, harf ısınması, hece, sözcük, harf cümleleri, 6 ağız hareketi, hızlı hece, tekerleme, bitiş kaydı.
+- Harf R → S → Z sırayla döner (her yeni günün rutininde bir sonraki). Seçimler mevcut modül havuzlarından yapılır (calisBul), yeni içerik yok.
+- Son 7 günde görülen sözcük/cümle/diziler ağırlık ×0.03 ile neredeyse hiç gelmez (veri.rutin.goruldu, 30 günden eskiler silinir); zorlanılan sözcükler daha sık.
+- Günün seti bir kez kurulur ve veri.rutin.bugun içinde saklanır; adım ve ✓ bölümler kaydedilir, kaldığın yerden devam edilir. Bölüm çipleri ✓ gösterir ve dokununca o bölüme gider.
+- Seri: veri.rutin.gunler ile ayrı "🔥 N gün" sayacı. Seviye tamamlanan gün sayısına göre: 0-6 Başlangıç, 7-13 Orta, 14+ İleri. Seviye artınca nefes verme sayıları, ısınma turu, dizi/sözcük/cümle sayısı, hareket süresi ve tekerleme uzunluğu artar; İleri'de bir "Zor metin" eklenir.
+- Kayıtlar calis: 'rutin' altında; tanıma ve zor sözcük verisi harfin kendi modülüne yazılır (modul.veriId).
+- jsdom ile akış, ertesi gün harf değişimi, tekrar etmeme, seri, seviye ve devam testi yapıldı. Gerçek telefonda denenmedi.
