@@ -573,7 +573,7 @@
   // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 3;
+  var RUTIN_SURUM = 4;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -644,7 +644,8 @@
       return w;
     });
   }
-  function rutinKur(harfId, sv) {
+  function rutinKur(harfId, sv, mod) {
+    mod = mod === 'kisa' ? 'kisa' : 'tam';
     var H = calisBul(harfId), D = calisBul('dudak'), N = calisBul('nefes'), Z = calisBul('zormetin');
     var zor = ((veri.calis || {})[harfId] || {}).zor || {};
     var secilen = [];
@@ -658,25 +659,50 @@
     function kopya(a, ek) { return Object.assign({}, a, ek); }
     var i = sv - 1, adimlar = [];
 
-    // 1) Nefes
-    adimlar.push(kopya(N.adimlar[1], { bolum: 0, baslik: 'Kollarla nefes', sure: [18, 22, 25][i], maddeler: N.adimlar[1].maddeler.slice(0, 4) }));
+    var kisaMod = mod === 'kisa';
+    var gercekAdim = {
+      tur: 'gercek', bolum: 5, baslik: 'Bugün kullanacağım cümle',
+      // Boş bırakılırsa gösterilecek yedek cümle (eski "Bitiş kaydı" havuzundan, günde bir kez seçilir)
+      yedek: sec(D.adimlar[4].havuz.concat(N.adimlar[4].havuz), 1)[0] || ''
+    };
     var ver = [8, 10, 12][i];
-    adimlar.push({
-      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, sssss diye ver', al: 6, ver: ver, turSayisi: 5,
+    var nefesOlcAdim = {
+      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, sssss diye ver', al: 6, ver: ver, turSayisi: kisaMod ? 3 : 5,
       maddeler: [
         'Elini karnına koy. Burundan <b>6 saniyede</b> sessizce nefes al; omuzların kalkmasın, karın ve kaburgalar açılsın.',
         '“Ver” denince <b>sssss</b> diye, <b>' + ver + ' saniye</b> boyunca aynı güçte ver.',
         'Telefonu yüzünden bir karış uzakta tut. Mikrofon her turda nefes verişini dinler ve ne olduğunu yazar.',
         'Mikrofon omzunu ya da karnını göremez; onu elinle ya da aynada kontrol et.'
       ]
-    });
+    };
+    var sk = H.adimlar[3], sn = [4, 5, 6][i];
+
+    if (kisaMod) {
+      // Kısa rutin (5 dk): nefes ölçümü, günün sesinin sözcükleri, 1 tekerleme, gerçek cümle.
+      // Bölüm numaraları tam rutinle aynıdır (0, 1, 3, 5); boş bölümler çizilmez.
+      var yarim = Math.max(3, Math.ceil(sn / 2));
+      adimlar.push(nefesOlcAdim);
+      adimlar.push(kopya(sk, { bolum: 1, yonerge: kirp(sk.yonerge), havuz: null, secim: null,
+        diziler: sk.havuz.map(function (g) { return { ad: g.ad, ogeler: sec(g.ogeler, yarim, null, zor) }; }) }));
+      var tek1 = sec(H.adimlar[5].havuz, 1, null, zor);
+      adimlar.push({ tur: 'cumle', bolum: 3, baslik: 'Tekerleme', cumleler: tek1,
+        yonerge: 'Önce yavaş, her ses net çıksın. Sonra tempoyu artır. Takılırsan yavaşlayıp yeniden başla.' });
+      adimlar.push(gercekAdim);
+      secilen.forEach(function (k) { rutinVeri().goruldu[k] = gunStr(); });
+      // Kısa rutinde adım sıraları farklı olduğu için "adıma git" eşlemeleri kaldırılır
+      var ozK = (H.ozKontrol || []).map(function (o) { var k = Object.assign({}, o); delete k.adim; return k; });
+      return { adimlar: adimlar, ozKontrol: ozK };
+    }
+
+    // 1) Nefes
+    adimlar.push(kopya(N.adimlar[1], { bolum: 0, baslik: 'Kollarla nefes', sure: [18, 22, 25][i], maddeler: N.adimlar[1].maddeler.slice(0, 4) }));
+    adimlar.push(nefesOlcAdim);
 
     // 2) Günün harfi
     adimlar.push(kopya(H.adimlar[1], { bolum: 1, turSayisi: [2, 2, 3][i] }));
     var hk = H.adimlar[2];
     adimlar.push(kopya(hk, { bolum: 1, yonerge: kirp(hk.yonerge), secimDizi: null, sabitDizi: null,
       diziler: hk.diziler.slice(0, 1).concat(sec(hk.diziler.slice(1), [2, 3, 4][i], function (d) { return 'dizi:' + harfId + ':' + d.ad; })) }));
-    var sk = H.adimlar[3], sn = [4, 5, 6][i];
     adimlar.push(kopya(sk, { bolum: 1, yonerge: kirp(sk.yonerge), havuz: null, secim: null,
       diziler: sk.havuz.map(function (g) { return { ad: g.ad, ogeler: sec(g.ogeler, sn, null, zor) }; }) }));
     var ck = H.adimlar[4];
@@ -710,10 +736,8 @@
         yonerge: 'Düz yazı gibi, doğal oku. Nefesi sadece / işaretinde al. | kısa durak, || uzun durak.' });
     }
 
-    // 6) Bitiş kaydı
-    adimlar.push({ tur: 'cumle', bolum: siir ? 5 : 4, baslik: 'Bitiş kaydı',
-      cumleler: sec(D.adimlar[4].havuz.concat(N.adimlar[4].havuz), 1),
-      yonerge: 'Bu cümleyi doğal sesinle oku ve aşağıdaki kırmızı düğmeyle kendini kaydet. Kayıtların birikir; ilk kaydınla karşılaştırabilirsin.' });
+    // 6) Bugün kullanacağım gerçek cümle (eski "Bitiş kaydı" yerine; aynı sıra, bölüm 5)
+    adimlar.push(gercekAdim);
 
     // Öz değerlendirmedeki "adıma git" sıraları rutindeki yerlerine çevrilir
     var esle = { 1: 2, 2: 3, 3: 4, 4: 5, 5: 8 };
@@ -726,30 +750,32 @@
     secilen.forEach(function (k) { rutinVeri().goruldu[k] = bugun; });
     return { adimlar: adimlar, ozKontrol: oz };
   }
-  function rutinBugun() {
+  function rutinBugun(mod) {
     var r = rutinVeri(), g = gunStr(), o = r.bugun;
+    // mod verilmezse varsayılan 'tam'; ama var olan setin modu da korunabilsin diye sadece kısa istenirse kısa olur
+    mod = mod === 'kisa' ? 'kisa' : 'tam';
     // Başlanmış günün seti, sürüm değişse bile aynen korunur (ilerleme kaybolmasın).
     if (o && o.tarih === g) {
       var basladi = o.bitti || o.adim > 0 || Object.keys(o.tamam || {}).length > 0;
-      if (o.surum === RUTIN_SURUM || basladi) return o;
+      if (basladi || (o.surum === RUTIN_SURUM && (o.mod || 'tam') === mod)) return o;
     }
     var harf = r.bugun && r.bugun.tarih === g ? r.bugun.harf : rutinSiradakiHarf();
     Object.keys(r.goruldu).forEach(function (k) { if (gunFark(r.goruldu[k], g) > 30) delete r.goruldu[k]; });
-    var sv = rutinSeviye(), kur = rutinKur(harf, sv);
-    r.bugun = { tarih: g, surum: RUTIN_SURUM, harf: harf, seviye: sv, adim: 0, tamam: {}, bitti: !!r.gunler[g], sn: 0, t: Date.now(), adimlar: kur.adimlar, ozKontrol: kur.ozKontrol };
+    var sv = rutinSeviye(), kur = rutinKur(harf, sv, mod);
+    r.bugun = { tarih: g, surum: RUTIN_SURUM, mod: mod, harf: harf, seviye: sv, adim: 0, tamam: {}, bitti: !!r.gunler[g], sn: 0, t: Date.now(), adimlar: kur.adimlar, ozKontrol: kur.ozKontrol };
     kaydet();
     return r.bugun;
   }
   function rutinModul() {
     var b = veri.rutin.bugun, H = calisBul(b.harf);
     return {
-      id: 'rutin', veriId: b.harf, rutin: true, harf: 'Rutin', ad: 'Günlük rutin', sesli: false,
+      id: 'rutin', veriId: b.harf, rutin: true, mod: b.mod || 'tam', harf: 'Rutin', ad: 'Günlük rutin', sesli: false,
       tanima: H.tanima, ozKontrol: b.ozKontrol, adimlar: b.adimlar,
       bolumler: ['Nefes', H.harf + ' sesi', 'Dudak-dil', 'Tekerleme', 'Şiir', 'Bitiş']
     };
   }
-  function rutinAc() {
-    var b = rutinBugun();
+  function rutinAc(mod) {
+    var b = rutinBugun(mod);
     b.t = Date.now();
     Calis.modul = rutinModul();
     Calis.adim = b.bitti ? 0 : Math.min(b.adim || 0, b.adimlar.length - 1);
@@ -766,6 +792,7 @@
     Calis.modul.bolumler.forEach(function (ad, i) {
       var sira = [];
       b.adimlar.forEach(function (a, j) { if (a.bolum === i) sira.push(j); });
+      if (!sira.length) return; // adımı olmayan bölüm (kısa rutin) çizilmez
       var bitti = sira.every(function (j) { return b.tamam[j]; });
       var c = el('button', 'rutin-bolum' + (bitti ? ' bitti' : '') + (i === simdi ? ' simdi' : ''), (bitti ? '✓ ' : '') + ad);
       c.type = 'button';
@@ -782,12 +809,20 @@
     var sv = b ? b.seviye : rutinSeviye(), seri = rutinSeri(), svSimdi = rutinSeviye();
     var sonGun = rutinSonGunSayisi(), hafta = rutinHafta(), hedef = rutinHedef();
     var bitti = !!(b && (b.bitti || r.gunler[b.tarih]));
-    var kart = el('button', 'rutin-kart'); kart.type = 'button';
+    // Kart <div>: içinde iki düğme olduğu için tüm kart düğme olamaz.
+    var kart = el('div', 'rutin-kart');
+    var basladi = !!(b && (b.adim > 0 || Object.keys(b.tamam).length));
+    var kisaGun = !!(b && (b.mod || 'tam') === 'kisa' && (basladi || bitti));
     var ust = el('span', 'satir');
     ust.appendChild(el('b', 'grow', 'Bugünün rutini'));
     ust.appendChild(el('span', 'pill', (seri > 0 ? '🔥 ' + seri + ' gün · bu hafta ' : 'Bu hafta ') + hafta + ' / ' + hedef));
     kart.appendChild(ust);
-    kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Dudak-dil → Tekerleme → Şiir · yaklaşık 14 dk'));
+    if (kisaGun) {
+      kart.appendChild(el('span', 'muted kucuk', 'Bugünkü rutin: Kısa · 5 dk'));
+      kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Tekerleme · yaklaşık 5 dk'));
+    } else {
+      kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Dudak-dil → Tekerleme → Şiir · yaklaşık 14 dk'));
+    }
     kart.appendChild(el('span', 'muted kucuk', 'Seviye ' + sv + ': ' + RUTIN_SEVIYE[sv] + ' · son 28 günde ' + sonGun + ' gün' +
       (svSimdi < 3 ? ' · Seviye ' + (svSimdi + 1) + ' için ' + Math.max(1, SEVIYE_ESIK[svSimdi] - sonGun) + ' gün daha' : '')));
     if (hafta >= hedef) kart.appendChild(el('span', 'muted kucuk', '✓ Bu haftanın hedefi tamam'));
@@ -795,12 +830,38 @@
     dun.setDate(dun.getDate() - 1); dunDun.setDate(dunDun.getDate() - 2);
     if (!r.gunler[gunStr()] && !r.gunler[gunStr(dun)] && r.gunler[gunStr(dunDun)])
       kart.appendChild(el('span', 'muted kucuk', 'Dün atladın, seri bozulmadı. Bugün devam et.'));
-    var durum;
-    if (bitti) durum = '✓ Bugün bitti. İstersen tekrar yap.';
-    else if (b && (b.adim > 0 || Object.keys(b.tamam).length)) durum = 'Kaldığın yerden devam et (' + (b.adim + 1) + ' / ' + b.adimlar.length + ') →';
-    else durum = 'Başla →';
-    kart.appendChild(el('span', 'rutin-durum' + (bitti ? ' bitti' : ''), durum));
-    kart.addEventListener('click', function () { goster('calis'); rutinAc(); });
+    // Ertesi gün geri bildirimi: hazırlanan cümle gerçekten kullanıldı mı?
+    var gc = r.gercek;
+    if (gc && gc.metin && gc.tarih < gunStr() && gc.kullandi === undefined) {
+      var soru = el('div', 'rutin-soru');
+      soru.appendChild(el('span', 'rutin-soru-cumle', '“' + gc.metin + '”'));
+      soru.appendChild(el('span', 'kucuk', 'Dün hazırladığın cümleyi gerçekten kullandın mı?'));
+      var sb = el('div', 'rutin-btnlar');
+      [['Evet', true], ['Hayır', false]].forEach(function (x) {
+        var d = el('button', 'secondary', x[0]); d.type = 'button';
+        d.addEventListener('click', function () { gc.kullandi = x[1]; kaydet(); rutinKartlariCiz(); });
+        sb.appendChild(d);
+      });
+      soru.appendChild(sb);
+      kart.appendChild(soru);
+    }
+    var bt = el('div', 'rutin-btnlar');
+    function dugme(yazi, sinif, mod) {
+      var d = el('button', sinif, yazi); d.type = 'button';
+      d.addEventListener('click', function () { goster('calis'); rutinAc(mod); });
+      bt.appendChild(d);
+      return d;
+    }
+    if (bitti) {
+      dugme('✓ Bugün bitti. İstersen tekrar yap.', 'secondary rutin-bitti', (b && b.mod) || 'tam');
+    } else if (basladi) {
+      dugme('Kaldığın yerden devam et (' + (b.adim + 1) + ' / ' + b.adimlar.length + ') →', 'primary', b.mod || 'tam');
+    } else {
+      dugme('Başla · 14 dk', 'primary', 'tam');
+      dugme('Kısa · 5 dk', 'secondary', 'kisa');
+    }
+    kart.appendChild(bt);
+    if (!bitti && !basladi) kart.appendChild(el('span', 'muted kucuk', 'Yoğun günlerde: nefes, günün sesi, tekerleme, gerçek cümle.'));
     kutu.appendChild(kart);
   }
   function rutinKartlariCiz() { rutinKartCiz($('#rutinKartBugun')); rutinKartCiz($('#rutinKartCalis')); }
@@ -936,6 +997,7 @@
     if (a.tur === 'kart') kartCiz(kutu, a);
     if (a.tur === 'cumle') cumleCiz(kutu, a);
     if (a.tur === 'siir') siirCiz(kutu, a);
+    if (a.tur === 'gercek') gercekCiz(kutu, a);
     $('#calisOnceki').disabled = Calis.adim === 0;
     $('#calisSonraki').textContent = Calis.adim === m.adimlar.length - 1 ? 'Bitir ✓' : 'Sonraki →';
     var ust = $('#calisDetay');
@@ -1508,6 +1570,83 @@
     kart.addEventListener('click', function () { otoDurdur(); adimAt(1); });
     chipCiz();
     goster1(false);
+  }
+
+  // ---------- Bugün kullanacağım gerçek cümle (rutinin son adımı) ----------
+  var gercekOneriOnbellek = null;
+  // Sınıf/veli/seminer metinlerinden kısa, tek cümlelik öneriler (işaretler temizlenir).
+  function gercekOneriler() {
+    var g = gunStr();
+    if (gercekOneriOnbellek && gercekOneriOnbellek.gun === g) return gercekOneriOnbellek.liste;
+    var adaylar = [];
+    (window.METINLER || []).forEach(function (m) {
+      if (m.kat !== 'veli' && m.kat !== 'ogretmen' && m.kat !== 'seminer') return;
+      var t = (m.metin || '').replace(/[\/|*↗↘]/g, ' ').replace(/\s+/g, ' ').trim();
+      var k = t.match(/^[^.?!]*[.?!]/);
+      var c = (k ? k[0] : t).trim();
+      if (c && c.length <= 160) adaylar.push(c);
+    });
+    gercekOneriOnbellek = { gun: g, liste: agirlikliSec(adaylar, 3) };
+    return gercekOneriOnbellek.liste;
+  }
+  function gercekCiz(kutu, a) {
+    Calis.sesli = false;
+    var r = rutinVeri(), b = r.bugun, tarih = b.tarih;
+    var onceki = r.gercek && r.gercek.tarih === tarih ? r.gercek.metin : '';
+    var zaman = null;
+    kutu.appendChild(el('p', 'calis-p', 'Bugün sınıfta ya da veli görüşmesinde gerçekten söyleyeceğin bir cümle yaz (örn. ders girişi, bir uyarı, bir teşekkür). Sonra söyleyerek çalışalım.'));
+    var ta = document.createElement('textarea');
+    ta.id = 'gercekMetin'; ta.rows = 3; ta.maxLength = 240;
+    ta.placeholder = 'Bugün söyleyeceğim cümle…';
+    ta.value = onceki;
+    ta.className = 'gercek-metin';
+    kutu.appendChild(ta);
+    var chipKutu = el('div', 'soz-chipler gercek-oneri');
+    kutu.appendChild(chipKutu);
+    var kart = el('div', 'card passage'); kart.id = 'gercekKart';
+    var yon = el('p', 'muted calis-p'); yon.id = 'gercekYonerge';
+    kutu.appendChild(kart); kutu.appendChild(yon);
+
+    function kaydetMetin() {
+      clearTimeout(zaman); zaman = null;
+      var m = ta.value.trim().slice(0, 240);
+      if (m) {
+        r.gercek = { tarih: tarih, metin: m };
+        var l = (r.cumleler || []).filter(function (x) { return x !== m; });
+        l.unshift(m);
+        r.cumleler = l.slice(0, 10);
+      } else if (r.gercek && r.gercek.tarih === tarih) {
+        delete r.gercek; // bugün yazılan silindiyse "kullandın mı" sorusu çıkmasın
+      }
+      kaydet();
+    }
+    function metinGoster() {
+      var m = ta.value.trim();
+      kart.textContent = '';
+      if (m) {
+        kart.textContent = m; kart.hidden = false;
+        yon.textContent = 'Önce iki kez yavaş, sonra bir kez doğal hızda oku. Sonra kırmızı düğmeyle kendini kaydet.';
+      } else if (a.yedek) {
+        kart.textContent = a.yedek; kart.hidden = false;
+        yon.textContent = 'Bugün için kendi cümleni yazmadın; bu cümleyi oku ve kaydet.';
+      } else { kart.hidden = true; yon.textContent = ''; }
+    }
+    ta.addEventListener('input', function () {
+      metinGoster();
+      clearTimeout(zaman); zaman = setTimeout(kaydetMetin, 700);
+    });
+    ta.addEventListener('blur', kaydetMetin);
+
+    // Öneriler: dünkü cümle (varsa) + en fazla 3 hazır cümle; toplam en fazla 4
+    var oneri = [];
+    if (r.gercek && r.gercek.metin && r.gercek.tarih < tarih) oneri.push({ yazi: r.gercek.metin, dun: true });
+    gercekOneriler().forEach(function (c) { if (oneri.length < 4) oneri.push({ yazi: c }); });
+    oneri.forEach(function (o) {
+      var c = el('button', 'soz-chip gercek-chip', (o.dun ? 'Dünkü cümlen: ' : '') + o.yazi); c.type = 'button';
+      c.addEventListener('click', function () { ta.value = o.yazi; metinGoster(); kaydetMetin(); });
+      chipKutu.appendChild(c);
+    });
+    metinGoster();
   }
 
   // ---------- Cümleler ----------

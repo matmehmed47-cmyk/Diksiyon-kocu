@@ -261,3 +261,13 @@ canvas.dalga.buyuk{height:80px;cursor:pointer;touch-action:manipulation}
   .chips.kaydir{flex-wrap:wrap;margin-inline:0;padding-inline:0}
 }
 @media (prefers-reduced-motion: reduce){.breath-circle,.progress span,.seviye-cubuk span{transition:none!important}}
+/* Rutin kartı: iki düğme (tam / kısa) ve ertesi gün sorusu */
+.rutin-btnlar{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.rutin-btnlar button{width:100%;min-height:48px}
+.rutin-soru{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:12px;background:var(--surface)}
+.rutin-soru-cumle{font-family:var(--read,inherit);font-size:17px}
+.rutin-bitti{color:var(--good)}
+.gercek-metin{width:100%;min-height:96px;font:inherit;font-size:18px;padding:12px;border-radius:12px;border:1px solid var(--accent);background:var(--surface);color:var(--fg);box-sizing:border-box;resize:vertical}
+.gercek-oneri{margin:10px 0}
+.gercek-chip{text-align:left;min-height:44px;line-height:1.35}
+@media (min-width:520px){.rutin-btnlar{flex-direction:row}.rutin-btnlar button{width:auto;flex:1}}
