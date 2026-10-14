@@ -202,15 +202,15 @@ window.CALISMALAR = [
         dene: { yonerge: 'Önce kendini yokla: Aşağıdakileri sesli söyle ve kaydet. Çalışmanın sonunda bir daha kaydedip karşılaştırırsın.', sozler: ['ses', 'sabah', 'masa', 'sıcak su', 'Sinan sessizce sordu.'] }
       },
       {
-        tur: 'tut', baslik: 'Isınma: Sssss', fazAd: 'Sssss!',
+        tur: 'nefesOlc', baslik: 'Nefes al, sssss diye ver', ses: 'sssss', filtre: 1500,
+        al: 6, ver: [8, 10, 12], turSayisi: [3, 4, 5],
         maddeler: [
-          'Mümkünse aynaya bak.',
-          'Dişlerini hafifçe birbirine yaklaştır, dudakların hafif gülümsesin.',
+          'Seviyen: <b>{seviye}</b>. Her tur: {al} saniye nefes al, <b>{ver} saniye</b> sssss diye ver; {tur} tur yapacaksın. Çalıştıkça süre ve tur sayısı artar.',
+          'Mümkünse aynaya bak. Dişlerini hafifçe birbirine yaklaştır, dudakların hafif gülümsesin.',
           'Dil ucunu alt ön dişlerin arkasına koy. Dil ucu dişlerin arasından görünmemeli.',
-          'Havayı ortadan, ince bir şerit gibi ver: Ssssss.',
-          'Sonra ses tellerini de katarak z’ye geç ve geri dön: Sssszzzzssss. Dil yeri değişmemeli.'
-        ],
-        sesler: ['Ssssss', 'Sssszzzz'], olcumsuz: ['Sssszzzz'], sure: 5, dinlenme: 4, turSayisi: 2, olcum: 'keskinlik'
+          'Elini karnına koy; burundan sessizce nefes al. “Ver” denince havayı ortadan, ince bir şerit gibi, baştan sona aynı güçte ver: Sssss.',
+          'İstersen son turda sesi z’ye geçirip geri dön: Sssszzzzssss. Dil yeri değişmemeli.'
+        ]
       },
       {
         tur: 'kart', baslik: 'Hece kartları', hece: true, sabitDizi: 1, secimDizi: 5,

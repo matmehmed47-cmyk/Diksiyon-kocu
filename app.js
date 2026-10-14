@@ -667,7 +667,7 @@
     };
     var ver = [8, 10, 12][i];
     var nefesOlcAdim = {
-      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, ffuuu diye ver', al: 6, ver: ver, turSayisi: kisaMod ? 3 : 5,
+      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, ffuuu diye ver', ses: 'ffuuu', filtre: 400, al: 6, ver: ver, turSayisi: kisaMod ? 3 : 5,
       maddeler: [
         'Elini karnına koy. Burundan <b>6 saniyede</b> sessizce nefes al; omuzların kalkmasın, karın ve kaburgalar açılsın.',
         '“Ver” denince <b>ffuuu</b> diye (mum üfler gibi, dudaklar hafif büzük), <b>' + ver + ' saniye</b> boyunca aynı güçte ver.',
@@ -699,7 +699,7 @@
     adimlar.push(nefesOlcAdim);
 
     // 2) Günün harfi
-    adimlar.push(kopya(H.adimlar[1], { bolum: 1, turSayisi: [2, 2, 3][i] }));
+    adimlar.push(kopya(H.adimlar[1], H.adimlar[1].tur === 'nefesOlc' ? { bolum: 1 } : { bolum: 1, turSayisi: [2, 2, 3][i] }));
     var hk = H.adimlar[2];
     adimlar.push(kopya(hk, { bolum: 1, yonerge: kirp(hk.yonerge), secimDizi: null, sabitDizi: null,
       diziler: hk.diziler.slice(0, 1).concat(sec(hk.diziler.slice(1), [2, 3, 4][i], function (d) { return 'dizi:' + harfId + ':' + d.ad; })) }));
@@ -941,6 +941,11 @@
     } else if (a.tur === 'kart' && a.secimDizi && a.diziler.length > a.secimDizi) {
       var sabit = a.diziler.slice(0, a.sabitDizi || 0);
       b = Object.assign({}, a, { diziler: sabit.concat(agirlikliSec(a.diziler.slice(sabit.length), a.secimDizi - sabit.length)) });
+    } else if (a.tur === 'nefesOlc' && Array.isArray(a.ver)) {
+      var sv0 = rutinSeviye(), v0 = a.ver[sv0 - 1], t0 = a.turSayisi[sv0 - 1];
+      b = Object.assign({}, a, { ver: v0, turSayisi: t0, maddeler: a.maddeler.map(function (md) {
+        return md.replace('{seviye}', RUTIN_SEVIYE[sv0]).replace('{al}', a.al).replace('{ver}', v0).replace('{tur}', t0);
+      }) });
     } else if (a.tur === 'cumle' && a.havuz) {
       b = Object.assign({}, a, { cumleler: agirlikliSec(a.havuz, a.secim || a.havuz.length, zorAgirlik) });
     }
@@ -1138,10 +1143,11 @@
 
   // ---------- Dinlemeli nefes: "al" sessiz, "ver" ffuuu (mikrofon dinler) ----------
   function nefesOlcCiz(kutu, a) {
+    var SES = a.ses || 'sssss';
     var ekran = el('div', 'tut-ekran');
     var ses = el('div', 'tut-ses', a.al + ' · ' + a.ver);
     var faz = el('div', 'tut-faz', 'Hazır');
-    var bilgi = el('div', 'muted kucuk', a.turSayisi + ' tur · ' + a.al + ' sn al, ' + a.ver + ' sn ffuuu diye ver');
+    var bilgi = el('div', 'muted kucuk', a.turSayisi + ' tur · ' + a.al + ' sn al, ' + a.ver + ' sn ' + SES + ' diye ver');
     var cubuk = el('div', 'seviye-cubuk'), dolgu = el('span');
     cubuk.appendChild(dolgu);
     ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi); ekran.appendChild(cubuk);
@@ -1153,7 +1159,7 @@
     kutu.appendChild(sonuclar);
     var FZ = {
       al: { ad: 'Nefes al', soz: 'Nefes al', zil: 523, sn: a.al },
-      ver: { ad: 'Ffuuu diye ver', soz: 'Yavaşça ver', zil: 440, sn: a.ver }
+      ver: { ad: SES.charAt(0).toUpperCase() + SES.slice(1) + ' diye ver', soz: 'Yavaşça ver', zil: 440, sn: a.ver }
     };
 
     function bitir(tamam, n) {
@@ -1182,7 +1188,7 @@
     }
     function turYaz(n) {
       var t = n.turVeri, durum, mesaj, cv = degiskenlik(t.verRms);
-      if (t.verAktif < 0.8) { durum = 'b'; mesaj = 'Nefes verişini duyamadım. Telefonu yüzüne yaklaştır ve “ffuuu” diye duyulur şekilde ver.'; }
+      if (t.verAktif < 0.8) { durum = 'b'; mesaj = 'Nefes verişini duyamadım. Telefonu yüzüne yaklaştır ve “' + SES + '” diye duyulur şekilde ver.'; }
       else if (t.verSon < a.ver - 1.2) { durum = 'w'; mesaj = 'Erken bitirdin: ' + sn(t.verSon) + ' sn / ' + a.ver + ' sn. Daha yavaş ver.'; }
       else if (t.verIlk != null && t.verIlk > 2.5) { durum = 'w'; mesaj = 'Geç başladın. “Ver” denince hemen başla.'; }
       else if (cv > 0.6) { durum = 'w'; mesaj = 'Süre iyi ama nefesin dalgalı çıktı. Baştan sona aynı güçte ver.'; }
@@ -1228,7 +1234,7 @@
       }
     }
     function basla(stream) {
-      var n = { dinle: !!stream, stream: stream, olcer: stream ? Olcer(stream, 1500) : null, tur: 1, faz: 'hazir',
+      var n = { dinle: !!stream, stream: stream, olcer: stream ? Olcer(stream, a.filtre || 1500) : null, tur: 1, faz: 'hazir',
         fazBas: performance.now(), son: performance.now(), kalib: [], esik: null, turVeri: null, turlar: [], zaman: null };
       // calisDurdur() bu nesnenin kapat()'ını çağırarak her şeyi durdurur
       Calis.olcer = { kapat: function () {
