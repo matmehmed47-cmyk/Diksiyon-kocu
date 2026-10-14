@@ -3210,4 +3210,22 @@
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
   }
+
+  // Kendini güncelleme: açılışta ve uygulamaya dönünce yeni sürüm var mı diye bakar (kısayoldan açılan eski kopya kalmasın).
+  function surumKontrol() {
+    var el0 = document.querySelector('script[src^="app.js"]');
+    var calisan = el0 && /[?&]v=(\d+)/.exec(el0.getAttribute('src'));
+    if (!calisan || !window.fetch) return;
+    fetch('index.html?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) {
+      var yeni = /app\.js\?v=(\d+)/.exec(t);
+      if (!yeni || yeni[1] === calisan[1]) return;
+      if (Kayit.aktif || Calis.tutCalisiyor || nefes || MK.aktif) return; // çalışırken yenileme
+      var bayrak = 'diksiyonYenile' + yeni[1];
+      try { if (sessionStorage.getItem(bayrak)) return; sessionStorage.setItem(bayrak, '1'); } catch (e) { /* yok say */ }
+      var ekle = navigator.serviceWorker && navigator.serviceWorker.getRegistration ? navigator.serviceWorker.getRegistration() : Promise.resolve(null);
+      ekle.then(function (reg) { return reg && reg.update ? reg.update() : null; }).catch(function () {}).then(function () { location.reload(); });
+    }).catch(function () { /* çevrimdışı: sorun değil */ });
+  }
+  window.addEventListener('load', function () { setTimeout(surumKontrol, 1500); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) surumKontrol(); });
 })();
