@@ -573,7 +573,7 @@
   // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 7;
+  var RUTIN_SURUM = 8;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -657,6 +657,7 @@
     function dizi(d) { return 'dizi:' + d.ad; }
     function kirp(y) { return (y || '').replace(/\s*Her açışta[^.]*\./g, ''); }
     function kopya(a, ek) { return Object.assign({}, a, ek); }
+    function katYon(id) { var k = katBul(id); return k && k.yonerge ? k.yonerge.slice() : []; }
     var i = sv - 1, adimlar = [];
 
     var kisaMod = mod === 'kisa';
@@ -687,7 +688,7 @@
         diziler: sk.havuz.map(function (g) { return { ad: g.ad, ogeler: sec(g.ogeler, yarim, null, zor) }; }) }));
       var tek1 = sec(H.adimlar[5].havuz, 1, null, zor);
       adimlar.push({ tur: 'cumle', bolum: 3, baslik: 'Tekerleme', cumleler: tek1,
-        yonerge: 'Önce yavaş, her ses net çıksın. Sonra tempoyu artır. Takılırsan yavaşlayıp yeniden başla.' });
+        maddeler: katYon('tekerleme') });
       adimlar.push(gercekAdim);
       secilen.forEach(function (k) { rutinVeri().goruldu[k] = gunStr(); });
       // Kısa rutinde adım sıraları farklı olduğu için "adıma git" eşlemeleri kaldırılır
@@ -724,8 +725,7 @@
     tek = tek.concat(sec(uygun(D.adimlar[3].havuz).filter(function (x) { return tek.indexOf(x) < 0; }), 1));
     if (sv >= 3) tek = tek.concat(sec(Z.adimlar[1].havuz, 1));
     adimlar.push({ tur: 'cumle', bolum: 3, baslik: 'Tekerlemeler', cumleler: tek,
-      yonerge: 'Önce yavaş, her ses net çıksın. Sonra tempoyu artır. Takılırsan yavaşlayıp yeniden başla. Nefesi cümle başında burundan al.' +
-        (sv >= 3 ? ' Sonuncusu uzun bir metin; virgüllerden bölerek oku.' : '') });
+      maddeler: katYon('tekerleme').concat(sv >= 3 ? ['Sonuncusu uzun bir metin; virgüllerden bölerek oku.'] : []) });
 
     // 5) Günün şiiri: işaretli (nefes / durak) okunur; seviyeye göre uzunluk sınırı
     var dizeSinir = [14, 24, 100000][i];
@@ -734,7 +734,7 @@
     var siir = sec(kisa.length ? kisa : siirler, 1, function (m) { return 'siir:' + m.id; })[0];
     if (siir) {
       adimlar.push({ tur: 'siir', bolum: 4, baslik: 'Günün şiiri', siirId: siir.id,
-        yonerge: 'Düz yazı gibi, doğal oku. Nefesi sadece / işaretinde, burundan ve sessizce al. | kısa durak, || uzun durak.' });
+        maddeler: katYon('siir') });
     }
 
     // 6) Bugün kullanacağım gerçek cümle (eski "Bitiş kaydı" yerine; aynı sıra, bölüm 5)
@@ -764,7 +764,11 @@
         if (yeni.adimlar.length === o.adimlar.length) {
           o.adimlar = o.adimlar.map(function (x, k) {
             var y = yeni.adimlar[k];
-            return y.tur === 'nefesOlc' && x.bolum === y.bolum ? y : x;
+            if (y.tur === 'nefesOlc' && x.bolum === y.bolum) return y;
+            if (y.tur === x.tur && y.maddeler && (x.tur === 'siir' || /^Tekerleme/.test(x.baslik || ''))) {
+              return Object.assign({}, x, { yonerge: y.yonerge, maddeler: y.maddeler });
+            }
+            return x;
           });
         }
         o.surum = RUTIN_SURUM; kaydet();
