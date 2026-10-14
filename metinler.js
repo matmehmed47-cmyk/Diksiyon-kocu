@@ -9,8 +9,16 @@
   Şiir işaretleri: /  nefes (anlam birimi bitince)  |  kısa durak  ||  kıta sonu.
 */
 window.KATEGORILER = [
-  { id: 'tekerleme', ad: 'Tekerleme', hedef: null },
-  { id: 'siir', ad: 'Şiir', hedef: [80, 115] },
+  { id: 'tekerleme', ad: 'Tekerleme', hedef: null, yonerge: [
+    'Önce yavaş oku; her ses net çıksın. Hız, netlik oturunca kendiliğinden gelir.',
+    'Takılırsan dur, yavaşla ve baştan başla. Zor sözcüğü önce tek başına birkaç kez söyle.',
+    'Nefesi cümlenin başında, burundan ve sessizce al. Tekerlemenin ortasında nefes alma.'
+  ] },
+  { id: 'siir', ad: 'Şiir', hedef: [80, 115], yonerge: [
+    'Şiiri anlamına göre oku. Satır sonunda kendiliğinden durma; noktalama ve anlam durağı belirler.',
+    'Nefesi / işaretinde, burundan ve sessizce al. Dizenin ortasında nefes alma, anlam bölünür.',
+    '| kısa, || uzun duraktır; durakta bekle. Kalın sözcükleri hafifçe vurgula, ↗ sesi yükselt, ↘ alçalt.'
+  ] },
   { id: 'cocuk', ad: 'Çocuklara', hedef: [100, 130] },
   { id: 'veli', ad: 'Velilere', hedef: [120, 140] },
   { id: 'ogretmen', ad: 'Öğretmenlere', hedef: [125, 150] },

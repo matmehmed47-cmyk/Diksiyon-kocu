@@ -724,7 +724,7 @@
     tek = tek.concat(sec(uygun(D.adimlar[3].havuz).filter(function (x) { return tek.indexOf(x) < 0; }), 1));
     if (sv >= 3) tek = tek.concat(sec(Z.adimlar[1].havuz, 1));
     adimlar.push({ tur: 'cumle', bolum: 3, baslik: 'Tekerlemeler', cumleler: tek,
-      yonerge: 'Önce yavaş, her ses net çıksın. Sonra tempoyu artır. Takılırsan yavaşlayıp yeniden başla.' +
+      yonerge: 'Önce yavaş, her ses net çıksın. Sonra tempoyu artır. Takılırsan yavaşlayıp yeniden başla. Nefesi cümle başında burundan al.' +
         (sv >= 3 ? ' Sonuncusu uzun bir metin; virgüllerden bölerek oku.' : '') });
 
     // 5) Günün şiiri: işaretli (nefes / durak) okunur; seviyeye göre uzunluk sınırı
@@ -734,7 +734,7 @@
     var siir = sec(kisa.length ? kisa : siirler, 1, function (m) { return 'siir:' + m.id; })[0];
     if (siir) {
       adimlar.push({ tur: 'siir', bolum: 4, baslik: 'Günün şiiri', siirId: siir.id,
-        yonerge: 'Düz yazı gibi, doğal oku. Nefesi sadece / işaretinde al. | kısa durak, || uzun durak.' });
+        yonerge: 'Düz yazı gibi, doğal oku. Nefesi sadece / işaretinde, burundan ve sessizce al. | kısa durak, || uzun durak.' });
     }
 
     // 6) Bugün kullanacağım gerçek cümle (eski "Bitiş kaydı" yerine; aynı sıra, bölüm 5)
@@ -2439,6 +2439,15 @@
     }
     simdikiMetin = m;
     veri.sonMetin[kat] = m.id; kaydet();
+    var ky = $('#katYonerge'), kb = katBul(kat);
+    ky.textContent = '';
+    if (kb && kb.yonerge) {
+      ky.appendChild(el('b', null, 'Nasıl çalışılır'));
+      var ul = el('ul', 'calis-ul');
+      kb.yonerge.forEach(function (y) { ul.appendChild(el('li', null, y)); });
+      ky.appendChild(ul);
+    }
+    ky.hidden = !(kb && kb.yonerge);
     metinCiz(m);
     $('#sonuc').hidden = true;
     $('#kayitci').hidden = false;
