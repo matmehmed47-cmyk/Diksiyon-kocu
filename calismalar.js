@@ -203,9 +203,9 @@ window.CALISMALAR = [
       },
       {
         tur: 'nefesOlc', baslik: 'Nefes al, sssss diye ver', ses: 'sssss', filtre: 1500,
-        al: 6, ver: [8, 10, 12], turSayisi: [3, 4, 5],
+        al: [4, 4, 5], tut: [4, 4, 5], ver: [8, 10, 12], turSayisi: [3, 4, 5],
         maddeler: [
-          'Seviyen: <b>{seviye}</b>. Her tur: {al} saniye nefes al, <b>{ver} saniye</b> sssss diye ver; {tur} tur yapacaksın. Çalıştıkça süre ve tur sayısı artar.',
+          'Seviyen: <b>{seviye}</b>. Her tur: {al} saniye nefes al, {tut} saniye tut, <b>{ver} saniye</b> sssss diye ver; {tur} tur yapacaksın. Çalıştıkça süre ve tur sayısı artar.',
           'Mümkünse aynaya bak. Dişlerini hafifçe birbirine yaklaştır, dudakların hafif gülümsesin.',
           'Dil ucunu alt ön dişlerin arkasına koy. Dil ucu dişlerin arasından görünmemeli.',
           'Elini karnına koy; burundan sessizce nefes al. “Ver” denince havayı ortadan, ince bir şerit gibi, baştan sona aynı güçte ver: Sssss.',

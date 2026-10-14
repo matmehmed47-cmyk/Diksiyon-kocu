@@ -573,7 +573,7 @@
   // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 5;
+  var RUTIN_SURUM = 6;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -667,10 +667,11 @@
     };
     var ver = [8, 10, 12][i];
     var nefesOlcAdim = {
-      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, ffuuu diye ver', ses: 'ffuuu', filtre: 400, al: 6, ver: ver, turSayisi: kisaMod ? 3 : 5,
+      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, ffuuu diye ver', ses: 'ffuuu', filtre: 400,
+      al: [4, 4, 5][i], tut: [4, 4, 5][i], ver: ver, turSayisi: kisaMod ? 3 : 5,
       maddeler: [
-        'Elini karnına koy. Burundan <b>6 saniyede</b> sessizce nefes al; omuzların kalkmasın, karın ve kaburgalar açılsın.',
-        '“Ver” denince <b>ffuuu</b> diye (mum üfler gibi, dudaklar hafif büzük), <b>' + ver + ' saniye</b> boyunca aynı güçte ver.',
+        'Elini karnına koy. Burundan <b>' + [4, 4, 5][i] + ' saniyede</b> sessizce nefes al; omuzların kalkmasın, karın ve kaburgalar açılsın.',
+        '<b>' + [4, 4, 5][i] + ' saniye</b> tut; sonra “Ver” denince <b>ffuuu</b> diye (mum üfler gibi, dudaklar hafif büzük), <b>' + ver + ' saniye</b> boyunca aynı güçte ver.',
         'Telefonu yüzünden bir karış uzakta tut. Mikrofon her turda nefes verişini dinler ve ne olduğunu yazar.',
         'Mikrofon omzunu ya da karnını göremez; onu elinle ya da aynada kontrol et.'
       ]
@@ -942,9 +943,11 @@
       var sabit = a.diziler.slice(0, a.sabitDizi || 0);
       b = Object.assign({}, a, { diziler: sabit.concat(agirlikliSec(a.diziler.slice(sabit.length), a.secimDizi - sabit.length)) });
     } else if (a.tur === 'nefesOlc' && Array.isArray(a.ver)) {
-      var sv0 = rutinSeviye(), v0 = a.ver[sv0 - 1], t0 = a.turSayisi[sv0 - 1];
-      b = Object.assign({}, a, { ver: v0, turSayisi: t0, maddeler: a.maddeler.map(function (md) {
-        return md.replace('{seviye}', RUTIN_SEVIYE[sv0]).replace('{al}', a.al).replace('{ver}', v0).replace('{tur}', t0);
+      var sv0 = rutinSeviye();
+      function sec0(x) { return Array.isArray(x) ? x[sv0 - 1] : x; }
+      var al0 = sec0(a.al), tut0 = sec0(a.tut), v0 = sec0(a.ver), t0 = sec0(a.turSayisi);
+      b = Object.assign({}, a, { al: al0, tut: tut0, ver: v0, turSayisi: t0, maddeler: a.maddeler.map(function (md) {
+        return md.replace('{seviye}', RUTIN_SEVIYE[sv0]).replace('{al}', al0).replace('{tut}', tut0).replace('{ver}', v0).replace('{tur}', t0);
       }) });
     } else if (a.tur === 'cumle' && a.havuz) {
       b = Object.assign({}, a, { cumleler: agirlikliSec(a.havuz, a.secim || a.havuz.length, zorAgirlik) });
@@ -1141,42 +1144,65 @@
     });
   }
 
-  // ---------- Dinlemeli nefes: "al" sessiz, "ver" ffuuu (mikrofon dinler) ----------
+  // ---------- Dinlemeli nefes (Nefes sekmesindeki daireli şablon): al · tut · ver (mikrofon dinler) ----------
   function nefesOlcCiz(kutu, a) {
     var SES = a.ses || 'sssss';
-    var ekran = el('div', 'tut-ekran');
-    var ses = el('div', 'tut-ses', a.al + ' · ' + a.ver);
-    var faz = el('div', 'tut-faz', 'Hazır');
-    var bilgi = el('div', 'muted kucuk', a.turSayisi + ' tur · ' + a.al + ' sn al, ' + a.ver + ' sn ' + SES + ' diye ver');
+    var TUT = a.tut != null ? a.tut : 4;
+    var SN = { al: a.al, tut: TUT, ver: a.ver };
+    var AD = { al: 'Nefes al', tut: 'Tut', ver: SES.charAt(0).toUpperCase() + SES.slice(1) + ' diye ver' };
+    var OLCEK = { al: 1, tut: 1, ver: 0.62 };
+    var SOZ = { al: ['Nefes al', 523], tut: ['Nefesi tut', 659], ver: ['Yavaşça ver', 440] };
+    var ekran = el('div', 'stack'); ekran.style.gap = '10px';
+    var sarma = el('div', 'breath-wrap');
+    sarma.appendChild(el('div', 'breath-ring'));
+    var daireEl = el('div', 'breath-circle');
+    sarma.appendChild(daireEl);
+    var etiket = el('div', 'breath-label');
+    var fazAd = el('div', 'p', 'Hazır'), sayac = el('div', 'c', '–');
+    etiket.appendChild(fazAd); etiket.appendChild(sayac);
+    sarma.appendChild(etiket);
+    var fazlar = el('div', 'phases'), fazKutu = {};
+    ['al', 'tut', 'ver'].forEach(function (k) {
+      var d = el('div', 'phase', k === 'ver' ? SES + ' ver' : AD[k]);
+      d.appendChild(el('b', null, SN[k] + ' sn'));
+      fazlar.appendChild(d); fazKutu[k] = d;
+    });
     var cubuk = el('div', 'seviye-cubuk'), dolgu = el('span');
     cubuk.appendChild(dolgu);
-    ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi); ekran.appendChild(cubuk);
+    var turYazi = el('div', 'muted'); turYazi.style.textAlign = 'center';
+    turYazi.textContent = a.turSayisi + ' tur · yaklaşık ' + Math.round((SN.al + SN.tut + SN.ver) * a.turSayisi / 60 * 10) / 10 + ' dakika';
+    [sarma, fazlar, cubuk, turYazi].forEach(function (x) { ekran.appendChild(x); });
     kutu.appendChild(ekran);
     var btn = el('button', 'primary', 'Başlat'); btn.type = 'button';
     kutu.appendChild(btn);
     kutu.appendChild(el('div', 'muted kucuk', 'Telefon süreyi ve dengeyi tahmin eder; telefonun yüzüne uzaklığı ve sesin sönmesi sonucu etkiler. Sonuç bir ipucudur.'));
     var sonuclar = el('div', 'stack'); sonuclar.style.gap = '6px';
     kutu.appendChild(sonuclar);
-    var FZ = {
-      al: { ad: 'Nefes al', soz: 'Nefes al', zil: 523, sn: a.al },
-      ver: { ad: SES.charAt(0).toUpperCase() + SES.slice(1) + ' diye ver', soz: 'Yavaşça ver', zil: 440, sn: a.ver }
-    };
 
+    function daireAyarla(olcek, sn) {
+      daireEl.style.transitionDuration = sn + 's';
+      daireEl.style.transform = 'scale(' + olcek + ')';
+    }
+    function sifirla() {
+      daireAyarla(0.62, 0.5);
+      fazAd.textContent = 'Hazır'; sayac.textContent = '–';
+      dolgu.style.width = '0';
+      Object.keys(fazKutu).forEach(function (k) { fazKutu[k].classList.remove('on'); });
+    }
     function bitir(tamam, n) {
       var turlar = n ? n.turlar : [];
       calisDurdur();
       btn.textContent = 'Yeniden başlat';
-      ekran.classList.remove('aktif', 'dinlen');
-      dolgu.style.width = '0';
-      if (!tamam) { faz.textContent = 'Durduruldu'; return; }
+      sifirla();
+      if (!tamam) { fazAd.textContent = 'Durduruldu'; return; }
       Rehber.soyle('Tebrikler, bitti', 784);
       if (!n.dinle) {
-        faz.textContent = 'Bitti (ölçümsüz).';
+        fazAd.textContent = 'Bitti';
         sonuclar.appendChild(el('div', 'olcum-satir orta', 'Mikrofon açılmadığı için nefesin ölçülmedi; süreleri ekrandan izledin. Mikrofonu açıp yeniden deneyebilirsin.'));
         if (Calis.modul && Calis.modul.rutin && veri.rutin && veri.rutin.bugun) { veri.rutin.bugun.olcumsuz = true; kaydet(); }
         return;
       }
-      faz.textContent = 'Bitti! Sonraki adıma geçebilirsin.';
+      fazAd.textContent = 'Bitti!';
       var iyi = turlar.filter(function (d) { return d === 'g'; }).length;
       var ozet = el('div', 'coach');
       ozet.appendChild(el('div', 'label', 'Özet'));
@@ -1193,7 +1219,7 @@
       else if (t.verIlk != null && t.verIlk > 2.5) { durum = 'w'; mesaj = 'Geç başladın. “Ver” denince hemen başla.'; }
       else if (cv > 0.6) { durum = 'w'; mesaj = 'Süre iyi ama nefesin dalgalı çıktı. Baştan sona aynı güçte ver.'; }
       else { durum = 'g'; mesaj = 'İyi görünüyor: telefon ' + a.ver + ' saniye dengeli bir nefes duydu.'; }
-      if (t.alAktif > 1.5) mesaj += ' Nefes alırken ses duydum; burundan sessizce al.';
+      if (t.tutAktif > 0.6) mesaj += ' “Tut” sırasında nefes kaçırdın.';
       n.turlar.push(durum);
       var satir = el('div', 'card tur');
       satir.appendChild(el('span', 'badge ' + durum, String(n.tur)));
@@ -1202,31 +1228,34 @@
     }
     function fazaGir(n, f) {
       n.faz = f; n.fazBas = performance.now();
-      if (f === 'al') n.turVeri = { alAktif: 0, verAktif: 0, verIlk: null, verSon: null, verRms: [] };
-      ses.textContent = FZ[f].ad;
-      ekran.classList.toggle('aktif', f === 'ver');
-      ekran.classList.toggle('dinlen', f === 'al');
-      Rehber.soyle(FZ[f].soz, FZ[f].zil);
+      if (f === 'al') {
+        n.turVeri = { verAktif: 0, verIlk: null, verSon: null, verRms: [], tutAktif: 0 };
+        turYazi.textContent = 'Tur ' + n.tur + ' / ' + a.turSayisi;
+      }
+      fazAd.textContent = AD[f];
+      Object.keys(fazKutu).forEach(function (k) { fazKutu[k].classList.toggle('on', k === f); });
+      daireAyarla(OLCEK[f], SN[f]);
+      Rehber.soyle(n.olcer ? SOZ[f][0] : AD[f], SOZ[f][1]);
     }
     function tik(n) {
       var simdi = performance.now(), dt = Math.min(0.25, (simdi - n.son) / 1000);
       n.son = simdi;
-      var gecen = (simdi - n.fazBas) / 1000, uzunluk = n.faz === 'hazir' ? 2 : FZ[n.faz].sn;
+      var gecen = (simdi - n.fazBas) / 1000, uzunluk = n.faz === 'hazir' ? 2 : SN[n.faz];
       if (n.olcer) {
         var r = n.olcer.rms();
         dolgu.style.width = Math.round((n.esik ? Math.min(1, r / (n.esik * 6)) : Math.min(1, r * 30)) * 100) + '%';
         if (n.faz === 'hazir') { if (!Rehber.mesgul()) n.kalib.push(r); }
         else if (n.esik && !Rehber.mesgul() && r > n.esik) {
           var t = n.turVeri;
-          if (n.faz === 'al') t.alAktif += dt;
-          else { t.verAktif += dt; t.verRms.push(r); if (t.verIlk == null) t.verIlk = gecen; t.verSon = gecen; }
+          if (n.faz === 'tut') t.tutAktif += dt;
+          else if (n.faz === 'ver') { t.verAktif += dt; t.verRms.push(r); if (t.verIlk == null) t.verIlk = gecen; t.verSon = gecen; }
         }
       }
-      faz.textContent = n.faz === 'hazir' ? (n.olcer ? 'Sessiz kal, ortamı dinliyorum…' : 'Hazırlan…')
-        : Math.max(1, Math.ceil(uzunluk - gecen)) + ' · ' + n.tur + '. tur / ' + a.turSayisi;
+      sayac.textContent = n.faz === 'hazir' ? '' : String(Math.max(1, Math.ceil(uzunluk - gecen)));
       if (gecen < uzunluk) return;
       if (n.faz === 'hazir') { if (n.olcer) n.esik = esikHesapla(medyan(n.kalib)); fazaGir(n, 'al'); }
-      else if (n.faz === 'al') fazaGir(n, 'ver');
+      else if (n.faz === 'al') fazaGir(n, 'tut');
+      else if (n.faz === 'tut') fazaGir(n, 'ver');
       else {
         if (n.olcer) turYaz(n);
         if (n.tur >= a.turSayisi) { bitir(true, n); return; }
@@ -1246,19 +1275,19 @@
       } };
       Calis.tutCalisiyor = true;
       btn.textContent = 'Durdur';
-      ses.textContent = 'Hazırlan';
+      fazAd.textContent = stream ? 'Sessiz kal' : 'Hazırlan';
+      sayac.textContent = '';
+      daireAyarla(0.62, 1);
       ekraniAcikTut();
       Rehber.soyle('Hazırlan', 600);
-      n.zaman = setInterval(function () {
-        tik(n);
-      }, 50);
+      n.zaman = setInterval(function () { tik(n); }, 50);
       btn.onclick = function () { if (Calis.tutCalisiyor) bitir(false, n); else baslat(); };
     }
     function baslat() {
       calisDurdur(); mkDurdur();
       sonuclar.textContent = '';
       Ses.baglam(); Rehber.uyandir();
-      faz.textContent = 'Mikrofon açılıyor…';
+      fazAd.textContent = 'Mikrofon açılıyor…';
       Ses.mikrofon().then(basla).catch(function (e) { mikrofonHatasi(e); basla(null); });
     }
     btn.onclick = baslat;
