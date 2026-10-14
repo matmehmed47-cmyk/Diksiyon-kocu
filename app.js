@@ -667,10 +667,10 @@
     };
     var ver = [8, 10, 12][i];
     var nefesOlcAdim = {
-      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, sssss diye ver', al: 6, ver: ver, turSayisi: kisaMod ? 3 : 5,
+      tur: 'nefesOlc', bolum: 0, baslik: 'Nefes al, ffuuu diye ver', al: 6, ver: ver, turSayisi: kisaMod ? 3 : 5,
       maddeler: [
         'Elini karnına koy. Burundan <b>6 saniyede</b> sessizce nefes al; omuzların kalkmasın, karın ve kaburgalar açılsın.',
-        '“Ver” denince <b>sssss</b> diye, <b>' + ver + ' saniye</b> boyunca aynı güçte ver.',
+        '“Ver” denince <b>ffuuu</b> diye (mum üfler gibi, dudaklar hafif büzük), <b>' + ver + ' saniye</b> boyunca aynı güçte ver.',
         'Telefonu yüzünden bir karış uzakta tut. Mikrofon her turda nefes verişini dinler ve ne olduğunu yazar.',
         'Mikrofon omzunu ya da karnını göremez; onu elinle ya da aynada kontrol et.'
       ]
@@ -1136,12 +1136,12 @@
     });
   }
 
-  // ---------- Dinlemeli nefes: "al" sessiz, "ver" sssss (mikrofon dinler) ----------
+  // ---------- Dinlemeli nefes: "al" sessiz, "ver" ffuuu (mikrofon dinler) ----------
   function nefesOlcCiz(kutu, a) {
     var ekran = el('div', 'tut-ekran');
     var ses = el('div', 'tut-ses', a.al + ' · ' + a.ver);
     var faz = el('div', 'tut-faz', 'Hazır');
-    var bilgi = el('div', 'muted kucuk', a.turSayisi + ' tur · ' + a.al + ' sn al, ' + a.ver + ' sn sssss diye ver');
+    var bilgi = el('div', 'muted kucuk', a.turSayisi + ' tur · ' + a.al + ' sn al, ' + a.ver + ' sn ffuuu diye ver');
     var cubuk = el('div', 'seviye-cubuk'), dolgu = el('span');
     cubuk.appendChild(dolgu);
     ekran.appendChild(ses); ekran.appendChild(faz); ekran.appendChild(bilgi); ekran.appendChild(cubuk);
@@ -1153,7 +1153,7 @@
     kutu.appendChild(sonuclar);
     var FZ = {
       al: { ad: 'Nefes al', soz: 'Nefes al', zil: 523, sn: a.al },
-      ver: { ad: 'Sssss diye ver', soz: 'Yavaşça ver', zil: 440, sn: a.ver }
+      ver: { ad: 'Ffuuu diye ver', soz: 'Yavaşça ver', zil: 440, sn: a.ver }
     };
 
     function bitir(tamam, n) {
@@ -1182,7 +1182,7 @@
     }
     function turYaz(n) {
       var t = n.turVeri, durum, mesaj, cv = degiskenlik(t.verRms);
-      if (t.verAktif < 0.8) { durum = 'b'; mesaj = 'Nefes verişini duyamadım. Telefonu yüzüne yaklaştır ve “sssss” diye duyulur şekilde ver.'; }
+      if (t.verAktif < 0.8) { durum = 'b'; mesaj = 'Nefes verişini duyamadım. Telefonu yüzüne yaklaştır ve “ffuuu” diye duyulur şekilde ver.'; }
       else if (t.verSon < a.ver - 1.2) { durum = 'w'; mesaj = 'Erken bitirdin: ' + sn(t.verSon) + ' sn / ' + a.ver + ' sn. Daha yavaş ver.'; }
       else if (t.verIlk != null && t.verIlk > 2.5) { durum = 'w'; mesaj = 'Geç başladın. “Ver” denince hemen başla.'; }
       else if (cv > 0.6) { durum = 'w'; mesaj = 'Süre iyi ama nefesin dalgalı çıktı. Baştan sona aynı güçte ver.'; }
