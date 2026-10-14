@@ -573,7 +573,7 @@
   // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 8;
+  var RUTIN_SURUM = 9;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -751,6 +751,12 @@
     secilen.forEach(function (k) { rutinVeri().goruldu[k] = bugun; });
     return { adimlar: adimlar, ozKontrol: oz };
   }
+  // Bugünün harfi: kullanıcı seçtiyse o, yoksa bugünün setindeki, yoksa sıradaki.
+  function rutinBugunHarf() {
+    var r = rutinVeri(), g = gunStr();
+    if (r.harfSecim && r.harfSecim.tarih === g) return r.harfSecim.harf;
+    return r.bugun && r.bugun.tarih === g ? r.bugun.harf : rutinSiradakiHarf();
+  }
   function rutinBugun(mod) {
     var r = rutinVeri(), g = gunStr(), o = r.bugun;
     // mod verilmezse varsayılan 'tam'; ama var olan setin modu da korunabilsin diye sadece kısa istenirse kısa olur
@@ -776,7 +782,7 @@
       }
       if (basladi || (o.surum === RUTIN_SURUM && (o.mod || 'tam') === mod)) return o;
     }
-    var harf = r.bugun && r.bugun.tarih === g ? r.bugun.harf : rutinSiradakiHarf();
+    var harf = rutinBugunHarf();
     Object.keys(r.goruldu).forEach(function (k) { if (gunFark(r.goruldu[k], g) > 30) delete r.goruldu[k]; });
     var sv = rutinSeviye(), kur = rutinKur(harf, sv, mod);
     r.bugun = { tarih: g, surum: RUTIN_SURUM, mod: mod, harf: harf, seviye: sv, adim: 0, tamam: {}, bitti: !!r.gunler[g], sn: 0, t: Date.now(), adimlar: kur.adimlar, ozKontrol: kur.ozKontrol };
@@ -822,7 +828,7 @@
     if (!kutu) return;
     kutu.textContent = '';
     var r = rutinVeri(), b = r.bugun && r.bugun.tarih === gunStr() ? r.bugun : null;
-    var H = calisBul(b ? b.harf : rutinSiradakiHarf());
+    var H = calisBul(rutinBugunHarf());
     var sv = b ? b.seviye : rutinSeviye(), seri = rutinSeri(), svSimdi = rutinSeviye();
     var sonGun = rutinSonGunSayisi(), hafta = rutinHafta(), hedef = rutinHedef();
     var bitti = !!(b && (b.bitti || r.gunler[b.tarih]));
@@ -876,6 +882,21 @@
     } else {
       dugme('Başla · 14 dk', 'primary', 'tam');
       dugme('Kısa · 5 dk', 'secondary', 'kisa');
+    }
+    if (!basladi) {
+      var hs = el('div', 'rutin-btnlar');
+      hs.appendChild(el('span', 'muted kucuk', 'Bugünün sesi:'));
+      RUTIN_HARFLER.forEach(function (h) {
+        var d = el('button', h === H.id ? 'primary' : 'secondary', h.toUpperCase()); d.type = 'button';
+        d.addEventListener('click', function () {
+          if (h === H.id) return;
+          r.harfSecim = { tarih: gunStr(), harf: h };
+          if (r.bugun && r.bugun.tarih === gunStr()) delete r.bugun;
+          kaydet(); rutinKartlariCiz();
+        });
+        hs.appendChild(d);
+      });
+      kart.appendChild(hs);
     }
     kart.appendChild(bt);
     if (!bitti && !basladi) kart.appendChild(el('span', 'muted kucuk', 'Yoğun günlerde: nefes, günün sesi, tekerleme, gerçek cümle.'));
