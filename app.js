@@ -573,7 +573,7 @@
   // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 6;
+  var RUTIN_SURUM = 7;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -758,6 +758,18 @@
     // Başlanmış günün seti, sürüm değişse bile aynen korunur (ilerleme kaybolmasın).
     if (o && o.tarih === g) {
       var basladi = o.bitti || o.adim > 0 || Object.keys(o.tamam || {}).length > 0;
+      if (basladi && o.surum !== RUTIN_SURUM) {
+        // Başlanmış günün seti korunur; yalnızca eski nefes adımları yenileriyle değiştirilir (ilerleme bozulmaz).
+        var yeni = rutinKur(o.harf, o.seviye || rutinSeviye(), o.mod || 'tam');
+        if (yeni.adimlar.length === o.adimlar.length) {
+          o.adimlar = o.adimlar.map(function (x, k) {
+            var y = yeni.adimlar[k];
+            return y.tur === 'nefesOlc' && x.bolum === y.bolum ? y : x;
+          });
+        }
+        o.surum = RUTIN_SURUM; kaydet();
+        return o;
+      }
       if (basladi || (o.surum === RUTIN_SURUM && (o.mod || 'tam') === mod)) return o;
     }
     var harf = r.bugun && r.bugun.tarih === g ? r.bugun.harf : rutinSiradakiHarf();
