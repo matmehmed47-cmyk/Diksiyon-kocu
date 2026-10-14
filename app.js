@@ -573,7 +573,7 @@
   // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 4;
+  var RUTIN_SURUM = 5;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
