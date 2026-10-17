@@ -278,3 +278,5 @@ canvas.dalga.buyuk{height:80px;cursor:pointer;touch-action:manipulation}
 .zor-etiket.zor{background:var(--bad-soft);color:var(--bad)}
 .kademe-satir{display:flex;gap:8px;flex-wrap:wrap}
 .kademe-satir button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+
+.ara-not{background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 14px;line-height:1.5;font-size:15px}

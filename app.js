@@ -830,6 +830,23 @@
     });
     kutu.appendChild(s);
   }
+  // ---------- Ara verince: "N gündür yoksun" bildirimi ----------
+  function araGunSayisi() {
+    var bugun = gunStr(), son = null, g = veri.gunler || {};
+    if (g[bugun] && Object.keys(g[bugun]).length) return 0;
+    Object.keys(g).forEach(function (k) { if (k < bugun && Object.keys(g[k]).length && (!son || k > son)) son = k; });
+    return son ? Math.max(0, gunFark(son, bugun) - 1) : 0;
+  }
+  function araMesaji() {
+    var n = araGunSayisi();
+    if (n < 2) return '';
+    var s = n <= 10 ? sayiSoz(n) : String(n);
+    s = s.charAt(0).toLocaleUpperCase('tr-TR') + s.slice(1);
+    if (n === 2) return s + ' gündür yoksun. Bugün 5 dakikalık kısa rutinle yeniden başlayalım.';
+    if (n === 3) return s + ' gündür yoksun. Kaldığın yerden, kısa rutinle devam edebilirsin.';
+    if (n < 7) return s + ' gündür yoksun. Seri bozulduysa üzülme; bugün kısa rutin yeter.';
+    return s + ' gündür yoksun. Hoş geldin! Kısa rutinle yavaşça geri dönelim.';
+  }
   function rutinKartCiz(kutu) {
     if (!kutu) return;
     kutu.textContent = '';
@@ -846,6 +863,8 @@
     ust.appendChild(el('b', 'grow', 'Bugünün rutini'));
     ust.appendChild(el('span', 'pill', (seri > 0 ? '🔥 ' + seri + ' gün · bu hafta ' : 'Bu hafta ') + hafta + ' / ' + hedef));
     kart.appendChild(ust);
+    var araM = !bitti && !basladi ? araMesaji() : '';
+    if (araM) kart.appendChild(el('div', 'ara-not', '👋 ' + araM));
     if (kisaGun) {
       kart.appendChild(el('span', 'muted kucuk', 'Bugünkü rutin: Kısa · 5 dk'));
       kart.appendChild(el('span', 'muted kucuk', 'Nefes → ' + H.harf + ' sesi → Tekerleme · yaklaşık 5 dk'));
@@ -864,7 +883,7 @@
     if (gc && gc.metin && gc.tarih < gunStr() && gc.kullandi === undefined) {
       var soru = el('div', 'rutin-soru');
       soru.appendChild(el('span', 'rutin-soru-cumle', '“' + gc.metin + '”'));
-      soru.appendChild(el('span', 'kucuk', 'Dün hazırladığın cümleyi gerçekten kullandın mı?'));
+      soru.appendChild(el('span', 'kucuk', (gunFark(gc.tarih, gunStr()) === 1 ? 'Dün' : tarihYaz(gc.tarih + 'T12:00')) + ' hazırladığın cümleyi gerçekten kullandın mı?'));
       var sb = el('div', 'rutin-btnlar');
       [['Evet', true], ['Hayır', false]].forEach(function (x) {
         var d = el('button', 'secondary', x[0]); d.type = 'button';
@@ -1848,10 +1867,10 @@
 
     // Öneriler: dünkü cümle (varsa) + en fazla 3 hazır cümle; toplam en fazla 4
     var oneri = [];
-    if (r.gercek && r.gercek.metin && r.gercek.tarih < tarih) oneri.push({ yazi: r.gercek.metin, dun: true });
+    if (r.gercek && r.gercek.metin && r.gercek.tarih < tarih) oneri.push({ yazi: r.gercek.metin, dun: true, once: gunFark(r.gercek.tarih, tarih) === 1 ? 'Dünkü cümlen: ' : 'Son yazdığın cümle (' + tarihYaz(r.gercek.tarih + 'T12:00') + '): ' });
     gercekOneriler().forEach(function (c) { if (oneri.length < 4) oneri.push({ yazi: c }); });
     oneri.forEach(function (o) {
-      var c = el('button', 'soz-chip gercek-chip', (o.dun ? 'Dünkü cümlen: ' : '') + o.yazi); c.type = 'button';
+      var c = el('button', 'soz-chip gercek-chip', (o.dun ? o.once : '') + o.yazi); c.type = 'button';
       c.addEventListener('click', function () { ta.value = o.yazi; metinGoster(); kaydetMetin(); });
       chipKutu.appendChild(c);
     });
@@ -2128,6 +2147,10 @@
   });
   calisListeCiz();
   rutinKartlariCiz();
+  setTimeout(function () {
+    var m = araMesaji();
+    if (m && veri.ayarlar.araGun !== gunStr()) { veri.ayarlar.araGun = gunStr(); kaydet(); uyariGoster('👋 ' + m); }
+  }, 1200);
 
   // ================= Dersler =================
   $$('[data-ders]').forEach(function (b) {
