@@ -50,16 +50,15 @@ window.CALISMALAR = [
         dene: { yonerge: 'Önce kendini yokla: Aşağıdakileri sesli söyle ve kaydet. Çalışmanın sonunda bir daha kaydedip karşılaştırırsın.', sozler: ['kara', 'para', 'bir adam', 'geliyorlar', 'Rıza resim yapıyor.'] }
       },
       {
-        tur: 'tut', baslik: 'Isınma: Rrrr ve Prrrr',
+        tur: 'nefesOlc', baslik: 'Nefes al, rrrrr diye ver', ses: 'rrrrr', filtre: 400, olcum: 'titresim',
+        al: [4, 4, 5], tut: [4, 4, 5], ver: [6, 8, 10], turSayisi: [3, 4, 5],
         maddeler: [
-          'Mümkünse aynaya bak.',
-          'Dil ucunu üst ön dişlerin arkasındaki diş etine götür.',
-          'Güçlü bir nefes ver ve dilini <b>abartarak</b> titret: Rrrrrrr.',
+          'Seviyen: <b>{seviye}</b>. Her tur: {al} saniye nefes al, {tut} saniye tut, <b>{ver} saniye</b> rrrrr diye ver; {tur} tur yapacaksın. Çalıştıkça süre ve tur sayısı artar.',
+          'Mümkünse aynaya bak. Dil ucunu üst ön dişlerin arkasındaki diş etine götür.',
+          'Burundan sessizce nefes al. “Ver” denince güçlü bir nefes ver ve dilini <b>abartarak</b> titret: Rrrrrrr. İstersen dudaklarını da katıp Prrrrrr dene.',
           'Bu abartı sadece ısınma içindir; konuşurken r hafif söylenir.',
-          'Sonra dudaklarını da katarak dene: Prrrrrr.',
           'Hemen titremezse zorlama. Dilini gevşek bırak, nefesi biraz artır. Her gün denedikçe gelir.'
-        ],
-        sesler: ['Rrrrrrr', 'Prrrrrr'], sure: 5, dinlenme: 4, turSayisi: 3, olcum: 'titresim'
+        ]
       },
       {
         tur: 'kart', baslik: 'Hece kartları', hece: true, sabitDizi: 1, secimDizi: 5,
@@ -728,15 +727,13 @@ window.CALISMALAR = [
         sesler: ['Yana aç', 'Yukarı ger', 'Öne yukarı'], sure: 25, dinlenme: 3, turSayisi: 1
       },
       {
-        tur: 'tut', baslik: 'Sayılı nefes', fazAd: 'Yap!', birim: 'tur',
+        tur: 'nefesOlc', baslik: 'Sayılı nefes', ses: 'ffuuu', filtre: 400,
+        al: 6, tut: 0, ver: [8, 10, 12], turSayisi: [3, 4, 5],
         maddeler: [
-          'Burundan <b>6 sayıda</b> nefes al (omuzlar sabit).',
-          'Ağızdan <b>8 sayıda</b> ver. Sonra verme sayısını ikişer ikişer artır: 10, 12, 14…',
-          'Alma sayısı hep 6 kalır.',
-          'Nefes bitti sanılan yerde biraz daha zorlamadan ver.',
-          'Her tur 14 saniyedir: önce 6 sayı al, sonra yavaşça ver.'
-        ],
-        sesler: ['Al 6 · Ver 8', 'Al 6 · Ver 10', 'Al 6 · Ver 12'], sure: 14, dinlenme: 3, turSayisi: 1
+          'Seviyen: <b>{seviye}</b>. Her tur: burundan <b>{al} sayıda</b> nefes al (omuzlar sabit), ağızdan <b>{ver} sayıda</b> ffuuu diye ver; {tur} tur yapacaksın.',
+          'Çalıştıkça verme süresi uzar: 8, 10, 12. Alma süresi hep 6 kalır.',
+          'Nefes bitti sanılan yerde biraz daha zorlamadan ver.'
+        ]
       },
       {
         tur: 'cumle', baslik: '“/” işaretinde nefes al', secim: 4,

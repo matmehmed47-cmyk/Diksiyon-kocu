@@ -573,7 +573,7 @@
   // Seviye, son 28 gündeki geçerli gün sayısına göre belirlenir (8 gün → Orta, 16 gün → İleri); uzun aradan sonra düşer.
   var RUTIN_HARFLER = ['r', 's', 'z'];
   var RUTIN_SEVIYE = ['', 'Başlangıç', 'Orta', 'İleri'];
-  var RUTIN_SURUM = 10;
+  var RUTIN_SURUM = 11;
   function gunFark(a, b) { return Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 86400000); }
   function rutinVeri() {
     var r = veri.rutin = veri.rutin || {};
@@ -1202,8 +1202,10 @@
     ['al', 'tut', 'ver'].forEach(function (k) {
       var d = el('div', 'phase', k === 'ver' ? SES + ' ver' : AD[k]);
       d.appendChild(el('b', null, SN[k] + ' sn'));
-      fazlar.appendChild(d); fazKutu[k] = d;
+      if (!(k === 'tut' && !TUT)) fazlar.appendChild(d);
+      fazKutu[k] = d;
     });
+    if (!TUT) fazlar.style.gridTemplateColumns = 'repeat(2,minmax(0,1fr))';
     var cubuk = el('div', 'seviye-cubuk'), dolgu = el('span');
     cubuk.appendChild(dolgu);
     var turYazi = el('div', 'muted'); turYazi.style.textAlign = 'center';
@@ -1257,6 +1259,7 @@
       else if (cv > 0.6) { durum = 'w'; mesaj = 'Süre iyi ama nefesin dalgalı çıktı. Baştan sona aynı güçte ver.'; }
       else { durum = 'g'; mesaj = 'İyi görünüyor: telefon ' + a.ver + ' saniye dengeli bir nefes duydu.'; }
       if (t.tutAktif > 0.6) mesaj += ' “Tut” sırasında nefes kaçırdın.';
+      if (n.tres) { mesaj += ' Dil titreşimi: ' + sn(Math.max(0, n.tres.titresimli - t.tit0)) + ' sn (telefonun tahmini).'; }
       n.turlar.push(durum);
       var satir = el('div', 'card tur');
       satir.appendChild(el('span', 'badge ' + durum, String(n.tur)));
@@ -1266,11 +1269,12 @@
     function fazaGir(n, f) {
       n.faz = f; n.fazBas = performance.now();
       if (f === 'al') {
-        n.turVeri = { verAktif: 0, verIlk: null, verSon: null, verRms: [], tutAktif: 0 };
+        n.turVeri = { verAktif: 0, verIlk: null, verSon: null, verRms: [], tutAktif: 0, tit0: 0 };
         turYazi.textContent = 'Tur ' + n.tur + ' / ' + a.turSayisi;
       }
       fazAd.textContent = AD[f];
       Object.keys(fazKutu).forEach(function (k) { fazKutu[k].classList.toggle('on', k === f); });
+      if (f === 'ver' && n.tres) n.turVeri.tit0 = n.tres.titresimli;
       daireAyarla(OLCEK[f], SN[f]);
       Rehber.soyle(n.olcer ? SOZ[f][0] : AD[f], SOZ[f][1]);
     }
@@ -1291,7 +1295,7 @@
       sayac.textContent = n.faz === 'hazir' ? '' : String(Math.max(1, Math.ceil(uzunluk - gecen)));
       if (gecen < uzunluk) return;
       if (n.faz === 'hazir') { if (n.olcer) n.esik = esikHesapla(medyan(n.kalib)); fazaGir(n, 'al'); }
-      else if (n.faz === 'al') fazaGir(n, 'tut');
+      else if (n.faz === 'al') fazaGir(n, TUT ? 'tut' : 'ver');
       else if (n.faz === 'tut') fazaGir(n, 'ver');
       else {
         if (n.olcer) turYaz(n);
@@ -1301,10 +1305,12 @@
     }
     function basla(stream) {
       var n = { dinle: !!stream, stream: stream, olcer: stream ? Olcer(stream, a.filtre || 1500) : null, tur: 1, faz: 'hazir',
-        fazBas: performance.now(), son: performance.now(), kalib: [], esik: null, turVeri: null, turlar: [], zaman: null };
+        fazBas: performance.now(), son: performance.now(), kalib: [], esik: null, turVeri: null, turlar: [], zaman: null, tres: null };
+      if (stream && a.olcum === 'titresim') { try { n.tres = new TitresimOlcer(stream); n.tres.basla(); } catch (e) { n.tres = null; } }
       // calisDurdur() bu nesnenin kapat()'ını çağırarak her şeyi durdurur
       Calis.olcer = { kapat: function () {
         clearInterval(n.zaman);
+        if (n.tres) { try { n.tres.calisiyor = false; n.tres.kaynak.disconnect(); } catch (e) { /* yok say */ } }
         if (n.olcer) n.olcer.kapat();
         akisiKapat(n.stream);
         Rehber.durdur();
