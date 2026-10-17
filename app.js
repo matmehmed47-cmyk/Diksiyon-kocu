@@ -1805,24 +1805,29 @@
       if (a.tekerleme) {
         var et = tekEtiket(c);
         b.appendChild(el('span', 'zor-etiket ' + et.toLowerCase(), et));
-        var ks = el('div', 'kademe-satir'), yapilan = {}, takildi = false;
-        function kademeBitti() {
-          if (Object.keys(yapilan).length === 3) {
-            b.classList.add('okundu');
-            if (!takildi) trKucuk(c).split(' ').forEach(function (w) { zorIsle(w, true); });
-          }
-        }
-        [['yavas', 'Yavaş'], ['normal', 'Normal'], ['hizli', 'Hızlı']].forEach(function (t) {
-          var kb = el('button', 'secondary kucuk-btn', t[1]); kb.type = 'button';
-          kb.setAttribute('aria-pressed', 'false');
-          kb.addEventListener('click', function () {
-            var on = kb.getAttribute('aria-pressed') !== 'true';
-            kb.setAttribute('aria-pressed', String(on));
-            if (on) yapilan[t[0]] = 1; else { delete yapilan[t[0]]; b.classList.remove('okundu'); }
-            kademeBitti();
+        var ks = el('div', 'kademe-satir'), takildi = false, adim = 0, kbler = [];
+        var kNot = el('div', 'muted kucuk');
+        var KADEME = [['Yavaş', 'Şimdi yavaş oku; her sesi aç, net çıkar.'], ['Normal', 'Şimdi normal konuşma hızında oku.'], ['Hızlı', 'Şimdi hızlı oku ama sesler net kalsın.']];
+        function kademeYenile() {
+          kbler.forEach(function (kb, i) {
+            kb.setAttribute('aria-pressed', String(i < adim));
+            kb.disabled = i > adim || (i < adim - 1);
           });
-          ks.appendChild(kb);
+          kNot.textContent = adim < 3 ? KADEME[adim][1] : 'Üç turu da okudun ✓';
+          b.classList.toggle('okundu', adim === 3);
+        }
+        function kademeBitti() {
+          if (adim === 3 && !takildi) trKucuk(c).split(' ').forEach(function (w) { zorIsle(w, true); });
+        }
+        KADEME.forEach(function (t, i) {
+          var kb = el('button', 'secondary kucuk-btn', t[0]); kb.type = 'button';
+          kb.addEventListener('click', function () {
+            if (i === adim) { adim++; kademeYenile(); kademeBitti(); }
+            else if (i === adim - 1) { adim--; kademeYenile(); } // son işareti geri al
+          });
+          kbler.push(kb); ks.appendChild(kb);
         });
+        kademeYenile();
         var tkb = el('button', 'secondary kucuk-btn', 'Takıldım'); tkb.type = 'button';
         tkb.addEventListener('click', function () {
           if (takildi) return;
@@ -1832,6 +1837,7 @@
         });
         ks.appendChild(tkb);
         sar.appendChild(ks);
+        sar.appendChild(kNot);
         var sonucT = el('div', 'tanima-sonuc'); sonucT.hidden = true;
         var tbt = tanimaDugmesi('Söyle, kontrol edeyim', function () { return c; },
           tekerlemeKontrol(function (w, d) { zorIsle(w, d); }), sonucT, function () { b.classList.add('okundu'); });
