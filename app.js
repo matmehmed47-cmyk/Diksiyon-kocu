@@ -1719,18 +1719,76 @@
   // ---------- Bugün kullanacağım gerçek cümle (rutinin son adımı) ----------
   var gercekOneriOnbellek = null;
   // Sınıf/veli/seminer metinlerinden kısa, tek cümlelik öneriler (işaretler temizlenir).
+  // ---------- Günün konusu: "Bugün kullanacağım cümle" adımı ----------
+  // Konular sırayla döner (gün atlanırsa konu da atlanmaz). Her konunun kendi hazır cümleleri vardır.
+  var GERCEK_KONULAR = [
+    { id: 'giris', ad: 'Ders girişi', tip: 'Sınıf', yonerge: 'Dersi sakin ve net bir cümleyle aç.', ipucu: 'Dersin konusunu ya da bugünkü hedefi ekleyebilirsin.', cumleler: [
+      'Günaydın çocuklar, bugün birlikte yeni bir şey öğreneceğiz.', 'Defterlerinizi açın, ilk soruyla başlıyoruz.',
+      'Önce geçen dersi kısaca hatırlayalım, sonra yeni konuya geçeceğiz.', 'Bugünkü hedefimiz şu: ders bitince bu konuyu kendi cümlelerinizle anlatabilmek.',
+      'Hazırsanız başlıyoruz; sessizce beni dinleyin.', 'Bugün biraz farklı bir şey deneyeceğiz, dikkatle takip edin.',
+      'Herkes yerine geçsin, ders başlıyor.', 'Bugünkü dersimiz kısa bir soruyla açılıyor; düşünün, sonra birlikte konuşacağız.'] },
+    { id: 'uyari', ad: 'Dikkat toplama ve uyarı', tip: 'Sınıf', yonerge: 'Sesini yükseltmeden, sakin ve kararlı bir uyarı cümlesi yaz.', ipucu: 'Cümleden sonra yavaşça dur ve bekle; bekleme de uyarının parçası.', cumleler: [
+      'Arkadaşımız konuşurken hepimiz onu dinliyoruz.', 'Bir dakika bana bakar mısınız, önemli bir şey söyleyeceğim.',
+      'Sınıfta sessizlik olunca başlayacağım; ben bekliyorum.', 'Şu an herkesin kalemi masada, gözleri bende olsun.',
+      'Konuşmanız dersi bölüyor; lütfen sırayla söz isteyin.', 'Üçe kadar sayıyorum, sonra devam ediyoruz: bir, iki, üç.',
+      'Bunu kızgın değil, sakin söylüyorum: lütfen yerlerinize oturun.', 'Bu kuralı hepimiz için koyduk, birlikte uyalım.'] },
+    { id: 'ovgu', ad: 'Öğrenciyi övme', tip: 'Sınıf', yonerge: 'Neyi gördüğünü söyleyen, içten bir övgü cümlesi yaz.', ipucu: 'Çocuğun adını ve gördüğün davranışı cümleye ekle.', cumleler: [
+      'Bu soruyu çözerken gösterdiğin sabır çok güzeldi.', 'Hata yapmaktan korkmadan denemen benim için çok değerli.',
+      'Arkadaşına yardım etmen sınıfımıza çok iyi geldi.', 'Bugün derse hazır gelmişsin, bunu fark ettim.',
+      'Cevabını açıkça ve güzel anlattın, teşekkür ederim.', 'Bu defterdeki düzen gerçekten dikkat çekici.',
+      'Geçen haftaya göre çok ilerleme var, bunu görüyorum.', 'Takıldığında vazgeçmeyip tekrar denedin; asıl başarı bu.'] },
+    { id: 'soru', ad: 'Soru sorma', tip: 'Sınıf', yonerge: 'Öğrencileri düşündüren, açık bir soru cümlesi yaz.', ipucu: 'Soruyu sorduktan sonra üç saniye bekle, hemen cevap verme.', cumleler: [
+      'Bunu kendi cümlenle anlatmak isteyen var mı?', 'Sence bir sonraki adım ne olmalı?',
+      'Bu cevap neden doğru olabilir, kim açıklar?', 'Başka bir yolla çözen var mı?',
+      'Bu konuda aklına takılan bir şey var mı?', 'Şimdi iki dakika yanındakiyle konuşun, sonra birkaçınızı dinleyeceğim.',
+      'Bunu günlük hayatta nerede görürüz?', 'Anlamadığınız yeri söylemek hiç ayıp değil, buyurun.'] },
+    { id: 'tesekkur', ad: 'Teşekkür', tip: 'Sınıf', yonerge: 'Neye teşekkür ettiğini açıkça söyleyen bir cümle yaz.', ipucu: 'Teşekkür ettiğin davranışı adıyla söyle.', cumleler: [
+      'Bugün sessiz ve düzenli çalıştığınız için teşekkür ederim.', 'Yardım ettiğin için sağ ol, bu arkadaşına çok iyi geldi.',
+      'Sınıfı toplamama yardım edenlere ayrıca teşekkür ederim.', 'Beni sabırla dinlediğiniz için hepinize teşekkürler.',
+      'Soru sorarak dersi zenginleştirdiğiniz için teşekkür ederim.', 'Bugünkü emeğiniz için sizinle gurur duyuyorum.',
+      'Ödevlerinizi zamanında getirdiğiniz için çok sağ olun.', 'Bugün birlikte güzel bir ders geçirdik, teşekkür ederim.'] },
+    { id: 'zor', ad: 'Zor konuyu açıklama', tip: 'Sınıf', yonerge: 'Zor bir konuya girerken öğrencinin içini rahatlatan bir cümle yaz.', ipucu: 'Önce konunun zor olabileceğini kabul et, sonra adımlara böl.', cumleler: [
+      'Bu konu zor gelebilir, adım adım gideceğiz.', 'Takıldığınız yerde hemen söyleyin, tekrar anlatırım.',
+      'Önce basit bir örnekle başlayalım, sonra zorlaştıracağız.', 'Şimdi bir adım geri gidip nerede kaybolduğumuzu bulalım.',
+      'Bu kısmı yavaş anlatacağım; hazır olunca başlıyoruz.', 'Anlamadıysanız bu benim anlatışımdan da olabilir; bir de başka türlü deneyeyim.',
+      'Üç adımda toparlayalım: birincisi şu, ikincisi şu.', 'Şimdi tahtadaki ilk satıra bakın, oradan başlıyoruz.'] },
+    { id: 'kapanis', ad: 'Ders kapanışı', tip: 'Sınıf', yonerge: 'Dersi toparlayan ve yarına bağlayan bir kapanış cümlesi yaz.', ipucu: 'Bugünün tek önemli noktasını bir cümleyle söyle.', cumleler: [
+      'Bugün neler öğrendik, birlikte kısaca toparlayalım.', 'Yarın bu konuya kaldığımız yerden devam edeceğiz.',
+      'Bugün hepinize teşekkür ederim, iyi dinlenin.', 'Çıkmadan önce bugünün en önemli noktasını bir cümleyle söyleyin.',
+      'Ödevinizi not alın, soru olursa yarın başında sorarız.', 'Eşyalarınızı toplayın, zil çalınca sırayla çıkacağız.',
+      'Bugünün en iyi cümlesi sizinkiydi; yarın yeniden görüşürüz.', 'Konuyu bitirdik, merak ettiğiniz bir şey kaldıysa şimdi sorun.'] },
+    { id: 'veliac', ad: 'Veli görüşmesi açılışı', tip: 'Veli', yonerge: 'Veliyi rahatlatan, sıcak bir açılış cümlesi yaz.', ipucu: 'Önce teşekkür et, sonra görüşmenin amacını söyle.', cumleler: [
+      'Hoş geldiniz, vakit ayırdığınız için teşekkür ederim.', 'Önce çocuğunuzun güçlü yanlarından bahsederek başlamak istiyorum.',
+      'Bugün sizinle çocuğunuzun derse katılımı hakkında konuşacağım.', 'Rahat oturun; sorularınız olursa istediğiniz an sorabilirsiniz.',
+      'Sizi dinlemek de istiyorum; önce siz nasıl gördüğünüzü anlatır mısınız?', 'Görüşmemiz yaklaşık on dakika sürecek; birlikte bir yol çizeceğiz.',
+      'Davetime geldiğiniz için çok teşekkür ederim.', 'Buraya suçlamak için değil, birlikte çözüm bulmak için bir araya geldik.'] },
+    { id: 'velidestek', ad: 'Veliye destek önerisi', tip: 'Veli', yonerge: 'Veliye küçük ve yapılabilir bir öneri veren bir cümle yaz.', ipucu: 'Tek bir somut şey öner; uzun liste verme.', cumleler: [
+      'Evde her gün on dakika birlikte çalışmak çok işe yarar.', 'Bu konuda size nasıl yardımcı olabilirim?',
+      'Akşamları kısa bir tekrar yapmanız yeterli olur.', 'Çocuğunuzun kendini anlatmasına fırsat verirseniz çok fayda göreceksiniz.',
+      'Küçük adımlarla ilerleyelim, her hafta bir şeyi birlikte takip edelim.', 'Okula ve eve aynı mesajı verirsek çocuk daha rahat eder.',
+      'Çalışma saatini sabit tutmak çok yardımcı oluyor.', 'İsterseniz ona kısa bir çalışma planı hazırlayıp gönderirim.'] },
+    { id: 'zorhaber', ad: 'Zor haberi nazikçe söyleme', tip: 'Veli', yonerge: 'Zor bir durumu, veliyi üzmeden ama net söyleyen bir cümle yaz.', ipucu: 'Önce olumlu bir şey söyle, sonra durumu açık cümleyle anlat.', cumleler: [
+      'Bu konuda biraz desteğe ihtiyacı olduğunu görüyorum, birlikte çözebiliriz.', 'Amacım suçlamak değil, birlikte yol bulmak.',
+      'Bunu söylemek kolay değil ama size dürüst olmak istiyorum.', 'Son haftalarda derse ilgisinin azaldığını fark ettim.',
+      'Bu durum geçici olabilir, ama erken önlem almak istiyorum.', 'Notlarındaki düşüş beni düşündürüyor; sizin gözleminiz nedir?',
+      'Bu konuda sizinle aynı tarafta olduğumu bilmenizi isterim.', 'Birlikte bir plan yaparsak durumu toparlayabiliriz.'] }
+  ];
+  function gercekKonuBugun() {
+    var r = rutinVeri(), g = gunStr(), i;
+    if (r.gercekKonu && r.gercekKonu.tarih === g) {
+      for (i = 0; i < GERCEK_KONULAR.length; i++) if (GERCEK_KONULAR[i].id === r.gercekKonu.id) return GERCEK_KONULAR[i];
+    }
+    var sira = -1;
+    if (r.gercekKonu) for (i = 0; i < GERCEK_KONULAR.length; i++) if (GERCEK_KONULAR[i].id === r.gercekKonu.id) sira = i;
+    var konu = GERCEK_KONULAR[(sira + 1) % GERCEK_KONULAR.length];
+    r.gercekKonu = { tarih: g, id: konu.id };
+    kaydet();
+    return konu;
+  }
   function gercekOneriler() {
-    var g = gunStr();
-    if (gercekOneriOnbellek && gercekOneriOnbellek.gun === g) return gercekOneriOnbellek.liste;
-    var adaylar = [];
-    (window.METINLER || []).forEach(function (m) {
-      if (m.kat !== 'veli' && m.kat !== 'ogretmen' && m.kat !== 'seminer') return;
-      var t = (m.metin || '').replace(/[\/|*↗↘]/g, ' ').replace(/\s+/g, ' ').trim();
-      var k = t.match(/^[^.?!]*[.?!]/);
-      var c = (k ? k[0] : t).trim();
-      if (c && c.length <= 160) adaylar.push(c);
-    });
-    gercekOneriOnbellek = { gun: g, liste: agirlikliSec(adaylar, 3) };
+    var g = gunStr(), konu = gercekKonuBugun();
+    if (gercekOneriOnbellek && gercekOneriOnbellek.gun === g && gercekOneriOnbellek.konu === konu.id) return gercekOneriOnbellek.liste;
+    gercekOneriOnbellek = { gun: g, konu: konu.id, liste: agirlikliSec(konu.cumleler, 3) };
     return gercekOneriOnbellek.liste;
   }
   function gercekCiz(kutu, a) {
@@ -1738,7 +1796,13 @@
     var r = rutinVeri(), b = r.bugun, tarih = b.tarih;
     var onceki = r.gercek && r.gercek.tarih === tarih ? r.gercek.metin : '';
     var zaman = null;
-    kutu.appendChild(el('p', 'calis-p', 'Bugün sınıfta ya da veli görüşmesinde gerçekten söyleyeceğin bir cümle yaz (örn. ders girişi, bir uyarı, bir teşekkür). Sonra söyleyerek çalışalım.'));
+    var konu = gercekKonuBugun();
+    var kb = el('p', 'calis-p');
+    kb.appendChild(el('span', 'zor-etiket', konu.tip));
+    kb.appendChild(document.createTextNode(' '));
+    kb.appendChild(el('b', null, 'Bugünün konusu: ' + konu.ad));
+    kutu.appendChild(kb);
+    kutu.appendChild(el('p', 'calis-p', konu.yonerge + ' Sonra söyleyerek çalışalım.'));
     var ta = document.createElement('textarea');
     ta.id = 'gercekMetin'; ta.rows = 3; ta.maxLength = 240;
     ta.placeholder = 'Bugün söyleyeceğim cümle…';
@@ -1747,6 +1811,7 @@
     kutu.appendChild(ta);
     var chipKutu = el('div', 'soz-chipler gercek-oneri');
     kutu.appendChild(chipKutu);
+    kutu.appendChild(el('div', 'muted kucuk', 'Hazır cümleyi kendi cümlene çevir. ' + konu.ipucu));
     var kart = el('div', 'card passage'); kart.id = 'gercekKart';
     var yon = el('p', 'muted calis-p'); yon.id = 'gercekYonerge';
     kutu.appendChild(kart); kutu.appendChild(yon);
@@ -1770,8 +1835,8 @@
       if (m) {
         kart.textContent = m; kart.hidden = false;
         yon.textContent = 'Önce iki kez yavaş, sonra bir kez doğal hızda oku. Sonra kırmızı düğmeyle kendini kaydet.';
-      } else if (a.yedek) {
-        kart.textContent = a.yedek; kart.hidden = false;
+      } else if (gercekOneriler()[0] || a.yedek) {
+        kart.textContent = gercekOneriler()[0] || a.yedek; kart.hidden = false;
         yon.textContent = 'Bugün için kendi cümleni yazmadın; bu cümleyi oku ve kaydet.';
       } else { kart.hidden = true; yon.textContent = ''; }
     }
