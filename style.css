@@ -271,3 +271,10 @@ canvas.dalga.buyuk{height:80px;cursor:pointer;touch-action:manipulation}
 .gercek-oneri{margin:10px 0}
 .gercek-chip{text-align:left;min-height:44px;line-height:1.35}
 @media (min-width:520px){.rutin-btnlar{flex-direction:row}.rutin-btnlar button{width:auto;flex:1}}
+
+.zor-etiket{flex-shrink:0;align-self:flex-start;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-strong)}
+.zor-etiket.kolay{background:var(--good-soft);color:var(--good)}
+.zor-etiket.orta{background:var(--warn-soft);color:var(--warn)}
+.zor-etiket.zor{background:var(--bad-soft);color:var(--bad)}
+.kademe-satir{display:flex;gap:8px;flex-wrap:wrap}
+.kademe-satir button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
