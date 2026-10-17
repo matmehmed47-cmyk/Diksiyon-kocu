@@ -1068,6 +1068,11 @@
     var kart = el('div', 'card passage');
     isaretliYaz(kart, m.metin);
     kutu.appendChild(kart);
+    var sSonuc = el('div', 'tanima-sonuc'); sSonuc.hidden = true;
+    kutu.appendChild(tanimaDugmesi('Söyle, dinleyeyim', function () { return duzMetin(m.metin); },
+      tekerlemeKontrol(function () { /* şiirde zor sözcük kaydı tutulmaz */ }, 0.8), sSonuc, null, true));
+    kutu.appendChild(sSonuc);
+    kutu.appendChild(el('div', 'muted kucuk', 'Şiiri bitirince düğmeye tekrar bas. Telefon sözcükleri anlayıp anlamadığını söyler; bu bir ipucudur, asıl ölçüt kulağındır.'));
   }
 
   function zorlukCiz(kutu) {
@@ -1480,8 +1485,9 @@
     });
     return w;
   }
+  function duzMetin(m) { return m.replace(/[\/|↗↘*]/g, ' ').replace(/\s+/g, ' ').trim(); }
   // Tüm tekerlemeyi kontrol eder: sözcükler sırayla anlaşıldı mı? (telefon bozuk sesi tamamlayabilir; ipucudur)
-  function tekerlemeKontrol(zorFn) {
+  function tekerlemeKontrol(zorFn, esik) {
     return function (hedef, duyulan) {
       if (!duyulan.length || !duyulan[0]) return { dogru: false, yazi: 'Seni duyamadım. Biraz daha yüksek sesle, düğmeye basar basmaz söyle.' };
       var hw = trKucuk(hedef).split(' ').filter(Boolean), en = null;
@@ -1495,17 +1501,17 @@
       });
       var dogruSay = hw.length - en.eksik.length;
       hw.forEach(function (w) { zorFn(w, en.eksik.indexOf(w) < 0); });
-      if (dogruSay / hw.length >= 0.9) {
+      if (dogruSay / hw.length >= (esik || 0.9)) {
         return { dogru: true, yazi: 'Sözcüklerin ' + dogruSay + ' / ' + hw.length + ' tanesi doğru anlaşıldı ✓ (telefon bozuk sesi de tamamlayabilir; kaydını dinleyerek kendin de kontrol et)' };
       }
       var uniq = en.eksik.filter(function (w, i) { return en.eksik.indexOf(w) === i; });
       return { dogru: false, yazi: dogruSay + ' / ' + hw.length + ' sözcük doğru anlaşıldı. Net olmayanlar: ' + uniq.join(', ') + '. Ben şunu duydum: “' + en.duyulan + '”. Yavaşla, bu sözcükleri önce tek başına söyle.' };
     };
   }
-  function dinle(cb) {
+  function dinle(cb, uzun) {
     var R = window.SpeechRecognition || window.webkitSpeechRecognition;
     var r = new R(), bitti = false, sonuc = [];
-    r.lang = 'tr-TR'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false;
+    r.lang = 'tr-TR'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = !!uzun;
     r.onresult = function (e) {
       // e.results birikimlidir: her çağrıda listeyi baştan kur.
       // İlk aday: her sonucun en iyi alternatiflerinin birleşimi; sonra ilk sonucun kalan alternatifleri.
@@ -1566,7 +1572,7 @@
     return { dogru: false, eksik: enEksik,
       yazi: (sozler.length - enEksik.length) + ' / ' + sozler.length + ' ' + hf + '’li sözcük doğru anlaşıldı. Şunlarda ' + hf + ' net değildi: ' + enEksik.join(', ') + '. Ben şunu duydum: “' + enIyi + '”' };
   }
-  function tanimaDugmesi(etiket, hedefAl, degerlendir, sonucKutu, basarida) {
+  function tanimaDugmesi(etiket, hedefAl, degerlendir, sonucKutu, basarida, uzun) {
     var b = el('button', 'secondary tanima-btn', '🎤 ' + etiket);
     b.type = 'button';
     b.addEventListener('click', function (e) {
@@ -1578,7 +1584,7 @@
       clearTimeout(Calis.zaman); Calis.oto = false;
       mkDurdur(); Rehber.durdur();
       var hedef = hedefAl();
-      b.textContent = '👂 Dinliyorum… söyle';
+      b.textContent = uzun ? '👂 Dinliyorum… bitince tekrar bas' : '👂 Dinliyorum… söyle';
       b.classList.add('dinliyor');
       sonucKutu.hidden = true;
       dinle(function (r) {
@@ -1589,7 +1595,7 @@
         sonucKutu.textContent = d.yazi;
         sonucKutu.hidden = false;
         if (d.dogru && basarida) basarida();
-      });
+      }, uzun);
     });
     return b;
   }
@@ -2689,12 +2695,18 @@
       (m.kat === 'tekerleme' ? ' · ' + tekEtiket(m.metin) : '');
     var tk = $('#metinTanima');
     tk.textContent = '';
-    tk.hidden = m.kat !== 'tekerleme';
+    tk.hidden = m.kat !== 'tekerleme' && m.kat !== 'siir';
     if (m.kat === 'tekerleme') {
       var ts = el('div', 'tanima-sonuc'); ts.hidden = true;
       tk.appendChild(tanimaDugmesi('Söyle, kontrol edeyim', function () { return m.metin; },
         tekerlemeKontrol(function (w, d) { zorIsleId('tekerleme', w, d); }), ts));
       tk.appendChild(ts);
+    } else if (m.kat === 'siir') {
+      var ss = el('div', 'tanima-sonuc'); ss.hidden = true;
+      tk.appendChild(tanimaDugmesi('Söyle, dinleyeyim', function () { return duzMetin(m.metin); },
+        tekerlemeKontrol(function () { /* şiirde zor sözcük kaydı tutulmaz */ }, 0.8), ss, null, true));
+      tk.appendChild(ss);
+      tk.appendChild(el('div', 'muted kucuk', 'Şiiri bitirince düğmeye tekrar bas.'));
     }
     var kn = $('#metinKunye');
     if (kn) {
