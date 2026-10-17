@@ -338,15 +338,14 @@ window.CALISMALAR = [
         dene: { yonerge: 'Önce kendini yokla: Aşağıdakileri sesli söyle ve kaydet. Çalışmanın sonunda bir daha kaydedip karşılaştırırsın.', sozler: ['zil', 'güzel', 'yüz', 'Zeynep’in gözleri', 'Zeki sizi zaman zaman arıyor.'] }
       },
       {
-        tur: 'tut', baslik: 'Isınma: Sssss → Zzzzz', fazAd: 'Söyle!',
+        tur: 'nefesOlc', baslik: 'Nefes al, zzzzz diye ver', ses: 'zzzzz', filtre: 400,
+        al: [4, 4, 5], tut: [4, 4, 5], ver: [8, 10, 12], turSayisi: [3, 4, 5],
         maddeler: [
-          'Mümkünse aynaya bak. Elini boğazına koy.',
-          'Önce s’yi söyle: Sssssss. Boğazda titreşim olmamalı.',
-          'Sonra sesini katarak z’ye geç: Zzzzzzz. Boğazda titreşim hissedeceksin.',
-          'Dil yeri değişmesin; sadece ses telleri çalışsın.',
-          'Sssszzzzssssszzzz diye gidip gel.'
-        ],
-        sesler: ['Sss → Zzz', 'Zzzzzzz'], sure: 6, dinlenme: 4, turSayisi: 2
+          'Seviyen: <b>{seviye}</b>. Her tur: {al} saniye nefes al, {tut} saniye tut, <b>{ver} saniye</b> zzzzz diye ver; {tur} tur yapacaksın. Çalıştıkça süre ve tur sayısı artar.',
+          'Mümkünse aynaya bak. Elini boğazına koy: z’de boğazda titreşim hissedeceksin.',
+          'Dil yeri s’deki gibi kalsın; fark sadece ses tellerinin çalışması. İstersen önce kısa bir sssss söyleyip sonra z’ye geç.',
+          'Elini karnına koy; burundan sessizce nefes al. “Ver” denince baştan sona aynı güçte, titreşerek ver: Zzzzz.'
+        ]
       },
       {
         tur: 'kart', baslik: 'Hece kartları', hece: true, sabitDizi: 1, secimDizi: 5,
